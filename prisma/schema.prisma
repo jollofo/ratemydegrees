@@ -1,0 +1,79 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id            String    @id
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  role          String    @default("USER") // USER, MODERATOR, ADMIN
+  banned        Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  reviews       Review[]
+  votes         Vote[]
+  reports       Report[]
+}
+
+model Major {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  cipCode     String?
+  category    String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  reviews     Review[]
+}
+
+model Review {
+  id                  String   @id @default(cuid())
+  majorId             String
+  major               Major    @relation(fields: [majorId], references: [id])
+  userId              String
+  user                User     @relation(fields: [userId], references: [id])
+  graduationStatus    String   // graduated, current, switched
+  graduationYearRange String?  // e.g., "2018–2020"
+  ratings             String   // JSON string of ratings
+  writtenResponses    String   // JSON string of answers to prompts
+  status              String   @default("PENDING") // PENDING, APPROVED, REMOVED
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  votes               Vote[]
+  reports             Report[]
+
+  @@index([majorId])
+  @@index([userId])
+}
+
+model Vote {
+  id       String @id @default(cuid())
+  reviewId String
+  review   Review @relation(fields: [reviewId], references: [id])
+  userId   String
+  user     User   @relation(fields: [userId], references: [id])
+  value    Int    @default(1) // +1
+
+  @@unique([reviewId, userId])
+}
+
+model Report {
+  id        String   @id @default(cuid())
+  reviewId  String
+  review    Review   @relation(fields: [reviewId], references: [id])
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  reason    String
+  createdAt DateTime @default(now())
+
+  @@index([reviewId])
+}
