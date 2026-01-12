@@ -1,6 +1,12 @@
 import HomeSearch from '@/components/HomeSearch';
+import prisma from '@/lib/prisma';
 
-export default function Home() {
+export default async function Home() {
+    const [majorCount, institutionCount] = await Promise.all([
+        prisma.major.count(),
+        prisma.institution.count({ where: { active: true } })
+    ]);
+
     return (
         <div className="relative isolate">
             {/* Hero Section */}
@@ -10,7 +16,7 @@ export default function Home() {
                         Choose your major with <span className="text-primary-600">confidence</span>
                     </h1>
                     <p className="mt-6 text-lg leading-8 text-gray-600">
-                        Real perspectives from students and alumni. Stop guessing and start knowing what it's actually like to study your degree.
+                        Real perspectives from students and alumni. Stop guessing and start knowing what it&apos;s actually like to study your degree.
                     </p>
                     <div className="mt-10">
                         <HomeSearch />
@@ -28,18 +34,14 @@ export default function Home() {
                                 Everything you need to know about academic rigor, career preparedness, and ROI.
                             </p>
                         </div>
-                        <dl className="mt-16 grid grid-cols-1 gap-0.5 overflow-hidden rounded-2xl text-center sm:grid-cols-3">
+                        <dl className="mt-16 grid grid-cols-1 gap-0.5 overflow-hidden rounded-2xl text-center sm:grid-cols-2">
                             <div className="flex flex-col bg-gray-400/5 p-8">
-                                <dt className="text-sm font-semibold leading-6 text-gray-600">Verified Majors</dt>
-                                <dd className="order-first text-3xl font-semibold tracking-tight text-gray-900">100+</dd>
+                                <dt className="text-sm font-semibold leading-6 text-gray-600">Verified Academic Programs</dt>
+                                <dd className="order-first text-3xl font-semibold tracking-tight text-gray-900">{majorCount}+</dd>
                             </div>
                             <div className="flex flex-col bg-gray-400/5 p-8">
-                                <dt className="text-sm font-semibold leading-6 text-gray-600">Student Reviews</dt>
-                                <dd className="order-first text-3xl font-semibold tracking-tight text-gray-900">1k+</dd>
-                            </div>
-                            <div className="flex flex-col bg-gray-400/5 p-8">
-                                <dt className="text-sm font-semibold leading-6 text-gray-600">Helpful Rating</dt>
-                                <dd className="order-first text-3xl font-semibold tracking-tight text-gray-900">98%</dd>
+                                <dt className="text-sm font-semibold leading-6 text-gray-600">US Institutions Integrated</dt>
+                                <dd className="order-first text-3xl font-semibold tracking-tight text-gray-900">{institutionCount.toLocaleString()}</dd>
                             </div>
                         </dl>
                     </div>

@@ -6,8 +6,9 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = "file:./dev.db"
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model User {
@@ -21,37 +22,84 @@ model User {
   updatedAt     DateTime  @updatedAt
   reviews       Review[]
   votes         Vote[]
-  reports       Report[]
+  reports       Report[]  @relation("Reporter")
+  actions       ModerationAction[]
+}
+
+model Institution {
+  unitid                 String   @id // IPEDS UNITID
+  name                   String
+  city                   String?
+  state                  String?
+  control                String?   // PUBLIC, PRIVATE
+  sector                 String?
+  website                String?
+  active                 Boolean   @default(true)
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+  reviews                Review[]
+  offeredMajors          InstitutionMajor[]
+}
+
+model Cip6 {
+  cip6        String   @id // e.g. 14.0901
+  title       String
+  definition  String?
+  cip2        String
+  cip4        String
 }
 
 model Major {
-  id          String   @id @default(cuid())
-  name        String   @unique
-  cipCode     String?
-  category    String
+  cip4        String   @id // e.g. 14.09
+  title       String
+  category    String?
+  slug        String?   @unique
   description String?
+  outcomes    String?  // JSON string: { commonJobs: [], salaryRange: "", gradPaths: [] }
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   reviews     Review[]
+  institutions InstitutionMajor[]
+}
+
+model InstitutionMajor {
+  unitid                     String
+  cip4                       String
+  institution                Institution @relation(fields: [unitid], references: [unitid])
+  major                      Major       @relation(fields: [cip4], references: [cip4])
+  latestYear                 String?
+  completionsTotal           Int        @default(0)
+
+  @@id([unitid, cip4])
 }
 
 model Review {
   id                  String   @id @default(cuid())
-  majorId             String
-  major               Major    @relation(fields: [majorId], references: [id])
+  cip4                String
+  major               Major    @relation(fields: [cip4], references: [cip4])
+  unitid              String
+  institution         Institution @relation(fields: [unitid], references: [unitid])
   userId              String
   user                User     @relation(fields: [userId], references: [id])
   graduationStatus    String   // graduated, current, switched
   graduationYearRange String?  // e.g., "2018–2020"
   ratings             String   // JSON string of ratings
   writtenResponses    String   // JSON string of answers to prompts
-  status              String   @default("PENDING") // PENDING, APPROVED, REMOVED
+  
+  status              String   @default("PENDING") // PENDING, APPROVED, REMOVED, REJECTED, SHADOW_HIDDEN
+  flagReasons         String?  // JSON array of strings
+  riskScore           Int      @default(0)
+  toxicityScore       Float?
+  lastModeratedAt     DateTime?
+
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
   votes               Vote[]
   reports             Report[]
+  moderationActions   ModerationAction[]
 
-  @@index([majorId])
+  @@index([cip4])
+  @@index([unitid])
   @@index([userId])
 }
 
@@ -71,9 +119,26 @@ model Report {
   reviewId  String
   review    Review   @relation(fields: [reviewId], references: [id])
   userId    String
-  user      User     @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id], name: "Reporter")
   reason    String
+  details   String?
+  status    String   @default("OPEN") // OPEN, RESOLVED
   createdAt DateTime @default(now())
 
   @@index([reviewId])
+}
+
+model ModerationAction {
+  id              String   @id @default(cuid())
+  reviewId        String
+  review          Review   @relation(fields: [reviewId], references: [id])
+  moderatorId     String
+  moderator       User     @relation(fields: [moderatorId], references: [id])
+  action          String   // APPROVE, REMOVE, SHADOW_HIDE, REJECT
+  notes           String?
+  metadata        String?  // JSON string
+  createdAt       DateTime @default(now())
+
+  @@index([reviewId])
+  @@index([moderatorId])
 }

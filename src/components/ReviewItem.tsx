@@ -50,9 +50,19 @@ export default function ReviewItem({ review, userId }: { review: any, userId?: s
                 <div>
                     <div className="flex items-center gap-2 mb-1">
                         <span className="font-bold text-gray-900">Anonymous Peer</span>
+                        {review.graduationStatus && (
+                            <span className="px-1.5 py-0.5 rounded-md bg-gray-50 text-[10px] font-bold text-gray-400 uppercase tracking-tighter border border-gray-100">
+                                {review.graduationStatus}
+                            </span>
+                        )}
                         <span className="text-gray-300">&bull;</span>
                         <span className="text-sm text-gray-500">{review.graduationYearRange}</span>
                     </div>
+                    {review.major && review.institution && (
+                        <div className="text-xs font-semibold text-primary-600 mb-2">
+                            {review.major.name} @ {review.institution.name}
+                        </div>
+                    )}
                     <div className="flex gap-1">
                         {[1, 2, 3, 4, 5].map((star) => (
                             <svg key={star} xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill={star <= (r.satisfaction || 0) ? "#EAB308" : "none"} stroke="#EAB308" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></svg>
@@ -60,7 +70,7 @@ export default function ReviewItem({ review, userId }: { review: any, userId?: s
                     </div>
                 </div>
                 <div className="text-sm text-gray-400 font-medium">
-                    {new Date(review.createdAt).toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}
+                    {new Date(review.createdAt).toLocaleDateString(undefined, { month: 'short', year: 'numeric' })}
                 </div>
             </div>
 

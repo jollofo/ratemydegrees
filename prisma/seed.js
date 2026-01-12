@@ -2,28 +2,62 @@ const { PrismaClient } = require('@prisma/client')
 const prisma = new PrismaClient()
 
 async function main() {
-    const majors = [
-        { name: 'Computer Science', category: 'STEM', description: 'Study of computers and computational systems.' },
-        { name: 'Mechanical Engineering', category: 'STEM', description: 'Branch of engineering that involves the design, production, and operation of machinery.' },
-        { name: 'Psychology', category: 'Social Sciences', description: 'Scientific study of the mind and behavior.' },
-        { name: 'Business Administration', category: 'Business', description: 'Management of a business or non-profit organization.' },
-        { name: 'Nursing', category: 'Health', description: 'Profession within the health care sector focused on the care of individuals, families, and communities.' },
-        { name: 'Biology', category: 'STEM', description: 'Natural science that studies life and living organisms.' },
-        { name: 'English Literature', category: 'Humanities', description: 'Study of literature written in the English language.' },
-        { name: 'Political Science', category: 'Social Sciences', description: 'Study of systems of government, and the analysis of political activities, thoughts, and behavior.' },
-        { name: 'Electrical Engineering', category: 'STEM', description: 'Engineering discipline concerned with the study, design, and application of equipment, devices, and systems which use electricity, electronics, and electromagnetism.' },
-        { name: 'Economics', category: 'Social Sciences', description: 'Social science that studies the production, distribution, and consumption of goods and services.' },
+    console.log('Start seeding...')
+
+    // Clear existing data (optional, but good for resetting to new schema)
+    await prisma.review.deleteMany({})
+    await prisma.institution.deleteMany({})
+    await prisma.major.deleteMany({})
+
+    const institutions = [
+        { name: 'Stanford University', state: 'CA', control: 'PRIVATE', sizeBucket: 'LARGE' },
+        { name: 'UC Berkeley', state: 'CA', control: 'PUBLIC', sizeBucket: 'LARGE' },
+        { name: 'MIT', state: 'MA', control: 'PRIVATE', sizeBucket: 'SMALL' },
+        { name: 'Georgia Tech', state: 'GA', control: 'PUBLIC', sizeBucket: 'LARGE' },
+        { name: 'University of Texas at Austin', state: 'TX', control: 'PUBLIC', sizeBucket: 'LARGE' },
     ]
 
-    console.log('Start seeding...')
-    for (const m of majors) {
-        const major = await prisma.major.upsert({
-            where: { name: m.name },
-            update: {},
-            create: m,
-        })
-        console.log(`Created major with id: ${major.id}`)
+    for (const inst of institutions) {
+        await prisma.institution.create({ data: inst })
     }
+
+    const majors = [
+        {
+            name: 'Computer Science',
+            category: 'STEM',
+            description: 'Study of computers and computational systems.',
+            outcomes: JSON.stringify({
+                commonJobs: ['Software Engineer', 'Data Scientist', 'Systems Architect'],
+                salaryRange: '$80,000 - $150,000',
+                gradPaths: ['MS in Computer Science', 'MBA', 'PhD in AI']
+            })
+        },
+        {
+            name: 'Mechanical Engineering',
+            category: 'STEM',
+            description: 'Design and production of machinery.',
+            outcomes: JSON.stringify({
+                commonJobs: ['Mechanical Engineer', 'Robotics Engineer', 'Design Engineer'],
+                salaryRange: '$70,000 - $120,000',
+                gradPaths: ['MS in Engineering', 'Professional Engineer (PE) License']
+            })
+        },
+        {
+            name: 'Psychology',
+            category: 'Social Sciences',
+            description: 'Scientific study of the mind and behavior.',
+            outcomes: JSON.stringify({
+                commonJobs: ['Mental Health Counselor', 'HR Specialist', 'Market Research Analyst'],
+                salaryRange: '$45,000 - $90,000',
+                gradPaths: ['Masters in Counseling', 'PhD in Psychology', 'Law School']
+            })
+        }
+    ]
+
+    for (const m of majors) {
+        await prisma.major.create({ data: m })
+    }
+
     console.log('Seeding finished.')
 }
 
