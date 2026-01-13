@@ -25,49 +25,51 @@ export default async function ReportsPage() {
     });
 
     return (
-        <div className="space-y-8">
-            <h2 className="text-3xl font-black text-gray-900 tracking-tight">User Reports</h2>
+        <div className="space-y-16">
+            <div className="flex items-center justify-between border-b-2 border-earth-sage/20 pb-10">
+                <h2 className="text-6xl font-funky text-foreground tracking-tight italic">Flagged Conversations</h2>
+            </div>
 
-            <div className="space-y-4">
+            <div className="space-y-10">
                 {reports.length === 0 ? (
-                    <div className="py-20 text-center bg-white border border-gray-50 rounded-[40px] text-gray-400 font-medium font-bold">
-                        No open reports. Great job!
+                    <div className="py-32 text-center coffee-card border-dashed bg-earth-parchment/30 text-earth-sage font-funky italic text-2xl">
+                        The air is clear. No discord found in the gathering.
                     </div>
                 ) : (
-                    reports.map((report) => (
-                        <div key={report.id} className="bg-white border border-gray-100 p-8 rounded-[32px] shadow-sm flex flex-col md:flex-row gap-8 items-start">
+                    reports.map((report: any) => (
+                        <div key={report.id} className="coffee-card bg-white flex flex-col md:flex-row gap-16 items-start">
                             <div className="flex-1">
-                                <div className="flex items-center gap-3 mb-4">
-                                    <span className="bg-yellow-50 text-yellow-700 px-3 py-1 rounded-full text-[10px] font-black uppercase border border-yellow-100 shadow-sm">
-                                        Reason: {report.reason}
+                                <div className="flex flex-wrap items-center gap-4 mb-10">
+                                    <span className="bg-earth-mustard/20 text-earth-mustard border border-earth-mustard/30 px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded-full italic">
+                                        Alert: {report.reason}
                                     </span>
-                                    <span className="text-gray-300">/</span>
-                                    <span className="text-gray-400 text-[10px] font-bold uppercase tracking-widest">
-                                        Reported on {new Date(report.createdAt).toLocaleDateString()}
+                                    <span className="text-earth-sage font-bold uppercase tracking-widest text-[10px] italic">
+                                        Surfaced: {new Date(report.createdAt).toLocaleDateString()}
                                     </span>
                                 </div>
-                                <div className="p-6 bg-gray-50 rounded-2xl mb-4 border border-gray-100">
-                                    <p className="text-sm font-bold text-gray-900 mb-2">Review Target:</p>
-                                    <p className="text-xs text-gray-500 line-clamp-2">{JSON.parse(report.review.writtenResponses).fit}</p>
-                                    <div className="mt-4 flex items-center gap-2 text-[10px] font-black text-primary-600 uppercase">
-                                        <span>{report.review.major.title}</span>
-                                        <span>@</span>
-                                        <span>{report.review.institution.name}</span>
+                                <div className="p-10 bg-earth-parchment/30 rounded-[2.5rem] border border-earth-sage/10 mb-10 relative overflow-hidden group">
+                                    <div className="absolute top-0 right-0 bg-earth-burgundy text-white px-5 py-2 text-[8px] font-bold uppercase tracking-widest">Target Reflection</div>
+                                    <p className="text-[10px] font-bold text-earth-sage uppercase tracking-widest mb-6 italic">The Fragmented Truth:</p>
+                                    <p className="text-xl font-medium text-foreground italic leading-relaxed mb-10">&ldquo;{JSON.parse(report.review.writtenResponses).fit}&rdquo;</p>
+                                    <div className="flex items-center gap-3 text-xs font-bold text-foreground bg-white/60 backdrop-blur-sm border border-earth-sage/10 px-5 py-3 rounded-full w-fit">
+                                        <span className="italic">{report.review.major.title}</span>
+                                        <span className="text-earth-terracotta opacity-50">@</span>
+                                        <span className="italic">{report.review.institution.name}</span>
                                     </div>
                                 </div>
                                 {report.details && (
-                                    <p className="text-sm text-gray-600 bg-blue-50/50 p-4 rounded-xl border border-blue-50">
-                                        <span className="font-bold text-blue-900 block mb-1">Reporter Details:</span>
-                                        {report.details}
-                                    </p>
+                                    <div className="p-8 bg-earth-sage/5 border border-earth-sage/10 rounded-3xl">
+                                        <span className="text-[10px] font-bold text-earth-sage uppercase tracking-widest block mb-3 italic">Reporter&apos;s Observation:</span>
+                                        <p className="text-sm font-medium text-foreground leading-relaxed italic">{report.details}</p>
+                                    </div>
                                 )}
                             </div>
-                            <div className="flex flex-col gap-2 w-full md:w-auto">
+                            <div className="flex flex-col gap-4 w-full md:w-80 shrink-0">
                                 <a
                                     href={`/admin/moderation?reviewId=${report.reviewId}`}
-                                    className="px-6 py-3 bg-gray-900 text-white text-center rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-black transition-all"
+                                    className="coffee-btn bg-earth-burgundy text-white px-8 py-5 text-center text-xs shadow-[6px_6px_0px_#433422]"
                                 >
-                                    Investigate Review
+                                    ACT ON TRUTH &rarr;
                                 </a>
                             </div>
                         </div>

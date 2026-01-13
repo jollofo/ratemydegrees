@@ -9,21 +9,34 @@ const config: Config = {
     theme: {
         extend: {
             colors: {
-                background: "white",
-                foreground: "#171717",
-                primary: {
-                    50: "#f0f9ff",
-                    100: "#e0f2fe",
-                    200: "#bae6fd",
-                    300: "#7dd3fc",
-                    400: "#38bdf8",
-                    500: "#0ea5e9",
-                    600: "#0284c7",
-                    700: "#0369a1",
-                    800: "#075985",
-                    900: "#0c4a6e",
-                    950: "#082f49",
+                background: "#fdf6e3", // Solarized-style parchment
+                foreground: "#433422", // Deep coffee brown
+                earth: {
+                    parchment: "#fdf6e3",
+                    terracotta: "#c36b4e",
+                    sage: "#8b9467",
+                    mustard: "#d4a017",
+                    burgundy: "#800020",
+                    clay: "#b5835a",
                 },
+                primary: {
+                    50: "#fdf8f6",
+                    100: "#f9ebe6",
+                    200: "#f0cdc1",
+                    300: "#e6ae9d",
+                    400: "#d37255",
+                    500: "#c36b4e", // Terracotta
+                    600: "#af6046",
+                    700: "#92503a",
+                    800: "#75402f",
+                    900: "#603426",
+                    950: "#381e16",
+                },
+            },
+            fontFamily: {
+                sans: ["Inter", "sans-serif"],
+                funky: ["Bricolage Grotesque", "serif"],
+                mono: ["Courier Prime", "monospace"],
             },
         },
     },

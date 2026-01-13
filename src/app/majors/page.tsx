@@ -1,5 +1,7 @@
+import { Prisma } from '@prisma/client';
 import prisma from '@/lib/prisma';
 import { redirect } from 'next/navigation';
+import { ArrowLeft, Search, Star } from 'lucide-react';
 
 const PAGE_SIZE = 12;
 
@@ -13,16 +15,31 @@ export default async function MajorsPage({
     const unitid = searchParams.unitid || '';
     const page = parseInt(searchParams.page || '1');
 
-    const whereClause = {
-        AND: [
-            query ? { title: { contains: query, mode: 'insensitive' } } : {},
-            category && category !== 'All Categories' ? { category: category } : {},
-            unitid ? {
-                institutions: {
-                    some: { unitid: unitid }
-                }
-            } : {},
-        ],
+    const andConditions: Prisma.MajorWhereInput[] = [];
+
+    if (query) {
+        andConditions.push({
+            title: {
+                contains: query,
+                mode: 'insensitive' as Prisma.QueryMode
+            }
+        });
+    }
+
+    if (category && category !== 'All Categories') {
+        andConditions.push({ category: category });
+    }
+
+    if (unitid) {
+        andConditions.push({
+            institutions: {
+                some: { unitid: unitid }
+            }
+        });
+    }
+
+    const whereClause: Prisma.MajorWhereInput = {
+        AND: andConditions.length > 0 ? andConditions : undefined,
     };
 
     const [majors, totalCount] = await Promise.all([
@@ -48,7 +65,7 @@ export default async function MajorsPage({
 
     const totalPages = Math.ceil(totalCount / PAGE_SIZE);
 
-    const majorsWithStats = majors.map((major) => {
+    const majorsWithStats = majors.map((major: any) => {
         const reviews = major.reviews;
         const reviewCount = major._count.reviews;
         const outcomes = major.outcomes ? JSON.parse(major.outcomes) : null;
@@ -57,12 +74,12 @@ export default async function MajorsPage({
         let avgDifficulty = 0;
 
         if (reviewCount >= 5) {
-            const totalRating = reviews.reduce((acc, rev) => {
+            const totalRating = reviews.reduce((acc: number, rev: any) => {
                 const ratings = JSON.parse(rev.ratings);
                 return acc + (ratings.satisfaction || 0);
             }, 0);
 
-            const totalDifficulty = reviews.reduce((acc, rev) => {
+            const totalDifficulty = reviews.reduce((acc: number, rev: any) => {
                 const ratings = JSON.parse(rev.ratings);
                 return acc + (ratings.difficulty || 0);
             }, 0);
@@ -89,97 +106,101 @@ export default async function MajorsPage({
     };
 
     return (
-        <div className="container mx-auto px-4 py-12 max-w-6xl">
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-12">
-                <div className="max-w-xl">
-                    <h1 className="text-5xl font-black text-gray-900 tracking-tight leading-tight">
-                        {query ? `Search: ${query}` : 'Academic Programs'}
+        <div className="container mx-auto px-6 py-16 max-w-7xl">
+            <a
+                href="/"
+                className="inline-flex items-center text-sm font-bold text-earth-terracotta hover:underline mb-12"
+            >
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back to Gathering
+            </a>
+
+            <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-12 mb-20">
+                <div className="max-w-2xl">
+                    <h1 className="text-6xl font-funky text-foreground tracking-tight leading-[0.9] mb-6">
+                        {query ? `Seeking: ${query}` : 'Academic Collections'}
                     </h1>
-                    <p className="text-xl text-gray-500 mt-4 font-medium leading-relaxed">
-                        Compare department-level quality and verified career outcomes across national aggregates.
+                    <p className="text-xl text-foreground/70 font-medium leading-relaxed italic">
+                        Explore department-level quality and verified career outcomes across our global aggregates.
                     </p>
                 </div>
-                <div className="flex flex-col items-end gap-6">
-                    <div className="bg-white border border-gray-100 rounded-2xl p-1 flex gap-1 shadow-sm">
-                        <button className="px-5 py-2.5 bg-gray-900 text-white rounded-xl text-sm font-bold cursor-default">All Majors</button>
-                        <a href="/institutions" className="px-5 py-2.5 text-gray-400 hover:text-gray-900 rounded-xl text-sm font-bold transition-colors">By Institution</a>
+                <div className="flex flex-col items-start lg:items-end gap-8 w-full max-w-md">
+                    <div className="bg-earth-parchment border-2 border-foreground p-1.5 flex gap-1 rounded-full w-fit">
+                        <button className="px-6 py-2.5 bg-foreground text-white rounded-full text-xs font-bold uppercase tracking-widest cursor-default">Catalog</button>
+                        <a href="/institutions" className="px-6 py-2.5 text-foreground hover:bg-foreground/5 rounded-full transition-colors text-xs font-bold uppercase tracking-widest">Institutions</a>
                     </div>
 
-                    <form action={handleSearch} className="relative w-full max-w-sm">
+                    <form action={handleSearch} className="relative w-full">
                         <input
                             type="text"
                             name="q"
                             defaultValue={query}
-                            placeholder="Search programs..."
-                            className="w-full px-5 py-3 rounded-2xl border border-gray-100 bg-gray-50 focus:bg-white focus:ring-4 focus:ring-primary-50 outline-none transition-all font-medium text-sm pr-12"
+                            placeholder="Find your major..."
+                            className="coffee-input pr-16 text-sm font-bold shadow-[4px_4px_0px_#8b9467]"
                         />
-                        <button type="submit" className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-primary-600 transition-colors">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg>
+                        <button type="submit" className="absolute right-4 top-1/2 -translate-y-1/2 text-earth-terracotta hover:scale-110 transition-transform">
+                            <Search className="h-6 w-6 stroke-[3]" />
                         </button>
                     </form>
                 </div>
             </div>
 
             {majorsWithStats.length === 0 ? (
-                <div className="py-32 text-center bg-gray-50 rounded-[40px] border-2 border-dashed border-gray-200">
-                    <div className="bg-white p-6 rounded-3xl shadow-sm inline-block mb-6">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-gray-300"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg>
-                    </div>
-                    <h2 className="text-2xl font-black text-gray-900">No matching programs</h2>
-                    <p className="text-gray-500 mt-2 font-medium">Try broadening your search criteria.</p>
+                <div className="py-40 text-center coffee-card border-dashed bg-earth-parchment/30">
+                    <h2 className="text-3xl font-funky text-foreground opacity-40 italic">The collection is silent. Try another query.</h2>
                 </div>
             ) : (
                 <>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-                        {majorsWithStats.map((major) => (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 mb-20">
+                        {majorsWithStats.map((major: any) => (
                             <a
                                 key={major.id}
                                 href={`/majors/${major.id}`}
-                                className="group flex flex-col bg-white border border-gray-100 rounded-[40px] p-8 shadow-sm hover:shadow-2xl hover:shadow-primary-100 hover:border-primary-100 transition-all duration-500"
+                                className="coffee-card group hover:shadow-[8px_8px_0px_#8b9467] flex flex-col"
                             >
-                                <div className="flex justify-between items-start mb-6">
-                                    <span className="px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-primary-600 bg-primary-50 rounded-lg">
+                                <div className="flex justify-between items-start mb-8">
+                                    <span className="text-[10px] font-bold uppercase tracking-widest text-earth-sage bg-earth-sage/10 border border-earth-sage px-3 py-1 rounded-full">
                                         {major.category}
                                     </span>
                                     {major.rating !== 'N/A' && (
-                                        <div className="flex items-center gap-1.5 bg-yellow-400 text-white px-3 py-1 rounded-full text-xs font-black shadow-lg shadow-yellow-100">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></svg>
+                                        <div className="flex items-center gap-1.5 bg-earth-mustard text-foreground px-3 py-1 text-xs font-bold rounded-full border border-foreground/10">
+                                            <Star className="h-4 w-4 fill-foreground" />
                                             {major.rating}
                                         </div>
                                     )}
                                 </div>
 
-                                <h2 className="text-2xl font-black text-gray-900 group-hover:text-primary-600 transition-colors leading-tight mb-4 text-balance">
+                                <h2 className="text-3xl font-funky text-foreground group-hover:text-earth-terracotta transition-colors leading-tight mb-8">
                                     {major.name}
                                 </h2>
 
                                 {major.outcomes && (
-                                    <div className="mt-auto pt-6 border-t border-gray-50">
-                                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-3">Typical Roles</span>
-                                        <div className="flex flex-wrap gap-2 mb-6">
+                                    <div className="mt-auto pt-8 border-t border-foreground/5">
+                                        <span className="text-[10px] font-bold text-earth-sage uppercase tracking-widest block mb-4 italic">Common Paths</span>
+                                        <div className="flex flex-wrap gap-2 mb-10">
                                             {major.outcomes.commonJobs.slice(0, 2).map((job: string) => (
-                                                <span key={job} className="text-xs font-bold text-gray-600 bg-gray-50 px-3 py-1.5 rounded-xl border border-gray-100/50">{job}</span>
+                                                <span key={job} className="text-[10px] font-bold text-foreground bg-earth-parchment border border-foreground/10 px-3 py-1.5 rounded-lg">{job}</span>
                                             ))}
                                             {major.outcomes.commonJobs.length > 2 && (
-                                                <span className="text-[10px] font-black text-gray-300 flex items-center">+{major.outcomes.commonJobs.length - 2}</span>
+                                                <span className="text-[10px] font-bold text-earth-sage flex items-center">+{major.outcomes.commonJobs.length - 2}</span>
                                             )}
                                         </div>
                                         <div className="flex items-center justify-between">
                                             <div>
-                                                <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-0.5">Est. Salary</span>
-                                                <span className="text-sm font-black text-gray-900">{major.outcomes.salaryRange}</span>
+                                                <span className="text-[10px] font-bold text-earth-sage uppercase tracking-widest block mb-1">Wisdom</span>
+                                                <span className="text-sm font-bold text-foreground">{major.reviewCount} Voices</span>
                                             </div>
                                             <div className="text-right">
-                                                <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-0.5">Volume</span>
-                                                <span className="text-sm font-black text-gray-900">{major.reviewCount} Reviews</span>
+                                                <span className="text-[10px] font-bold text-earth-sage uppercase tracking-widest block mb-1">Est. Income</span>
+                                                <span className="text-sm font-bold text-foreground">{major.outcomes.salaryRange}</span>
                                             </div>
                                         </div>
                                     </div>
                                 )}
 
                                 {!major.outcomes && (
-                                    <div className="mt-auto py-8 text-center bg-gray-50 rounded-3xl border-2 border-dashed border-gray-100">
-                                        <p className="text-xs font-bold text-gray-400 uppercase">Be the first to review</p>
+                                    <div className="mt-auto py-10 text-center bg-earth-parchment/50 border-2 border-dotted border-earth-sage/30 rounded-3xl">
+                                        <p className="text-[10px] font-bold text-earth-sage uppercase tracking-widest italic">Be the first to share</p>
                                     </div>
                                 )}
                             </a>
@@ -188,17 +209,17 @@ export default async function MajorsPage({
 
                     {/* Pagination */}
                     {totalPages > 1 && (
-                        <div className="flex justify-center items-center gap-2 pt-8 border-t border-gray-100">
+                        <div className="flex justify-center items-center gap-4 pt-16 border-t border-foreground/10">
                             {page > 1 && (
                                 <a
                                     href={`/majors?page=${page - 1}${query ? `&q=${encodeURIComponent(query)}` : ''}`}
-                                    className="p-3 rounded-xl border border-gray-100 hover:bg-gray-50 text-gray-600 transition-colors"
+                                    className="w-14 h-14 bg-white border-2 border-foreground rounded-2xl flex items-center justify-center hover:bg-earth-parchment transition-colors"
                                 >
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="rotate-180"><path d="m9 18 6-6-6-6" /></svg>
+                                    <ArrowLeft className="h-5 w-5 stroke-[2.5]" />
                                 </a>
                             )}
 
-                            <div className="flex items-center gap-1">
+                            <div className="flex items-center gap-3">
                                 {[...Array(Math.min(5, totalPages))].map((_, i) => {
                                     let pageNum = page;
                                     if (page <= 3) pageNum = i + 1;
@@ -211,9 +232,9 @@ export default async function MajorsPage({
                                         <a
                                             key={pageNum}
                                             href={`/majors?page=${pageNum}${query ? `&q=${encodeURIComponent(query)}` : ''}`}
-                                            className={`w-10 h-10 flex items-center justify-center rounded-xl font-bold transition-all ${page === pageNum
-                                                ? 'bg-primary-600 text-white shadow-lg shadow-primary-100'
-                                                : 'text-gray-400 hover:text-gray-900 hover:bg-gray-50'
+                                            className={`w-14 h-14 flex items-center justify-center rounded-2xl border-2 font-bold transition-all ${page === pageNum
+                                                ? 'bg-earth-terracotta border-earth-terracotta text-white shadow-lg scale-110'
+                                                : 'bg-white border-foreground hover:bg-earth-parchment'
                                                 }`}
                                         >
                                             {pageNum}
@@ -225,9 +246,9 @@ export default async function MajorsPage({
                             {page < totalPages && (
                                 <a
                                     href={`/majors?page=${page + 1}${query ? `&q=${encodeURIComponent(query)}` : ''}`}
-                                    className="p-3 rounded-xl border border-gray-100 hover:bg-gray-50 text-gray-600 transition-colors"
+                                    className="w-14 h-14 bg-white border-2 border-foreground rounded-2xl flex items-center justify-center hover:bg-earth-parchment transition-colors"
                                 >
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6" /></svg>
+                                    <ArrowLeft className="h-5 w-5 rotate-180 stroke-[2.5]" />
                                 </a>
                             )}
                         </div>

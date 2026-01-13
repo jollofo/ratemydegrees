@@ -20,48 +20,55 @@ export default async function UsersPage() {
     });
 
     return (
-        <div className="space-y-8">
-            <h2 className="text-3xl font-black text-gray-900 tracking-tight">User Management</h2>
+        <div className="space-y-16">
+            <div className="flex items-center justify-between border-b-2 border-earth-sage/20 pb-10">
+                <h2 className="text-6xl font-funky text-foreground tracking-tight italic">Gathering Seekers</h2>
+            </div>
 
-            <div className="bg-white border border-gray-100 rounded-[32px] overflow-hidden shadow-sm">
-                <table className="w-full text-left border-collapse">
-                    <thead>
-                        <tr className="bg-gray-50/50">
-                            <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-100">User</th>
-                            <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-100">Role</th>
-                            <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-100">Activity</th>
-                            <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-100">Status</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-50">
-                        {users.map((u) => (
-                            <tr key={u.id} className="hover:bg-gray-50/30 transition-colors">
-                                <td className="px-6 py-6">
-                                    <p className="font-bold text-gray-900">{u.email}</p>
-                                    <p className="text-[10px] text-gray-400 font-mono mt-1">{u.id}</p>
-                                </td>
-                                <td className="px-6 py-6">
-                                    <span className={`px-2 py-1 rounded text-[10px] font-black uppercase tracking-widest ${u.role === 'ADMIN' ? 'bg-primary-900 text-white' :
-                                            u.role === 'MODERATOR' ? 'bg-primary-100 text-primary-700' :
-                                                'bg-gray-100 text-gray-500'
-                                        }`}>
-                                        {u.role}
-                                    </span>
-                                </td>
-                                <td className="px-6 py-6 font-bold text-gray-600 text-sm">
-                                    {u._count.reviews} Reviews
-                                </td>
-                                <td className="px-6 py-6">
-                                    {u.banned ? (
-                                        <span className="text-red-600 font-bold text-xs uppercase tracking-widest">Banned</span>
-                                    ) : (
-                                        <span className="text-green-500 font-bold text-xs uppercase tracking-widest">Active</span>
-                                    )}
-                                </td>
+            <div className="coffee-card !p-0 bg-white overflow-hidden border-earth-sage/10">
+                <div className="overflow-x-auto">
+                    <table className="w-full text-left border-separate border-spacing-0">
+                        <thead>
+                            <tr className="bg-earth-parchment/60">
+                                <th className="px-10 py-6 text-[10px] font-bold text-earth-sage uppercase tracking-[0.2em] border-b-2 border-earth-sage/10 italic">Wanderer Identity</th>
+                                <th className="px-10 py-6 text-[10px] font-bold text-earth-sage uppercase tracking-[0.2em] border-b-2 border-earth-sage/10 italic">Clearance</th>
+                                <th className="px-10 py-6 text-[10px] font-bold text-earth-sage uppercase tracking-[0.2em] border-b-2 border-earth-sage/10 italic">Wisdom Shared</th>
+                                <th className="px-10 py-6 text-[10px] font-bold text-earth-sage uppercase tracking-[0.2em] border-b-2 border-earth-sage/10 italic">Presence Status</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody className="divide-y divide-earth-sage/5">
+                            {users.map((u: any) => (
+                                <tr key={u.id} className="hover:bg-earth-parchment/40 transition-colors group">
+                                    <td className="px-10 py-10">
+                                        <p className="font-funky text-2xl text-foreground italic tracking-tight group-hover:text-earth-terracotta transition-colors">{u.email?.split('@')[0]}</p>
+                                        <p className="text-[10px] text-earth-sage/50 font-bold uppercase tracking-widest mt-2">{u.id.substring(0, 16)}...</p>
+                                    </td>
+                                    <td className="px-10 py-10">
+                                        <span className={`px-5 py-2 rounded-full font-bold text-[10px] uppercase tracking-widest shadow-sm italic ${u.role === 'ADMIN' ? 'bg-earth-burgundy text-white' :
+                                            u.role === 'MODERATOR' ? 'bg-earth-mustard text-foreground' :
+                                                'bg-earth-sage/10 text-earth-sage border border-earth-sage/20'
+                                            }`}>
+                                            {u.role}
+                                        </span>
+                                    </td>
+                                    <td className="px-10 py-10">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-2 h-2 bg-earth-terracotta rounded-full animate-pulse" />
+                                            <span className="font-bold text-xs text-foreground uppercase tracking-widest">{u._count.reviews} Reflections</span>
+                                        </div>
+                                    </td>
+                                    <td className="px-10 py-10">
+                                        {u.banned ? (
+                                            <span className="bg-earth-burgundy/10 text-earth-burgundy px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest italic border border-earth-burgundy/20">Access Halted</span>
+                                        ) : (
+                                            <span className="bg-earth-sage/10 text-earth-sage px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest italic border border-earth-sage/20">Active Presence</span>
+                                        )}
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     );

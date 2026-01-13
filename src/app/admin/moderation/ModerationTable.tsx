@@ -23,85 +23,85 @@ export default function ModerationTable({ initialQueue }: { initialQueue: any[] 
 
     if (initialQueue.length === 0) {
         return (
-            <div className="py-20 text-center text-gray-400 font-medium">
-                Queue is empty for this status.
+            <div className="py-32 text-center text-earth-sage font-funky italic text-2xl opacity-40">
+                The silence is profound. No reflections await judgment.
             </div>
         );
     }
 
     return (
-        <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
+        <div className="overflow-x-auto custom-scrollbar">
+            <table className="w-full text-left border-separate border-spacing-0">
                 <thead>
-                    <tr className="bg-gray-50/50">
-                        <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-100">Details</th>
-                        <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-100">Content Snippet</th>
-                        <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-100">Risk & Reasons</th>
-                        <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-100 text-right">Actions</th>
+                    <tr className="bg-earth-parchment/60">
+                        <th className="px-8 py-6 text-[10px] font-bold text-earth-sage uppercase tracking-[0.2em] border-b-2 border-earth-sage/10 italic">Source Details</th>
+                        <th className="px-8 py-6 text-[10px] font-bold text-earth-sage uppercase tracking-[0.2em] border-b-2 border-earth-sage/10 italic">Reflection Snippet</th>
+                        <th className="px-8 py-6 text-[10px] font-bold text-earth-sage uppercase tracking-[0.2em] border-b-2 border-earth-sage/10 italic">Friction & Echoes</th>
+                        <th className="px-8 py-6 text-[10px] font-bold text-earth-sage uppercase tracking-[0.2em] border-b-2 border-earth-sage/10 italic text-right">Oversight</th>
                     </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-50">
+                <tbody className="divide-y divide-earth-sage/5">
                     {initialQueue.map((review) => {
                         const responses = JSON.parse(review.writtenResponses);
                         const flagReasons = review.flagReasons ? JSON.parse(review.flagReasons) : [];
 
                         return (
-                            <tr key={review.id} className="hover:bg-gray-50/30 transition-colors group">
-                                <td className="px-6 py-6">
-                                    <p className="font-bold text-gray-900 leading-tight mb-1">{review.major.title}</p>
-                                    <p className="text-xs text-gray-400 font-medium">{review.institution.name}</p>
-                                    <div className="mt-2 flex items-center gap-2">
-                                        <span className="text-[10px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded font-bold uppercase">{review.graduationStatus}</span>
-                                        <span className="text-[10px] text-gray-300 font-bold uppercase">{review.graduationYearRange}</span>
+                            <tr key={review.id} className="hover:bg-earth-parchment/40 transition-colors group">
+                                <td className="px-8 py-8">
+                                    <p className="font-funky text-2xl text-foreground italic leading-tight mb-2 group-hover:text-earth-terracotta transition-colors">{review.major.title}</p>
+                                    <p className="text-[10px] text-earth-sage font-bold uppercase tracking-widest leading-none">{review.institution.name}</p>
+                                    <div className="mt-5 flex items-center gap-2">
+                                        <span className="text-[10px] bg-earth-mustard text-foreground px-3 py-1 font-bold uppercase tracking-widest rounded-full italic">{review.graduationStatus}</span>
+                                        <span className="text-[10px] text-earth-sage/60 font-bold uppercase tracking-widest italic">{review.graduationYearRange}</span>
                                     </div>
                                 </td>
-                                <td className="px-6 py-6 max-w-md">
-                                    <div className="text-xs text-gray-600 line-clamp-3 leading-relaxed">
-                                        <span className="font-bold text-gray-900 block mb-1">Fit Query:</span>
-                                        {responses.fit || 'No text provided'}
+                                <td className="px-8 py-8 max-w-md">
+                                    <div className="text-sm text-foreground font-medium leading-relaxed italic line-clamp-3">
+                                        <span className="text-earth-terracotta font-bold uppercase tracking-widest text-[10px] mr-2 not-italic">Fit:</span>
+                                        &quot;{responses.fit || 'No text provided'}&quot;
                                     </div>
                                 </td>
-                                <td className="px-6 py-6">
-                                    <div className="flex flex-wrap gap-1.5">
+                                <td className="px-8 py-8">
+                                    <div className="flex flex-wrap gap-2">
                                         {review.riskScore > 0 && (
-                                            <span className="bg-red-50 text-red-600 px-2 py-0.5 rounded text-[10px] font-black border border-red-100">
+                                            <span className="bg-earth-burgundy text-white px-3 py-1 text-[10px] font-bold rounded-full uppercase tracking-widest shadow-sm">
                                                 RISK: {review.riskScore}
                                             </span>
                                         )}
                                         {review._count.reports > 0 && (
-                                            <span className="bg-yellow-50 text-yellow-700 px-2 py-0.5 rounded text-[10px] font-black border border-yellow-100">
+                                            <span className="bg-earth-mustard text-foreground px-3 py-1 text-[10px] font-bold rounded-full uppercase tracking-widest shadow-sm">
                                                 REPORTS: {review._count.reports}
                                             </span>
                                         )}
                                         {flagReasons.map((reason: string, i: number) => (
-                                            <span key={i} className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded text-[10px] font-bold border border-gray-200">
+                                            <span key={i} className="bg-white border border-earth-sage/20 text-earth-sage px-3 py-1 text-[10px] font-bold rounded-full uppercase tracking-widest shadow-sm italic">
                                                 {reason}
                                             </span>
                                         ))}
                                     </div>
                                 </td>
-                                <td className="px-6 py-6 text-right">
-                                    <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <td className="px-8 py-8 text-right">
+                                    <div className="flex justify-end gap-3 opacity-0 group-hover:opacity-100 transition-all translate-x-4 group-hover:translate-x-0">
                                         <button
                                             onClick={() => handleAction(review.id, 'APPROVE')}
                                             disabled={actioningId === review.id}
-                                            className="px-4 py-2 bg-green-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-green-600 transition-all shadow-lg shadow-green-100"
+                                            className="px-4 py-2 bg-earth-sage text-white text-[10px] font-bold uppercase tracking-widest rounded-full shadow-md hover:bg-earth-sage/90 hover:-translate-y-0.5 transition-all"
                                         >
-                                            Approve
+                                            APPROVE
                                         </button>
                                         <button
                                             onClick={() => handleAction(review.id, 'REMOVE')}
                                             disabled={actioningId === review.id}
-                                            className="px-4 py-2 bg-red-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-red-600 transition-all shadow-lg shadow-red-100"
+                                            className="px-4 py-2 bg-earth-burgundy text-white text-[10px] font-bold uppercase tracking-widest rounded-full shadow-md hover:bg-earth-burgundy/90 hover:-translate-y-0.5 transition-all"
                                         >
-                                            Remove
+                                            REMOVE
                                         </button>
                                         <button
                                             onClick={() => handleAction(review.id, 'SHADOW_HIDE')}
                                             disabled={actioningId === review.id}
-                                            className="px-4 py-2 bg-gray-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-black transition-all shadow-lg shadow-gray-200"
+                                            className="px-4 py-2 bg-[#433422] text-white text-[10px] font-bold uppercase tracking-widest rounded-full shadow-md hover:bg-black hover:-translate-y-0.5 transition-all"
                                         >
-                                            Shadow
+                                            SHADOW
                                         </button>
                                     </div>
                                 </td>

@@ -1,6 +1,8 @@
 import prisma from '@/lib/prisma';
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
+import ProgramIndex from '@/components/ProgramIndex';
+import { ArrowLeft } from 'lucide-react';
 
 export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
     const institution = await prisma.institution.findUnique({ where: { unitid: params.id } });
@@ -18,8 +20,7 @@ export default async function InstitutionPage({ params }: { params: { id: string
                 include: {
                     major: true
                 },
-                orderBy: { completionsTotal: 'desc' },
-                take: 50
+                orderBy: { completionsTotal: 'desc' }
             },
             _count: {
                 select: { reviews: { where: { status: 'APPROVED' } } }
@@ -40,86 +41,62 @@ export default async function InstitutionPage({ params }: { params: { id: string
     }));
 
     return (
-        <div className="container mx-auto px-4 py-8 max-w-5xl">
-            <div className="mb-12">
-                <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-                    <div>
-                        <div className="flex items-center gap-2 mb-2">
-                            <span className="text-gray-400 text-sm font-semibold uppercase tracking-wider">{institution.state} &bull; {institution.control}</span>
-                        </div>
-                        <h1 className="text-5xl font-black text-gray-900 tracking-tight">{institution.name}</h1>
-                        <p className="mt-4 text-lg text-gray-500 max-w-2xl leading-relaxed font-medium">
-                            An overview of academic programs and verified student outcomes for {institution.name} in {institution.city}, {institution.state}.
-                        </p>
+        <div className="container mx-auto px-6 py-16 max-w-7xl">
+            <a
+                href="/institutions"
+                className="inline-flex items-center text-sm font-bold text-earth-terracotta hover:underline mb-12"
+            >
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Return to Gathering
+            </a>
+
+            <div className="mb-20 border-b-2 border-earth-sage/20 pb-16 flex flex-col md:flex-row md:items-end justify-between gap-12">
+                <div className="max-w-4xl">
+                    <div className="flex items-center gap-4 mb-6">
+                        <span className="bg-earth-sage/10 border border-earth-sage px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest text-earth-sage rounded-full">{institution.control}</span>
+                        <span className="text-foreground font-bold uppercase tracking-widest text-[10px] opacity-60">{institution.city}, {institution.state}</span>
                     </div>
+                    <h1 className="text-7xl font-funky text-foreground tracking-tight leading-[0.85]">{institution.name}</h1>
+                </div>
+                <div className="bg-earth-parchment border-2 border-foreground p-1.5 flex gap-1 rounded-full w-fit h-fit">
+                    <div className="px-6 py-2.5 bg-foreground text-white rounded-full text-xs font-bold uppercase tracking-widest">Profiles</div>
+                    <div className="px-6 py-2.5 text-foreground opacity-40 rounded-full text-xs font-bold uppercase tracking-widest cursor-not-allowed">Map</div>
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 mb-16">
-                <div className="bg-white border border-gray-100 p-8 rounded-[32px] shadow-sm">
-                    <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Institutional Profile</h3>
-                    <div className="space-y-4">
-                        <div className="flex justify-between items-center py-2 border-b border-gray-50">
-                            <span className="text-gray-500 text-sm font-medium">Control</span>
-                            <span className="text-gray-900 font-bold">{institution.control}</span>
-                        </div>
-                        <div className="flex justify-between items-center py-2 border-b border-gray-50">
-                            <span className="text-gray-500 text-sm font-medium">Sector</span>
-                            <span className="text-gray-900 font-bold">{institution.sector}</span>
-                        </div>
-                        <div className="flex justify-between items-center py-2">
-                            <span className="text-gray-500 text-sm font-medium">UNITID</span>
-                            <span className="text-gray-900 font-bold text-right text-xs leading-tight">
-                                {institution.unitid}
-                            </span>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="lg:col-span-3 bg-primary-900 text-white rounded-[32px] p-10 relative overflow-hidden">
-                    <div className="relative z-10 max-w-xl">
-                        <h3 className="text-2xl font-black mb-4">Academic Experience Focus</h3>
-                        <p className="text-primary-100 font-medium leading-relaxed">
-                            We focus exclusively on program-level data to help you understand the quality of specific departments.
-                            Aggregated ratings are calculated based on curriculum, faculty, and outcomes rather than institution-wide policies.
-                        </p>
-                    </div>
-                    {/* Subtle decorative element */}
-                    <div className="absolute -right-12 -bottom-12 w-64 h-64 bg-primary-800 rounded-full blur-3xl opacity-50 transition-all group-hover:scale-110"></div>
-                </div>
-            </div>
-
-            <div className="mb-12">
-                <div className="flex items-center justify-between mb-8">
-                    <h2 className="text-3xl font-black text-gray-900">Program Index</h2>
-                    <span className="text-gray-400 text-sm font-medium">{uniqueMajors.length} Academic Programs Offered</span>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {uniqueMajors.length > 0 ? (uniqueMajors.map((major) => (
-                        <a
-                            key={major.id}
-                            href={`/majors/${major.id}/${institution.unitid}`}
-                            className="group bg-white border border-gray-100 p-8 rounded-[32px] hover:border-primary-200 hover:shadow-2xl hover:shadow-primary-100 transition-all"
-                        >
-                            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-2">{major.category}</span>
-                            <h4 className="text-xl font-black text-gray-900 group-hover:text-primary-600 transition-colors leading-tight mb-4">{major.name}</h4>
-                            <div className="flex items-center justify-between pt-4 border-t border-gray-50 group-hover:border-primary-50 transition-colors">
-                                <div className="flex items-center gap-1.5">
-                                    <div className="w-1.5 h-1.5 rounded-full bg-primary-500"></div>
-                                    <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">{major.completions} Grads/Year</span>
-                                </div>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary-400 transition-transform group-hover:translate-x-1"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg>
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 mb-24">
+                <div className="lg:col-span-5 space-y-12">
+                    <div className="coffee-card bg-earth-parchment/30">
+                        <h3 className="text-2xl font-funky text-foreground mb-10 italic border-b border-foreground/5 pb-6">Campus Profile</h3>
+                        <div className="space-y-8">
+                            <div className="flex justify-between items-end border-b border-foreground/5 pb-4">
+                                <span className="text-[10px] font-bold uppercase tracking-widest text-earth-sage italic">Community Voices</span>
+                                <span className="text-4xl font-funky text-foreground italic leading-none">{institution._count.reviews}</span>
                             </div>
-                        </a>
-                    ))) : (
-                        <div className="col-span-full py-20 bg-gray-50 rounded-[40px] border-2 border-dashed border-gray-200 text-center">
-                            <p className="text-gray-400 font-bold mb-4">No academic experiences logged for this institution yet.</p>
-                            <a href="/write-review" className="bg-primary-600 text-white px-8 py-3 rounded-2xl font-bold shadow-lg shadow-primary-200 inline-block hover:-translate-y-1 transition-transform">
-                                Start the first review
-                            </a>
+                            <div className="flex justify-between items-end border-b border-foreground/5 pb-4">
+                                <span className="text-[10px] font-bold uppercase tracking-widest text-earth-sage italic">Affiliation</span>
+                                <span className="text-sm font-bold text-foreground uppercase tracking-widest">{institution.control}</span>
+                            </div>
+                            <div className="flex justify-between items-end">
+                                <span className="text-[10px] font-bold uppercase tracking-widest text-earth-sage italic">Gathering At</span>
+                                <span className="text-sm font-bold text-foreground uppercase tracking-widest text-right">{institution.city}, {institution.state}</span>
+                            </div>
                         </div>
-                    )}
+                    </div>
+
+                    <div className="coffee-card bg-earth-burgundy text-earth-parchment shadow-[6px_6px_0px_#433422]">
+                        <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center mb-8 border border-white/10">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-6 h-6"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10" /></svg>
+                        </div>
+                        <h3 className="text-2xl font-funky mb-4 italic">Verified Truth</h3>
+                        <p className="text-sm font-medium leading-relaxed italic opacity-70">
+                            The metrics shared for &quot;{institution.name}&quot; are synchronized with official NCPES outcomes and the latest CIP taxonomy.
+                        </p>
+                    </div>
+                </div>
+
+                <div className="lg:col-span-7">
+                    <ProgramIndex majors={uniqueMajors} unitid={institution.unitid} />
                 </div>
             </div>
         </div>

@@ -1,8 +1,6 @@
-import { PrismaClient } from '@prisma/client';
+import prisma from '../../src/lib/prisma';
 import { parseCsv } from './utils/parseCsv';
 import path from 'path';
-
-const prisma = new PrismaClient();
 
 async function main() {
     const filePath = path.join(process.cwd(), 'data', 'hd2024.csv');
@@ -12,47 +10,51 @@ async function main() {
 
     let count = 0;
     for (const record of records) {
-        const unitid = record['UNITID'];
-        const name = (record['INSTNM'] || '').trim();
-        const city = record['CITY'];
-        const state = record['STABBR'];
-        const website = record['GWEBSURL'];
+        try {
+            const unitid = record['UNITID'];
+            const name = (record['INSTNM'] || '').trim();
+            const city = record['CITY'];
+            const state = record['STABBR'];
+            const website = record['GWEBSURL'];
 
-        // CONTROL: 1=Public, 2=Private non-profit, 3=Private for-profit
-        const controlRaw = record['CONTROL'];
-        const control = controlRaw === '1' ? 'PUBLIC' : (controlRaw === '2' || controlRaw === '3' ? 'PRIVATE' : 'OTHER');
+            // CONTROL: 1=Public, 2=Private non-profit, 3=Private for-profit
+            const controlRaw = record['CONTROL'];
+            const control = controlRaw === '1' ? 'PUBLIC' : (controlRaw === '2' || controlRaw === '3' ? 'PRIVATE' : 'OTHER');
 
-        const sector = record['SECTOR'];
+            const sector = record['SECTOR'];
 
-        // CYACTIVE: 1=Yes, 2=No
-        const active = record['CYACTIVE'] === '1';
+            // CYACTIVE: 1=Yes, 2=No
+            const active = record['CYACTIVE'] === '1';
 
-        if (!name || !state || !unitid) continue;
+            if (!name || !state || !unitid) continue;
 
-        await prisma.institution.upsert({
-            where: { unitid: String(unitid) },
-            update: {
-                name,
-                city,
-                state,
-                control,
-                website,
-                sector: String(sector),
-                active
-            },
-            create: {
-                unitid: String(unitid),
-                name,
-                city,
-                state,
-                control,
-                website,
-                sector: String(sector),
-                active
-            }
-        });
-        count++;
-        if (count % 500 === 0) console.log(`Loaded ${count} institutions...`);
+            await prisma.institution.upsert({
+                where: { unitid: String(unitid) },
+                update: {
+                    name,
+                    city,
+                    state,
+                    control,
+                    website,
+                    sector: String(sector),
+                    active
+                },
+                create: {
+                    unitid: String(unitid),
+                    name,
+                    city,
+                    state,
+                    control,
+                    website,
+                    sector: String(sector),
+                    active
+                }
+            });
+            count++;
+            if (count % 500 === 0) console.log(`Loaded ${count} institutions...`);
+        } catch (e) {
+            console.error(`Failed to upsert institution: ${record['INSTNM']}`, e);
+        }
     }
 
     console.log(`Finished loading ${count} institutions.`);

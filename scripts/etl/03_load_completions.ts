@@ -1,8 +1,6 @@
-import { PrismaClient } from '@prisma/client';
+import prisma from '../../src/lib/prisma';
 import { parseCsv } from './utils/parseCsv';
 import path from 'path';
-
-const prisma = new PrismaClient();
 
 async function main() {
     const filePath = path.join(process.cwd(), 'data', 'c2024_a.csv');
@@ -14,30 +12,37 @@ async function main() {
     const rollup = new Map<string, number>();
 
     // We only want to link to majors/insitutions we actually have
-    const activeInstitutions = new Set((await prisma.institution.findMany({ select: { unitid: true } })).map(i => i.unitid));
-    const activeMajors = new Set((await prisma.major.findMany({ select: { cip4: true } })).map(m => m.cip4));
+    const activeInstitutionsList = await prisma.institution.findMany({ select: { unitid: true } });
+    const activeInstitutions = new Set(activeInstitutionsList.map(i => i.unitid));
+
+    const activeMajorsList = await prisma.major.findMany({ select: { cip4: true } });
+    const activeMajors = new Set(activeMajorsList.map(m => m.cip4));
 
     console.log(`Checking against ${activeInstitutions.size} institutions and ${activeMajors.size} majors.`);
 
     for (const record of records) {
-        const unitid = String(record['UNITID']);
-        let cip6raw = String(record['CIPCODE']);
-        const completions = parseInt(record['CTOTALT'] || '0', 10);
+        try {
+            const unitid = String(record['UNITID']);
+            let cip6raw = String(record['CIPCODE']);
+            const completions = parseInt(record['CTOTALT'] || '0', 10);
 
-        if (completions <= 0) continue;
-        if (!activeInstitutions.has(unitid)) continue;
+            if (completions <= 0) continue;
+            if (!activeInstitutions.has(unitid)) continue;
 
-        // Clean CIPCODE (remove dots if present, then normalize to XX.XXXX)
-        let cleanCip = cip6raw.replace(/\./g, '');
-        if (cleanCip.length < 6) cleanCip = cleanCip.padStart(6, '0');
+            // Clean CIPCODE (remove dots if present, then normalize to XX.XXXX)
+            let cleanCip = cip6raw.replace(/\./g, '');
+            if (cleanCip.length < 6) cleanCip = cleanCip.padStart(6, '0');
 
-        // Derive CIP4
-        const cip4 = `${cleanCip.substring(0, 2)}.${cleanCip.substring(2, 4)}`;
+            // Derive CIP4
+            const cip4 = `${cleanCip.substring(0, 2)}.${cleanCip.substring(2, 4)}`;
 
-        if (!activeMajors.has(cip4)) continue;
+            if (!activeMajors.has(cip4)) continue;
 
-        const key = `${unitid}|${cip4}`;
-        rollup.set(key, (rollup.get(key) || 0) + completions);
+            const key = `${unitid}|${cip4}`;
+            rollup.set(key, (rollup.get(key) || 0) + completions);
+        } catch (e) {
+            // Silently skip corrupted rows
+        }
     }
 
     console.log(`Aggregated into ${rollup.size} institution-major pairs.`);
@@ -49,17 +54,21 @@ async function main() {
 
     console.log(`Starting bulk insert of ${data.length} records...`);
 
-    // SQLite variable limit is 999. 4 variables per record.
+    // SQLite/PG variable limit
     const CHUNK_SIZE = 240;
     let count = 0;
     for (let i = 0; i < data.length; i += CHUNK_SIZE) {
         const chunk = data.slice(i, i + CHUNK_SIZE);
-        await prisma.institutionMajor.createMany({
-            data: chunk,
-            skipDuplicates: true
-        });
-        count += chunk.length;
-        if (count % 4800 === 0) console.log(`Synced ${count} link records...`);
+        try {
+            await prisma.institutionMajor.createMany({
+                data: chunk,
+                skipDuplicates: true
+            });
+            count += chunk.length;
+            if (count % 4800 === 0) console.log(`Synced ${count} link records...`);
+        } catch (e) {
+            console.error('Failed chunk sync:', e);
+        }
     }
 
     console.log('Institution-Major links loaded successfully.');

@@ -11,46 +11,53 @@ export default async function ModerationPage({
     const stats = await getAdminStats();
 
     return (
-        <div className="space-y-8">
-            <div className="flex items-center justify-between">
+        <div className="space-y-16">
+            <div className="flex items-center justify-between border-b-2 border-earth-sage/20 pb-10">
                 <div>
-                    <h2 className="text-3xl font-black text-gray-900 tracking-tight">Moderation Queue</h2>
-                    <p className="text-gray-500 font-medium mt-1">Found {queue.length} reviews requiring attention.</p>
+                    <h2 className="text-6xl font-funky text-foreground tracking-tight italic">Moderation Gathering</h2>
+                    <p className="text-earth-sage font-bold text-xs uppercase tracking-[0.2em] mt-4 italic">
+                        {queue.length} reflections awaiting the community veil
+                    </p>
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
-                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Total Pending</p>
-                    <p className="text-3xl font-black text-gray-900">{stats.pending}</p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+                <div className="coffee-card bg-[#fffefb]/50">
+                    <p className="text-[10px] font-bold text-earth-sage uppercase tracking-widest mb-3 italic">Total Flow</p>
+                    <p className="text-5xl font-funky text-foreground tracking-tighter italic">{stats.pending}</p>
+                    <div className="mt-4 text-[10px] font-bold text-earth-sage uppercase tracking-widest opacity-40">AWAITING GESTALT</div>
                 </div>
-                <div className="bg-red-50 p-6 rounded-3xl border border-red-100 shadow-sm">
-                    <p className="text-[10px] font-black text-red-400 uppercase tracking-widest mb-1">High Risk (Flagged)</p>
-                    <p className="text-3xl font-black text-red-600">{stats.flagged}</p>
+                <div className="coffee-card bg-earth-terracotta/5 border-earth-terracotta/20">
+                    <p className="text-[10px] font-bold text-earth-terracotta uppercase tracking-widest mb-3 italic">High Friction (Flagged)</p>
+                    <p className="text-5xl font-funky text-earth-terracotta tracking-tighter italic">{stats.flagged}</p>
+                    <div className="mt-4 text-[10px] font-bold text-earth-terracotta uppercase tracking-widest opacity-40">REVISION REQUIRED</div>
                 </div>
-                <div className="bg-yellow-50 p-6 rounded-3xl border border-yellow-100 shadow-sm">
-                    <p className="text-[10px] font-black text-yellow-500 uppercase tracking-widest mb-1">Open Reports</p>
-                    <p className="text-3xl font-black text-yellow-700">{stats.reports}</p>
+                <div className="coffee-card bg-earth-mustard/5 border-earth-mustard/20">
+                    <p className="text-[10px] font-bold text-earth-mustard uppercase tracking-widest mb-3 italic">External Echoes (Reports)</p>
+                    <p className="text-5xl font-funky text-earth-mustard tracking-tighter italic">{stats.reports}</p>
+                    <div className="mt-4 text-[10px] font-bold text-earth-mustard uppercase tracking-widest opacity-40">COMMUNITY ALERTS</div>
                 </div>
             </div>
 
-            <div className="bg-white border border-gray-100 rounded-[32px] overflow-hidden shadow-sm">
-                <div className="flex border-b border-gray-100">
+            <div className="coffee-card !p-0 bg-white overflow-hidden border-earth-sage/10">
+                <div className="flex bg-earth-parchment p-1.5 gap-1">
                     {['PENDING', 'APPROVED', 'REMOVED', 'SHADOW_HIDDEN'].map((s) => (
                         <a
                             key={s}
                             href={`?status=${s}`}
-                            className={`px-8 py-5 text-sm font-bold transition-all border-b-2 ${status === s
-                                    ? 'text-primary-600 border-primary-600'
-                                    : 'text-gray-400 border-transparent hover:text-gray-600'
+                            className={`flex-1 text-center py-4 text-[10px] font-bold uppercase tracking-widest transition-all rounded-2xl ${status === s
+                                ? 'bg-earth-terracotta text-white shadow-sm'
+                                : 'text-foreground opacity-40 hover:opacity-100 hover:bg-white/50'
                                 }`}
                         >
-                            {s}
+                            {s.replace('_', ' ')}
                         </a>
                     ))}
                 </div>
 
-                <ModerationTable initialQueue={queue} />
+                <div className="p-10">
+                    <ModerationTable initialQueue={queue} />
+                </div>
             </div>
         </div>
     );

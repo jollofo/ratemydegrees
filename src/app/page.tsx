@@ -8,43 +8,67 @@ export default async function Home() {
     ]);
 
     return (
-        <div className="relative isolate">
+        <div className="relative isolate overflow-hidden">
             {/* Hero Section */}
-            <div className="px-6 py-24 sm:py-32 lg:px-8">
-                <div className="mx-auto max-w-2xl text-center">
-                    <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl text-balance">
-                        Choose your major with <span className="text-primary-600">confidence</span>
+            <div className="relative px-6 py-32 sm:py-48 lg:px-8 bg-earth-parchment">
+                <div className="absolute inset-0 z-0 opacity-10 pointer-events-none">
+                    <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+                        <path d="M0,50 Q25,30 50,50 T100,50 L100,100 L0,100 Z" fill="#8b9467" />
+                    </svg>
+                </div>
+
+                <div className="relative z-10 mx-auto max-w-4xl text-center">
+                    <h1 className="text-6xl font-funky tracking-tight text-foreground sm:text-8xl text-balance leading-[0.85] mb-12">
+                        Find your <span className="text-earth-terracotta italic">truest</span> academic path
                     </h1>
-                    <p className="mt-6 text-lg leading-8 text-gray-600">
-                        Real perspectives from students and alumni. Stop guessing and start knowing what it&apos;s actually like to study your degree.
+                    <p className="mt-8 text-xl leading-relaxed text-foreground/80 font-medium max-w-2xl mx-auto">
+                        Gather 'round for verified perspectives from students and alumni. Eclectic insights for the modern seeker of wisdom.
                     </p>
-                    <div className="mt-10">
+                    <div className="mt-16">
                         <HomeSearch />
                     </div>
                 </div>
             </div>
 
             {/* Stats / Features */}
-            <div className="bg-white py-24 sm:py-32">
+            <div className="py-32 bg-[#fffefb] relative border-y-2 border-earth-sage/20">
                 <div className="mx-auto max-w-7xl px-6 lg:px-8">
-                    <div className="mx-auto max-w-2xl lg:max-w-none">
-                        <div className="text-center">
-                            <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">Built by students, for students</h2>
-                            <p className="mt-4 text-lg leading-8 text-gray-600">
-                                Everything you need to know about academic rigor, career preparedness, and ROI.
+                    <div className="mx-auto max-w-2xl lg:max-w-none text-center">
+                        <div className="mb-20">
+                            <h2 className="text-5xl font-funky tracking-tight text-foreground mb-4">A Global Gathering of Minds</h2>
+                            <p className="text-lg font-medium text-earth-sage max-w-xl mx-auto italic">
+                                Everything you need to know about academic rigor, career preparedness, and the ROI of your journey.
                             </p>
                         </div>
-                        <dl className="mt-16 grid grid-cols-1 gap-0.5 overflow-hidden rounded-2xl text-center sm:grid-cols-2">
-                            <div className="flex flex-col bg-gray-400/5 p-8">
-                                <dt className="text-sm font-semibold leading-6 text-gray-600">Verified Academic Programs</dt>
-                                <dd className="order-first text-3xl font-semibold tracking-tight text-gray-900">{majorCount}+</dd>
+                        <div className="grid grid-cols-1 gap-12 sm:grid-cols-2 lg:px-20">
+                            <div className="coffee-card flex flex-col items-center text-center">
+                                <div className="w-16 h-16 bg-earth-terracotta/10 rounded-full flex items-center justify-center text-earth-terracotta mb-6">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-8 h-8"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" /></svg>
+                                </div>
+                                <dt className="text-xs font-bold uppercase tracking-widest text-earth-sage mb-2">Programs Cataloged</dt>
+                                <dd className="text-6xl font-funky tracking-tighter text-foreground italic leading-none">{majorCount}+</dd>
                             </div>
-                            <div className="flex flex-col bg-gray-400/5 p-8">
-                                <dt className="text-sm font-semibold leading-6 text-gray-600">US Institutions Integrated</dt>
-                                <dd className="order-first text-3xl font-semibold tracking-tight text-gray-900">{institutionCount.toLocaleString()}</dd>
+                            <div className="coffee-card flex flex-col items-center text-center shadow-[6px_6px_0px_#d4a017]">
+                                <div className="w-16 h-16 bg-earth-mustard/10 rounded-full flex items-center justify-center text-earth-mustard mb-6">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-8 h-8"><path d="M3 21h18" /><path d="M3 7v1a3 3 0 0 0 6 0V7m0 1a3 3 0 0 0 6 0V7m0 1a3 3 0 0 0 6 0V7H3l2-4h14l2 4" /><path d="M5 21V10.85" /><path d="M19 21V10.85" /><path d="M9 21V14" /><path d="M15 21V14" /></svg>
+                                </div>
+                                <dt className="text-xs font-bold uppercase tracking-widest text-earth-sage mb-2">US Institutions</dt>
+                                <dd className="text-6xl font-funky tracking-tighter text-foreground italic leading-none">{institutionCount.toLocaleString()}</dd>
                             </div>
-                        </dl>
+                        </div>
                     </div>
+                </div>
+            </div>
+
+            {/* CTA Section */}
+            <div className="py-40 bg-earth-terracotta text-white relative overflow-hidden">
+                <div className="absolute right-[-10%] top-[-20%] w-[40%] aspect-square rounded-full bg-white/5 blur-3xl opacity-50" />
+                <div className="container mx-auto px-6 text-center relative z-10">
+                    <h3 className="text-5xl font-funky tracking-tight italic mb-10 max-w-2xl mx-auto">Have you walked this path before?</h3>
+                    <p className="text-xl mb-12 opacity-90 max-w-lg mx-auto font-medium">Your insights are the seeds of wisdom for the next generation of seekers.</p>
+                    <a href="/write-review" className="coffee-btn bg-white text-earth-terracotta hover:bg-earth-parchment px-16 py-6 text-xl">
+                        Share Your Story
+                    </a>
                 </div>
             </div>
         </div>

@@ -17,13 +17,15 @@ export default async function WriteReviewPage() {
     ]);
 
     return (
-        <div className="container mx-auto px-4 py-12 max-w-4xl">
-            <div className="mb-12 text-center">
-                <h1 className="text-4xl font-black text-gray-900 mb-3 tracking-tight">Rate Your Academic Program</h1>
-                <p className="text-gray-500 max-w-lg mx-auto leading-relaxed">
-                    Focus on your major-specific experience. Academic rigor, faculty, and outcomes.
-                    <span className="block font-bold mt-2 text-primary-600 italic">No institution-wide complaints.</span>
+        <div className="container mx-auto px-6 py-20 max-w-4xl">
+            <div className="mb-20 text-center">
+                <h1 className="text-6xl font-funky text-foreground mb-6 tracking-tight italic">Share Your Wisdom</h1>
+                <p className="text-xl text-earth-sage max-w-2xl mx-auto leading-relaxed italic opacity-80">
+                    Help other seekers understand the path you've walked. Focus on departmental rigor, curriculum depth, and the faculty that shaped your journey.
                 </p>
+                <div className="mt-8 inline-block px-6 py-2 bg-earth-mustard/20 border border-earth-mustard/30 rounded-full text-xs font-bold text-foreground uppercase tracking-widest italic">
+                    Departmental focus only
+                </div>
             </div>
 
             <WriteReviewForm majors={majors} institutions={institutions} />
