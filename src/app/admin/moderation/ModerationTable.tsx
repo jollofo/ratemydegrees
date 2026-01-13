@@ -24,7 +24,7 @@ export default function ModerationTable({ initialQueue }: { initialQueue: any[] 
     if (initialQueue.length === 0) {
         return (
             <div className="py-32 text-center text-earth-sage font-funky italic text-2xl opacity-40">
-                The silence is profound. No reflections await judgment.
+                No reviews pending moderation.
             </div>
         );
     }
@@ -34,10 +34,10 @@ export default function ModerationTable({ initialQueue }: { initialQueue: any[] 
             <table className="w-full text-left border-separate border-spacing-0">
                 <thead>
                     <tr className="bg-earth-parchment/60">
-                        <th className="px-8 py-6 text-[10px] font-bold text-earth-sage uppercase tracking-[0.2em] border-b-2 border-earth-sage/10 italic">Source Details</th>
-                        <th className="px-8 py-6 text-[10px] font-bold text-earth-sage uppercase tracking-[0.2em] border-b-2 border-earth-sage/10 italic">Reflection Snippet</th>
-                        <th className="px-8 py-6 text-[10px] font-bold text-earth-sage uppercase tracking-[0.2em] border-b-2 border-earth-sage/10 italic">Friction & Echoes</th>
-                        <th className="px-8 py-6 text-[10px] font-bold text-earth-sage uppercase tracking-[0.2em] border-b-2 border-earth-sage/10 italic text-right">Oversight</th>
+                        <th className="px-8 py-6 text-[10px] font-bold text-earth-sage uppercase tracking-[0.2em] border-b-2 border-earth-sage/10 italic">Program & Institution</th>
+                        <th className="px-8 py-6 text-[10px] font-bold text-earth-sage uppercase tracking-[0.2em] border-b-2 border-earth-sage/10 italic">Review Snippet</th>
+                        <th className="px-8 py-6 text-[10px] font-bold text-earth-sage uppercase tracking-[0.2em] border-b-2 border-earth-sage/10 italic">Flags & Reports</th>
+                        <th className="px-8 py-6 text-[10px] font-bold text-earth-sage uppercase tracking-[0.2em] border-b-2 border-earth-sage/10 italic text-right">Actions</th>
                     </tr>
                 </thead>
                 <tbody className="divide-y divide-earth-sage/5">

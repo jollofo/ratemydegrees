@@ -14,28 +14,28 @@ export default async function ModerationPage({
         <div className="space-y-16">
             <div className="flex items-center justify-between border-b-2 border-earth-sage/20 pb-10">
                 <div>
-                    <h2 className="text-6xl font-funky text-foreground tracking-tight italic">Moderation Gathering</h2>
+                    <h2 className="text-6xl font-funky text-foreground tracking-tight italic">Moderation Dashboard</h2>
                     <p className="text-earth-sage font-bold text-xs uppercase tracking-[0.2em] mt-4 italic">
-                        {queue.length} reflections awaiting the community veil
+                        {queue.length} reviews pending moderation
                     </p>
                 </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
                 <div className="coffee-card bg-[#fffefb]/50">
-                    <p className="text-[10px] font-bold text-earth-sage uppercase tracking-widest mb-3 italic">Total Flow</p>
+                    <p className="text-[10px] font-bold text-earth-sage uppercase tracking-widest mb-3 italic">Pending Reviews</p>
                     <p className="text-5xl font-funky text-foreground tracking-tighter italic">{stats.pending}</p>
-                    <div className="mt-4 text-[10px] font-bold text-earth-sage uppercase tracking-widest opacity-40">AWAITING GESTALT</div>
+                    <div className="mt-4 text-[10px] font-bold text-earth-sage uppercase tracking-widest opacity-40">WAITING</div>
                 </div>
                 <div className="coffee-card bg-earth-terracotta/5 border-earth-terracotta/20">
-                    <p className="text-[10px] font-bold text-earth-terracotta uppercase tracking-widest mb-3 italic">High Friction (Flagged)</p>
+                    <p className="text-[10px] font-bold text-earth-terracotta uppercase tracking-widest mb-3 italic">Flagged Content</p>
                     <p className="text-5xl font-funky text-earth-terracotta tracking-tighter italic">{stats.flagged}</p>
-                    <div className="mt-4 text-[10px] font-bold text-earth-terracotta uppercase tracking-widest opacity-40">REVISION REQUIRED</div>
+                    <div className="mt-4 text-[10px] font-bold text-earth-terracotta uppercase tracking-widest opacity-40">ACTION REQUIRED</div>
                 </div>
                 <div className="coffee-card bg-earth-mustard/5 border-earth-mustard/20">
-                    <p className="text-[10px] font-bold text-earth-mustard uppercase tracking-widest mb-3 italic">External Echoes (Reports)</p>
+                    <p className="text-[10px] font-bold text-earth-mustard uppercase tracking-widest mb-3 italic">Reported Items</p>
                     <p className="text-5xl font-funky text-earth-mustard tracking-tighter italic">{stats.reports}</p>
-                    <div className="mt-4 text-[10px] font-bold text-earth-mustard uppercase tracking-widest opacity-40">COMMUNITY ALERTS</div>
+                    <div className="mt-4 text-[10px] font-bold text-earth-mustard uppercase tracking-widest opacity-40">URGENT</div>
                 </div>
             </div>
 

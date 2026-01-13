@@ -131,8 +131,8 @@ export default function WriteReviewForm({ majors: initialMajors, institutions: i
                     <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /><path d="m9 12 2 2 4-4" /></svg>
                 </div>
                 <div>
-                    <p className="text-xl font-funky text-foreground italic mb-1">Encrypted Anonymity</p>
-                    <p className="text-sm font-medium text-foreground opacity-60 leading-relaxed italic">Your identity is protected by the community veil. We only use your account to preserve the integrity of our collective wisdom.</p>
+                    <p className="text-xl font-funky text-foreground italic mb-1">Verified Anonymity</p>
+                    <p className="text-sm font-medium text-foreground opacity-60 leading-relaxed italic">Your identity is protected. We only use your account to ensure the integrity of our reviews.</p>
                 </div>
             </div>
 
@@ -157,18 +157,18 @@ export default function WriteReviewForm({ majors: initialMajors, institutions: i
                 {step === 1 && (
                     <div className="space-y-16 animate-in fade-in slide-in-from-bottom-6 duration-700">
                         <div className="border-b border-foreground/5 pb-10">
-                            <h2 className="text-5xl font-funky text-foreground tracking-tight italic mb-4">1. The Context</h2>
-                            <p className="text-earth-sage text-xs font-bold uppercase tracking-[0.2em] italic">Where did your educational journey unfold?</p>
+                            <h2 className="text-5xl font-funky text-foreground tracking-tight italic mb-4">1. Basic Information</h2>
+                            <p className="text-earth-sage text-xs font-bold uppercase tracking-[0.2em] italic">Where did you study?</p>
                         </div>
 
                         <div className="space-y-12">
                             <div className="relative" ref={instSearchRef}>
                                 <label className="block">
-                                    <span className="text-[10px] font-bold text-earth-sage uppercase tracking-widest block mb-4 italic">National Institution / University</span>
+                                    <span className="text-[10px] font-bold text-earth-sage uppercase tracking-widest block mb-4 italic">Institution / University</span>
                                     <div className="relative">
                                         <input
                                             type="text"
-                                            placeholder="Seek your college..."
+                                            placeholder="Search for your college..."
                                             className="coffee-input pr-14 !py-5 shadow-[4px_4px_0px_#8b9467] text-lg"
                                             value={instQuery}
                                             onChange={(e) => {
@@ -184,7 +184,7 @@ export default function WriteReviewForm({ majors: initialMajors, institutions: i
                                     {formData.institutionId && (
                                         <div className="mt-6 inline-flex items-center gap-3 px-5 py-2.5 bg-earth-sage/10 border border-earth-sage/30 rounded-full text-xs font-bold text-earth-sage uppercase tracking-widest italic">
                                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="w-4 h-4"><path d="M20 6L9 17l-5-5" /></svg>
-                                            Pinned: {instResults.find(i => i.unitid === formData.institutionId)?.name || 'The Academy'}
+                                            Selected: {instResults.find(i => i.unitid === formData.institutionId)?.name || 'The Academy'}
                                         </div>
                                     )}
                                 </label>
@@ -192,7 +192,7 @@ export default function WriteReviewForm({ majors: initialMajors, institutions: i
                                 {showInstResults && (instResults.length > 0 || isSearchingInst) && (
                                     <div className="absolute z-50 w-full mt-6 bg-[#fffefb] border-2 border-foreground rounded-[2rem] shadow-[12px_12px_0px_rgba(67,52,34,0.1)] overflow-hidden">
                                         {isSearchingInst ? (
-                                            <div className="p-10 text-center text-xs font-bold uppercase tracking-widest text-earth-sage animate-pulse italic">Seeking Archives...</div>
+                                            <div className="p-10 text-center text-xs font-bold uppercase tracking-widest text-earth-sage animate-pulse italic">Searching...</div>
                                         ) : (
                                             <div className="max-h-80 overflow-y-auto custom-scrollbar">
                                                 {instResults.map(inst => (
@@ -218,11 +218,11 @@ export default function WriteReviewForm({ majors: initialMajors, institutions: i
 
                             <div className="relative" ref={majorSearchRef}>
                                 <label className="block">
-                                    <span className="text-[10px] font-bold text-earth-sage uppercase tracking-widest block mb-4 italic">Academic Discipline / Major</span>
+                                    <span className="text-[10px] font-bold text-earth-sage uppercase tracking-widest block mb-4 italic">Degree / Major</span>
                                     <div className="relative">
                                         <input
                                             type="text"
-                                            placeholder="Seek your program..."
+                                            placeholder="Search for your program..."
                                             className="coffee-input pr-14 !py-5 shadow-[4px_4px_0px_#d4a017] text-lg"
                                             value={majorQuery}
                                             onChange={(e) => {
@@ -238,7 +238,7 @@ export default function WriteReviewForm({ majors: initialMajors, institutions: i
                                     {formData.majorId && (
                                         <div className="mt-6 inline-flex items-center gap-3 px-5 py-2.5 bg-earth-mustard/10 border border-earth-mustard/30 rounded-full text-xs font-bold text-earth-mustard uppercase tracking-widest italic">
                                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="w-4 h-4"><path d="M20 6L9 17l-5-5" /></svg>
-                                            Pinned: {majorResults.find(m => m.cip4 === formData.majorId)?.title || 'The Discipline'}
+                                            Selected: {majorResults.find(m => m.cip4 === formData.majorId)?.title || 'The Discipline'}
                                         </div>
                                     )}
                                 </label>
@@ -246,7 +246,7 @@ export default function WriteReviewForm({ majors: initialMajors, institutions: i
                                 {showMajorResults && (majorResults.length > 0 || isSearchingMajor) && (
                                     <div className="absolute z-50 w-full mt-6 bg-[#fffefb] border-2 border-foreground rounded-[2rem] shadow-[12px_12px_0px_rgba(67,52,34,0.1)] overflow-hidden">
                                         {isSearchingMajor ? (
-                                            <div className="p-10 text-center text-xs font-bold uppercase tracking-widest text-earth-mustard animate-pulse italic">Seeking Taxonomy...</div>
+                                            <div className="p-10 text-center text-xs font-bold uppercase tracking-widest text-earth-mustard animate-pulse italic">Searching...</div>
                                         ) : (
                                             <div className="max-h-80 overflow-y-auto custom-scrollbar">
                                                 {majorResults.map(m => (
@@ -272,16 +272,16 @@ export default function WriteReviewForm({ majors: initialMajors, institutions: i
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
                                 <label className="block">
-                                    <span className="text-[10px] font-bold text-earth-sage uppercase tracking-widest block mb-4 italic">Wayfarer Status</span>
+                                    <span className="text-[10px] font-bold text-earth-sage uppercase tracking-widest block mb-4 italic">Education Status</span>
                                     <div className="relative">
                                         <select
                                             className="coffee-input !py-5 shadow-[4px_4px_0px_#433422] text-sm font-bold appearance-none cursor-pointer pr-12"
                                             value={formData.status}
                                             onChange={(e) => setFormData({ ...formData, status: e.target.value })}
                                         >
-                                            <option value="graduated">STUDY COMPLETED / GRADUATED</option>
-                                            <option value="current">CURRENTLY PRACTICING</option>
-                                            <option value="switched">DIVERGED / SWITCHED OUT</option>
+                                            <option value="graduated">GRADUATED</option>
+                                            <option value="current">CURRENT STUDENT</option>
+                                            <option value="switched">SWITCHED MAJOR / DROPPED OUT</option>
                                         </select>
                                         <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-foreground opacity-30">
                                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="w-5 h-5"><path d="M19 9l-7 7-7-7" /></svg>
@@ -289,7 +289,7 @@ export default function WriteReviewForm({ majors: initialMajors, institutions: i
                                     </div>
                                 </label>
                                 <label className="block">
-                                    <span className="text-[10px] font-bold text-earth-sage uppercase tracking-widest block mb-4 italic">Era of Study</span>
+                                    <span className="text-[10px] font-bold text-earth-sage uppercase tracking-widest block mb-4 italic">Graduation Year / Range</span>
                                     <input
                                         type="text"
                                         placeholder="e.g. 2020 — 2024"
@@ -306,8 +306,8 @@ export default function WriteReviewForm({ majors: initialMajors, institutions: i
                 {step === 2 && (
                     <div className="space-y-16 animate-in fade-in slide-in-from-bottom-6 duration-700">
                         <div className="border-b border-foreground/5 pb-10">
-                            <h2 className="text-5xl font-funky text-foreground tracking-tight italic mb-4">2. The Experience</h2>
-                            <p className="text-earth-sage text-xs font-bold uppercase tracking-[0.2em] italic">Rate the academic core, not the peripheral amenities.</p>
+                            <h2 className="text-5xl font-funky text-foreground tracking-tight italic mb-4">2. Academic Ratings</h2>
+                            <p className="text-earth-sage text-xs font-bold uppercase tracking-[0.2em] italic">Rate the academic program based on your experience.</p>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-20 gap-y-16">
@@ -341,23 +341,23 @@ export default function WriteReviewForm({ majors: initialMajors, institutions: i
                 {step === 3 && (
                     <div className="space-y-16 animate-in fade-in slide-in-from-bottom-6 duration-700">
                         <div className="border-b border-foreground/5 pb-10">
-                            <h2 className="text-5xl font-funky text-foreground tracking-tight italic mb-4">3. Wisdom Shared</h2>
-                            <p className="text-earth-sage text-xs font-bold uppercase tracking-[0.2em] italic">Leave insights for those who follow.</p>
+                            <h2 className="text-5xl font-funky text-foreground tracking-tight italic mb-4">3. Detailed Feedback</h2>
+                            <p className="text-earth-sage text-xs font-bold uppercase tracking-[0.2em] italic">Help other students by providing more context.</p>
                         </div>
 
                         <div className="space-y-12">
                             <label className="block">
-                                <span className="text-xs font-bold text-earth-sage uppercase tracking-widest block mb-6 italic">Who is this gathering for? (The "Ideal Seeker")</span>
+                                <span className="text-xs font-bold text-earth-sage uppercase tracking-widest block mb-6 italic">Who is this program for?</span>
                                 <textarea
                                     rows={5}
                                     className="coffee-input shadow-[6px_6px_0px_#8b9467] text-lg font-medium italic resize-none min-h-[160px] bg-white/50"
-                                    placeholder="Seekers who find solace in practical application over theoretical abstraction..."
+                                    placeholder="Students who prefer hands-on learning over theory..."
                                     value={formData.fit}
                                     onChange={(e) => setFormData({ ...formData, fit: e.target.value })}
                                 ></textarea>
                             </label>
                             <label className="block">
-                                <span className="text-xs font-bold text-earth-sage uppercase tracking-widest block mb-6 italic">The Crucible (Most Significant Challenge)</span>
+                                <span className="text-xs font-bold text-earth-sage uppercase tracking-widest block mb-6 italic">Most Significant Challenge</span>
                                 <textarea
                                     rows={5}
                                     className="coffee-input shadow-[6px_6px_0px_#c36b4e] text-lg font-medium italic resize-none min-h-[160px] bg-white/50"
@@ -372,9 +372,9 @@ export default function WriteReviewForm({ majors: initialMajors, institutions: i
                                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" /><circle cx="12" cy="12" r="4" /></svg>
                                 </div>
                                 <div>
-                                    <p className="text-xl font-funky text-foreground italic mb-2 tracking-tight">The Community Scroll</p>
+                                    <p className="text-xl font-funky text-foreground italic mb-2 tracking-tight">Review Guidelines</p>
                                     <p className="text-sm font-medium leading-relaxed text-foreground opacity-60 italic">
-                                        By publishing this experience, you contribute to the collective wisdom. Focus on the truth of the department. Comments on auxiliary services or campus politics are filtered to preserve academic clarity.
+                                        By submitting this review, you help our community. Focus on the academic experience. Reviews about campus politics or unrelated services may be removed.
                                     </p>
                                 </div>
                             </div>
@@ -390,7 +390,7 @@ export default function WriteReviewForm({ majors: initialMajors, institutions: i
                         className={`text-xs font-bold uppercase tracking-[0.2em] italic transition-all ${step === 1 ? 'opacity-0 pointer-events-none' : 'text-earth-sage hover:text-earth-terracotta'
                             }`}
                     >
-                        &larr; Previous Phase
+                        &larr; Previous Step
                     </button>
 
                     <div className="flex gap-6">
@@ -400,7 +400,7 @@ export default function WriteReviewForm({ majors: initialMajors, institutions: i
                                 onClick={nextStep}
                                 className="coffee-btn shadow-[6px_6px_0px_#433422] px-12"
                             >
-                                NEXT PHASE &rarr;
+                                NEXT STEP &rarr;
                             </button>
                         ) : (
                             <button
@@ -412,9 +412,9 @@ export default function WriteReviewForm({ majors: initialMajors, institutions: i
                                 {isSubmitting ? (
                                     <div className="flex items-center gap-4">
                                         <svg className="animate-spin h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                                        ETCHING WISDOM...
+                                        SUBMITTING...
                                     </div>
-                                ) : 'PUBLISH EXPERIENCE'}
+                                ) : 'SUBMIT REVIEW'}
                             </button>
                         )}
                     </div>

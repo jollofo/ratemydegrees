@@ -37,7 +37,7 @@ export default async function AdminLayout({
                         </div>
                         <div className="flex flex-col">
                             <span className="text-2xl font-funky tracking-tight leading-none text-white italic">RateMyDegree</span>
-                            <span className="text-earth-mustard/60 text-[10px] font-bold tracking-[0.3em] mt-2 uppercase">GATHERING LEADER</span>
+                            <span className="text-earth-mustard/60 text-[10px] font-bold tracking-[0.3em] mt-2 uppercase">ADMIN DASHBOARD</span>
                         </div>
                     </Link>
                 </div>
@@ -45,15 +45,15 @@ export default async function AdminLayout({
                 <nav className="space-y-6 flex-1 relative z-10">
                     <Link href="/admin/moderation" className="flex items-center gap-5 px-6 py-4 rounded-2xl border-2 border-transparent hover:border-earth-terracotta/30 hover:bg-earth-terracotta/5 transition-all font-bold text-xs uppercase tracking-[0.2em] text-earth-parchment/40 hover:text-white group">
                         <svg className="w-5 h-5 transition-transform group-hover:scale-110" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="m16 12-4-4-4 4" /><path d="M12 8v8" /></svg>
-                        Wisdom Filter
+                        Moderation Queue
                     </Link>
                     <Link href="/admin/reports" className="flex items-center gap-5 px-6 py-4 rounded-2xl border-2 border-transparent hover:border-earth-terracotta/30 hover:bg-earth-terracotta/5 transition-all font-bold text-xs uppercase tracking-[0.2em] text-earth-parchment/40 hover:text-white group">
                         <svg className="w-5 h-5 transition-transform group-hover:scale-110" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" /><line x1="4" x2="4" y1="22" y2="15" /></svg>
-                        Flagged Truths
+                        User Reports
                     </Link>
                     <Link href="/admin/users" className="flex items-center gap-5 px-6 py-4 rounded-2xl border-2 border-transparent hover:border-earth-terracotta/30 hover:bg-earth-terracotta/5 transition-all font-bold text-xs uppercase tracking-[0.2em] text-earth-parchment/40 hover:text-white group">
                         <svg className="w-5 h-5 transition-transform group-hover:scale-110" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
-                        The Seekers
+                        User Access
                     </Link>
                 </nav>
 
@@ -73,11 +73,11 @@ export default async function AdminLayout({
             {/* Main Content */}
             <main className="flex-1 overflow-y-auto bg-earth-parchment">
                 <header className="bg-white/80 backdrop-blur-md border-b-2 border-earth-sage/10 px-16 py-8 flex items-center justify-between sticky top-0 z-30">
-                    <h1 className="font-bold text-earth-sage uppercase tracking-[0.25em] text-[10px] italic">Controller&apos;s Sanctorum // Oversight</h1>
+                    <h1 className="font-bold text-earth-sage uppercase tracking-[0.25em] text-[10px] italic">Admin Dashboard // Oversight</h1>
                     <div className="flex items-center gap-4">
                         <span className="flex items-center gap-2 text-[10px] font-bold text-foreground bg-earth-mustard/20 px-4 py-2 rounded-full border border-earth-mustard/30 uppercase tracking-widest">
                             <div className="w-1.5 h-1.5 bg-earth-mustard rounded-full animate-pulse" />
-                            Gathering synchronized
+                            System synchronized
                         </span>
                     </div>
                 </header>

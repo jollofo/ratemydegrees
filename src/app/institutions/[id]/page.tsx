@@ -47,7 +47,7 @@ export default async function InstitutionPage({ params }: { params: { id: string
                 className="inline-flex items-center text-sm font-bold text-earth-terracotta hover:underline mb-12"
             >
                 <ArrowLeft className="h-4 w-4 mr-2" />
-                Return to Gathering
+                Back to Universities
             </a>
 
             <div className="mb-20 border-b-2 border-earth-sage/20 pb-16 flex flex-col md:flex-row md:items-end justify-between gap-12">
@@ -70,7 +70,7 @@ export default async function InstitutionPage({ params }: { params: { id: string
                         <h3 className="text-2xl font-funky text-foreground mb-10 italic border-b border-foreground/5 pb-6">Campus Profile</h3>
                         <div className="space-y-8">
                             <div className="flex justify-between items-end border-b border-foreground/5 pb-4">
-                                <span className="text-[10px] font-bold uppercase tracking-widest text-earth-sage italic">Community Voices</span>
+                                <span className="text-[10px] font-bold uppercase tracking-widest text-earth-sage italic">Student Reviews</span>
                                 <span className="text-4xl font-funky text-foreground italic leading-none">{institution._count.reviews}</span>
                             </div>
                             <div className="flex justify-between items-end border-b border-foreground/5 pb-4">
@@ -78,7 +78,7 @@ export default async function InstitutionPage({ params }: { params: { id: string
                                 <span className="text-sm font-bold text-foreground uppercase tracking-widest">{institution.control}</span>
                             </div>
                             <div className="flex justify-between items-end">
-                                <span className="text-[10px] font-bold uppercase tracking-widest text-earth-sage italic">Gathering At</span>
+                                <span className="text-[10px] font-bold uppercase tracking-widest text-earth-sage italic">Location</span>
                                 <span className="text-sm font-bold text-foreground uppercase tracking-widest text-right">{institution.city}, {institution.state}</span>
                             </div>
                         </div>
@@ -88,9 +88,9 @@ export default async function InstitutionPage({ params }: { params: { id: string
                         <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center mb-8 border border-white/10">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-6 h-6"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10" /></svg>
                         </div>
-                        <h3 className="text-2xl font-funky mb-4 italic">Verified Truth</h3>
+                        <h3 className="text-2xl font-funky mb-4 italic">Data Accuracy</h3>
                         <p className="text-sm font-medium leading-relaxed italic opacity-70">
-                            The metrics shared for &quot;{institution.name}&quot; are synchronized with official NCPES outcomes and the latest CIP taxonomy.
+                            The metrics shared for &quot;{institution.name}&quot; are verified with official outcomes and the latest academic taxonomy.
                         </p>
                     </div>
                 </div>

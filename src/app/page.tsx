@@ -19,10 +19,10 @@ export default async function Home() {
 
                 <div className="relative z-10 mx-auto max-w-4xl text-center">
                     <h1 className="text-6xl font-funky tracking-tight text-foreground sm:text-8xl text-balance leading-[0.85] mb-12">
-                        Find your <span className="text-earth-terracotta italic">truest</span> academic path
+                        Find your <span className="text-earth-terracotta italic">best</span> academic path
                     </h1>
                     <p className="mt-8 text-xl leading-relaxed text-foreground/80 font-medium max-w-2xl mx-auto">
-                        Gather 'round for verified perspectives from students and alumni. Eclectic insights for the modern seeker of wisdom.
+                        Honest, verified reviews from students and alumni. Real experiences to help you choose the right program.
                     </p>
                     <div className="mt-16">
                         <HomeSearch />
@@ -35,9 +35,9 @@ export default async function Home() {
                 <div className="mx-auto max-w-7xl px-6 lg:px-8">
                     <div className="mx-auto max-w-2xl lg:max-w-none text-center">
                         <div className="mb-20">
-                            <h2 className="text-5xl font-funky tracking-tight text-foreground mb-4">A Global Gathering of Minds</h2>
+                            <h2 className="text-5xl font-funky tracking-tight text-foreground mb-4">Real Reviews, Real Outcomes</h2>
                             <p className="text-lg font-medium text-earth-sage max-w-xl mx-auto italic">
-                                Everything you need to know about academic rigor, career preparedness, and the ROI of your journey.
+                                Everything you need to know about academic rigor, career preparedness, and the value of your education.
                             </p>
                         </div>
                         <div className="grid grid-cols-1 gap-12 sm:grid-cols-2 lg:px-20">
@@ -64,10 +64,10 @@ export default async function Home() {
             <div className="py-40 bg-earth-terracotta text-white relative overflow-hidden">
                 <div className="absolute right-[-10%] top-[-20%] w-[40%] aspect-square rounded-full bg-white/5 blur-3xl opacity-50" />
                 <div className="container mx-auto px-6 text-center relative z-10">
-                    <h3 className="text-5xl font-funky tracking-tight italic mb-10 max-w-2xl mx-auto">Have you walked this path before?</h3>
-                    <p className="text-xl mb-12 opacity-90 max-w-lg mx-auto font-medium">Your insights are the seeds of wisdom for the next generation of seekers.</p>
+                    <h3 className="text-5xl font-funky tracking-tight italic mb-10 max-w-2xl mx-auto">Share your student experience</h3>
+                    <p className="text-xl mb-12 opacity-90 max-w-lg mx-auto font-medium">Help future students make informed decisions by sharing your program experience.</p>
                     <a href="/write-review" className="coffee-btn bg-white text-earth-terracotta hover:bg-earth-parchment px-16 py-6 text-xl">
-                        Share Your Story
+                        Write a Review
                     </a>
                 </div>
             </div>

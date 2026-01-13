@@ -49,7 +49,7 @@ export default function ReviewItem({ review, userId }: { review: any, userId?: s
             <div className="flex justify-between items-start mb-10">
                 <div>
                     <div className="flex items-center gap-4 mb-4">
-                        <span className="font-funky text-foreground text-2xl italic">A Wanderer's Voice</span>
+                        <span className="font-funky text-foreground text-2xl italic">Anonymous Student</span>
                         {review.graduationStatus && (
                             <span className="px-3 py-1 bg-earth-mustard text-foreground text-[10px] font-bold uppercase tracking-widest rounded-full border border-foreground/10">
                                 {review.graduationStatus}
@@ -75,13 +75,13 @@ export default function ReviewItem({ review, userId }: { review: any, userId?: s
             <div className="space-y-10">
                 {responses.fit && (
                     <div className="border-l-4 border-earth-sage pl-8">
-                        <h4 className="text-[10px] font-bold text-earth-sage uppercase tracking-widest mb-3 italic">For the seeker who...</h4>
+                        <h4 className="text-[10px] font-bold text-earth-sage uppercase tracking-widest mb-3 italic">Program Fit</h4>
                         <p className="text-foreground font-medium leading-[1.8] italic text-lg">{responses.fit}</p>
                     </div>
                 )}
                 {responses.challenge && (
                     <div className="border-l-4 border-earth-terracotta pl-8">
-                        <h4 className="text-[10px] font-bold text-earth-terracotta uppercase tracking-widest mb-3 italic">The high hurdle</h4>
+                        <h4 className="text-[10px] font-bold text-earth-terracotta uppercase tracking-widest mb-3 italic">Biggest Challenge</h4>
                         <p className="text-foreground font-medium leading-[1.8] italic text-lg">{responses.challenge}</p>
                     </div>
                 )}
@@ -96,14 +96,14 @@ export default function ReviewItem({ review, userId }: { review: any, userId?: s
                         : 'bg-white border-foreground/10 text-foreground hover:bg-earth-parchment active:bg-earth-sage/10'}`}
                 >
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill={hasVoted ? "currentColor" : "none"} stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M7 10v12" /><path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2h0a3.13 3.13 0 0 1 3 3.88Z" /></svg>
-                    Helpful Wisdom ({votes})
+                    Helpful ({votes})
                 </button>
                 <button
                     onClick={handleReport}
                     disabled={isReporting}
                     className="text-[10px] font-bold uppercase tracking-widest text-foreground/30 hover:text-earth-terracotta transition-colors disabled:opacity-50 italic"
                 >
-                    {isReporting ? 'Witnessing...' : 'Report Dishonesty'}
+                    {isReporting ? 'Reporting...' : 'Report Review'}
                 </button>
             </div>
         </div>

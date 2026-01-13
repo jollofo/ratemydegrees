@@ -4,6 +4,7 @@ import "./globals.css";
 import prisma from "@/lib/prisma";
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
+import Image from "next/image";
 
 const inter = Inter({ subsets: ["latin"], variable: '--font-inter' });
 const funky = Bricolage_Grotesque({ subsets: ["latin"], variable: '--font-funky' });
@@ -11,7 +12,7 @@ const mono = Courier_Prime({ weight: "400", subsets: ["latin"], variable: '--fon
 
 export const metadata: Metadata = {
     title: "RateMyDegree | Student-Powered Degree Insights",
-    description: "An eclectic collection of student and alumni reviews for U.S. college majors. Real voices, earthy truths.",
+    description: "Honest college major reviews from students and alumni. Real experiences, real insights.",
 };
 
 export default async function RootLayout({
@@ -59,10 +60,13 @@ export default async function RootLayout({
                                     <div className="flex items-center gap-8">
                                         <div className="flex items-center justify-center bg-[#fffefb] border-2 border-foreground rounded-full w-12 h-12 shadow-sm">
                                             {user.user_metadata?.avatar_url ? (
-                                                <img
+                                                <Image
                                                     src={user.user_metadata.avatar_url}
                                                     alt="Profile"
-                                                    className="w-10 h-10 rounded-full border border-foreground"
+                                                    width={40}
+                                                    height={40}
+                                                    className="rounded-full border border-foreground"
+                                                    unoptimized
                                                 />
                                             ) : (
                                                 <div className="w-10 h-10 bg-earth-sage rounded-full border border-foreground flex items-center justify-center text-white font-funky text-lg">
@@ -92,12 +96,12 @@ export default async function RootLayout({
                             <div className="w-16 h-16 bg-earth-mustard wavy-border mx-auto mb-10 flex items-center justify-center text-earth-burgundy scale-110">
                                 <svg viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z" /></svg>
                             </div>
-                            <p className="font-funky text-4xl mb-6 italic tracking-tight text-white">Global Truths, Student Voices.</p>
+                            <p className="font-funky text-4xl mb-6 italic tracking-tight text-white">Real Student Voices. Real Insights.</p>
                             <div className="h-px bg-earth-parchment/10 max-w-xs mx-auto mb-10" />
-                            <p className="text-xs font-bold uppercase tracking-[0.2em] opacity-40">&copy; {new Date().getFullYear()} RateMyDegree. All paths lead home.</p>
+                            <p className="text-xs font-bold uppercase tracking-[0.2em] opacity-40">&copy; {new Date().getFullYear()} RateMyDegree. All rights reserved.</p>
                             <div className="mt-12 flex justify-center gap-12">
-                                <a href="/terms" className="text-[10px] opacity-40 hover:opacity-100 transition-opacity uppercase tracking-widest font-bold">Terms of Gathering</a>
-                                <a href="/privacy" className="text-[10px] opacity-40 hover:opacity-100 transition-opacity uppercase tracking-widest font-bold">Privacy Scroll</a>
+                                <a href="/terms" className="text-[10px] opacity-40 hover:opacity-100 transition-opacity uppercase tracking-widest font-bold">Terms of Service</a>
+                                <a href="/privacy" className="text-[10px] opacity-40 hover:opacity-100 transition-opacity uppercase tracking-widest font-bold">Privacy Policy</a>
                             </div>
                         </div>
                     </footer>

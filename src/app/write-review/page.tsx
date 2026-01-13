@@ -19,9 +19,9 @@ export default async function WriteReviewPage() {
     return (
         <div className="container mx-auto px-6 py-20 max-w-4xl">
             <div className="mb-20 text-center">
-                <h1 className="text-6xl font-funky text-foreground mb-6 tracking-tight italic">Share Your Wisdom</h1>
+                <h1 className="text-6xl font-funky text-foreground mb-6 tracking-tight italic">Share Your Experience</h1>
                 <p className="text-xl text-earth-sage max-w-2xl mx-auto leading-relaxed italic opacity-80">
-                    Help other seekers understand the path you've walked. Focus on departmental rigor, curriculum depth, and the faculty that shaped your journey.
+                    Help other students understand your academic journey. Focus on departmental rigor, curriculum depth, and the faculty that shaped your program.
                 </p>
                 <div className="mt-8 inline-block px-6 py-2 bg-earth-mustard/20 border border-earth-mustard/30 rounded-full text-xs font-bold text-foreground uppercase tracking-widest italic">
                     Departmental focus only
