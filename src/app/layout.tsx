@@ -82,7 +82,7 @@ export default async function RootLayout({
                                     </div>
                                 ) : (
                                     <a href="/login" className="coffee-btn py-2.5 text-sm">
-                                        Join Us
+                                        Sign In
                                     </a>
                                 )}
                             </nav>
