@@ -112,7 +112,7 @@ export default async function MajorsPage({
                 className="inline-flex items-center text-sm font-bold text-earth-terracotta hover:underline mb-12"
             >
                 <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Gathering
+                Back to Home
             </a>
 
             <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-12 mb-20">
@@ -120,13 +120,10 @@ export default async function MajorsPage({
                     <h1 className="text-6xl font-funky text-foreground tracking-tight leading-[0.9] mb-6">
                         {query ? `Seeking: ${query}` : 'Academic Collections'}
                     </h1>
-                    <p className="text-xl text-foreground/70 font-medium leading-relaxed italic">
-                        Explore department-level quality and verified career outcomes across our global aggregates.
-                    </p>
                 </div>
                 <div className="flex flex-col items-start lg:items-end gap-8 w-full max-w-md">
                     <div className="bg-earth-parchment border-2 border-foreground p-1.5 flex gap-1 rounded-full w-fit">
-                        <button className="px-6 py-2.5 bg-foreground text-white rounded-full text-xs font-bold uppercase tracking-widest cursor-default">Catalog</button>
+                        <button className="px-6 py-2.5 bg-foreground text-white rounded-full text-xs font-bold uppercase tracking-widest cursor-default">Majors</button>
                         <a href="/institutions" className="px-6 py-2.5 text-foreground hover:bg-foreground/5 rounded-full transition-colors text-xs font-bold uppercase tracking-widest">Institutions</a>
                     </div>
 
@@ -170,7 +167,7 @@ export default async function MajorsPage({
                                     )}
                                 </div>
 
-                                <h2 className="text-3xl font-funky text-foreground group-hover:text-earth-terracotta transition-colors leading-tight mb-8">
+                                <h2 className="text-3xl font-funky text-foreground group-hover:text-earth-terracotta transition-colors leading-tight mb-8 break-words overflow-hidden">
                                     {major.name}
                                 </h2>
 

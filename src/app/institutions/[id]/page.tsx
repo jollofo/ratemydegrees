@@ -12,16 +12,20 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
     };
 }
 
-export default async function InstitutionPage({ params }: { params: { id: string } }) {
+export default async function InstitutionPage({
+    params,
+    searchParams
+}: {
+    params: { id: string },
+    searchParams: { page?: string; q?: string }
+}) {
+    const page = parseInt(searchParams.page || '1');
+    const query = searchParams.q || '';
+    const PAGE_SIZE = 12;
+
     const institution = await prisma.institution.findUnique({
         where: { unitid: params.id },
         include: {
-            offeredMajors: {
-                include: {
-                    major: true
-                },
-                orderBy: { completionsTotal: 'desc' }
-            },
             _count: {
                 select: { reviews: { where: { status: 'APPROVED' } } }
             }
@@ -32,7 +36,33 @@ export default async function InstitutionPage({ params }: { params: { id: string
         notFound();
     }
 
-    const uniqueMajors = institution.offeredMajors.map(om => ({
+    // Filter conditions for offered majors
+    const whereClause = {
+        unitid: params.id,
+        major: {
+            OR: [
+                { title: { contains: query, mode: 'insensitive' as const } },
+                { cip4: { contains: query, mode: 'insensitive' as const } },
+                { category: { contains: query, mode: 'insensitive' as const } }
+            ]
+        }
+    };
+
+    // Parallel fetch for count and current page
+    const [totalCount, offeredMajorsPage] = await Promise.all([
+        prisma.institutionMajor.count({ where: whereClause }),
+        prisma.institutionMajor.findMany({
+            where: whereClause,
+            include: { major: true },
+            orderBy: { completionsTotal: 'desc' },
+            skip: (page - 1) * PAGE_SIZE,
+            take: PAGE_SIZE
+        })
+    ]);
+
+    const totalPages = Math.ceil(totalCount / PAGE_SIZE);
+
+    const uniqueMajors = offeredMajorsPage.map(om => ({
         id: om.major.cip4,
         name: om.major.title,
         category: om.major.category,
@@ -96,7 +126,13 @@ export default async function InstitutionPage({ params }: { params: { id: string
                 </div>
 
                 <div className="lg:col-span-7">
-                    <ProgramIndex majors={uniqueMajors} unitid={institution.unitid} />
+                    <ProgramIndex
+                        majors={uniqueMajors}
+                        unitid={institution.unitid}
+                        totalPages={totalPages}
+                        currentPage={page}
+                        query={query}
+                    />
                 </div>
             </div>
         </div>

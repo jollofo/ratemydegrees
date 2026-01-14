@@ -117,15 +117,15 @@ export default async function InstitutionsPage({
                                         </div>
                                         <span className="text-[10px] font-bold text-earth-sage uppercase tracking-widest italic">{inst.state}</span>
                                     </div>
-                                    <h3 className="font-funky text-2xl text-foreground group-hover:text-earth-terracotta transition-colors leading-tight italic">{inst.name}</h3>
+                                    <h3 className="font-funky text-2xl text-foreground group-hover:text-earth-terracotta transition-colors leading-tight italic break-words overflow-hidden">{inst.name}</h3>
                                     <p className="text-[10px] text-foreground font-bold uppercase tracking-widest mt-4 opacity-60">{inst.city} &bull; {inst.control}</p>
                                 </div>
                                 <div className="flex items-center justify-between mt-8 pt-8 border-t border-foreground/5">
                                     <span className="text-[10px] font-bold text-foreground bg-earth-mustard px-4 py-1.5 rounded-full border border-foreground/10 uppercase tracking-widest">
-                                        {inst._count.reviews} WISDOMS
+                                        {inst._count.reviews} Reviews
                                     </span>
                                     <div className="flex items-center gap-2 text-xs font-bold text-foreground group-hover:gap-3 transition-all uppercase tracking-widest">
-                                        View Paths
+                                        View Majors
                                         <ArrowLeft className="h-4 w-4 rotate-180 stroke-[3]" />
                                     </div>
                                 </div>
