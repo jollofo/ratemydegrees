@@ -3,9 +3,8 @@ import { PrismaPg } from '@prisma/adapter-pg'
 import { Pool } from 'pg'
 
 const prismaClientSingleton = () => {
-    if (process.env.NODE_ENV !== 'production') {
-        process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
-    }
+    // For Supabase connection pooler, we often need to allow self-signed certificates
+    process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
     console.log('Initializing PrismaClient with adapter...')
     const pool = new Pool({
         connectionString: process.env.DATABASE_URL,
