@@ -10,7 +10,14 @@ export default function LoginPage({
     const signInWithGoogle = async () => {
         'use server'
         const supabase = createClient()
-        const origin = headers().get('origin')
+
+        // Robust origin detection for deployment
+        const host = headers().get('host')
+        const protocol = headers().get('x-forwarded-proto') || 'http'
+        const origin = process.env.NEXT_PUBLIC_SITE_URL || `${protocol}://${host}`
+
+        console.log('Redirecting to origin:', origin)
+
         const { data, error } = await supabase.auth.signInWithOAuth({
             provider: 'google',
             options: {
@@ -19,6 +26,7 @@ export default function LoginPage({
         })
 
         if (error) {
+            console.error('OAuth error:', error)
             return redirect('/login?message=Could not authenticate user')
         }
 
