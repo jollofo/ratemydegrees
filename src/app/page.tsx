@@ -10,7 +10,7 @@ export default async function Home() {
     return (
         <div className="relative isolate overflow-hidden">
             {/* Hero Section */}
-            <div className="relative px-6 py-32 sm:py-48 lg:px-8 bg-earth-parchment">
+            <div className="relative px-6 py-20 sm:py-28 lg:px-8 bg-earth-parchment">
                 <div className="absolute inset-0 z-0 opacity-10 pointer-events-none">
                     <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
                         <path d="M0,50 Q25,30 50,50 T100,50 L100,100 L0,100 Z" fill="#8b9467" />
@@ -31,10 +31,10 @@ export default async function Home() {
             </div>
 
             {/* Stats / Features */}
-            <div className="py-32 bg-[#fffefb] relative border-y-2 border-earth-sage/20">
+            <div className="py-20 bg-[#fffefb] relative border-y-2 border-earth-sage/20">
                 <div className="mx-auto max-w-7xl px-6 lg:px-8">
                     <div className="mx-auto max-w-2xl lg:max-w-none text-center">
-                        <div className="mb-20">
+                        <div className="mb-12">
                             <h2 className="text-5xl font-funky tracking-tight text-foreground mb-4">Real Reviews, Real Outcomes</h2>
                             <p className="text-lg font-medium text-earth-sage max-w-xl mx-auto italic">
                                 Everything you need to know about academic rigor, career preparedness, and the value of your education.
@@ -61,7 +61,7 @@ export default async function Home() {
             </div>
 
             {/* CTA Section */}
-            <div className="py-40 bg-earth-terracotta text-white relative overflow-hidden">
+            <div className="py-24 bg-earth-terracotta text-white relative overflow-hidden">
                 <div className="absolute right-[-10%] top-[-20%] w-[40%] aspect-square rounded-full bg-white/5 blur-3xl opacity-50" />
                 <div className="container mx-auto px-6 text-center relative z-10">
                     <h3 className="text-5xl font-funky tracking-tight italic mb-10 max-w-2xl mx-auto">Share your student experience</h3>

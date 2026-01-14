@@ -71,7 +71,7 @@ export default async function InstitutionPage({
     }));
 
     return (
-        <div className="container mx-auto px-6 py-16 max-w-7xl">
+        <div className="container mx-auto px-6 py-10 max-w-7xl">
             <a
                 href="/institutions"
                 className="inline-flex items-center text-sm font-bold text-earth-terracotta hover:underline mb-12"
@@ -80,60 +80,62 @@ export default async function InstitutionPage({
                 Back to Universities
             </a>
 
-            <div className="mb-20 border-b-2 border-earth-sage/20 pb-16 flex flex-col md:flex-row md:items-end justify-between gap-12">
-                <div className="max-w-4xl">
-                    <div className="flex items-center gap-4 mb-6">
-                        <span className="bg-earth-sage/10 border border-earth-sage px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest text-earth-sage rounded-full">{institution.control}</span>
-                        <span className="text-foreground font-bold uppercase tracking-widest text-[10px] opacity-60">{institution.city}, {institution.state}</span>
+            <div className="mb-12 border-b-2 border-earth-sage/20 pb-10">
+                <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-10">
+                    <div className="max-w-4xl">
+                        <div className="flex items-center gap-4 mb-4">
+                            <span className="bg-earth-sage/10 border border-earth-sage px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest text-earth-sage rounded-full">{institution.control}</span>
+                            <span className="text-earth-terracotta font-bold uppercase tracking-widest text-[10px]">{page > 1 ? `Page ${page}` : 'Catalog Root'}</span>
+                        </div>
+                        <h1 className="text-7xl font-funky text-foreground tracking-tight leading-[0.85]">{institution.name}</h1>
                     </div>
-                    <h1 className="text-7xl font-funky text-foreground tracking-tight leading-[0.85]">{institution.name}</h1>
+                    <div className="bg-earth-parchment border-2 border-foreground p-1.5 flex gap-1 rounded-full w-fit h-fit">
+                        <div className="px-6 py-2.5 bg-foreground text-white rounded-full text-xs font-bold uppercase tracking-widest">Profiles</div>
+                        <div className="px-6 py-2.5 text-foreground opacity-40 rounded-full text-xs font-bold uppercase tracking-widest cursor-not-allowed">Map</div>
+                    </div>
                 </div>
-                <div className="bg-earth-parchment border-2 border-foreground p-1.5 flex gap-1 rounded-full w-fit h-fit">
-                    <div className="px-6 py-2.5 bg-foreground text-white rounded-full text-xs font-bold uppercase tracking-widest">Profiles</div>
-                    <div className="px-6 py-2.5 text-foreground opacity-40 rounded-full text-xs font-bold uppercase tracking-widest cursor-not-allowed">Map</div>
+
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                    <div className="border-r border-earth-sage/20 pr-6">
+                        <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-earth-sage block mb-1 opacity-60">Wisdom Shared</span>
+                        <div className="text-2xl font-funky text-foreground italic flex items-baseline gap-2">
+                            {institution._count.reviews} <span className="text-[10px] font-bold uppercase tracking-widest opacity-40 italic">Voices</span>
+                        </div>
+                    </div>
+                    <div className="border-r border-earth-sage/20 pr-6">
+                        <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-earth-sage block mb-1 opacity-60">Control</span>
+                        <div className="text-2xl font-funky text-foreground italic uppercase">{institution.control?.split('_')[0]}</div>
+                    </div>
+                    <div className="border-r border-earth-sage/20 pr-6">
+                        <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-earth-sage block mb-1 opacity-60">Location</span>
+                        <div className="text-2xl font-funky text-foreground italic">{institution.state}</div>
+                    </div>
+                    <div>
+                        <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-earth-sage block mb-1 opacity-60">UNITID</span>
+                        <div className="text-2xl font-funky text-foreground italic">{institution.unitid}</div>
+                    </div>
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 mb-24">
-                <div className="lg:col-span-5 space-y-12">
-                    <div className="coffee-card bg-earth-parchment/30">
-                        <h3 className="text-2xl font-funky text-foreground mb-10 italic border-b border-foreground/5 pb-6">Campus Profile</h3>
-                        <div className="space-y-8">
-                            <div className="flex justify-between items-end border-b border-foreground/5 pb-4">
-                                <span className="text-[10px] font-bold uppercase tracking-widest text-earth-sage italic">Student Reviews</span>
-                                <span className="text-4xl font-funky text-foreground italic leading-none">{institution._count.reviews}</span>
-                            </div>
-                            <div className="flex justify-between items-end border-b border-foreground/5 pb-4">
-                                <span className="text-[10px] font-bold uppercase tracking-widest text-earth-sage italic">Affiliation</span>
-                                <span className="text-sm font-bold text-foreground uppercase tracking-widest">{institution.control}</span>
-                            </div>
-                            <div className="flex justify-between items-end">
-                                <span className="text-[10px] font-bold uppercase tracking-widest text-earth-sage italic">Location</span>
-                                <span className="text-sm font-bold text-foreground uppercase tracking-widest text-right">{institution.city}, {institution.state}</span>
-                            </div>
-                        </div>
+            <div className="mb-12">
+                <div className="bg-earth-burgundy/5 border border-earth-burgundy/10 rounded-2xl p-4 flex items-center gap-4">
+                    <div className="w-8 h-8 bg-earth-burgundy text-white rounded-lg flex items-center justify-center shrink-0">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="w-4 h-4"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10" /></svg>
                     </div>
-
-                    <div className="coffee-card bg-earth-burgundy text-earth-parchment shadow-[6px_6px_0px_#433422]">
-                        <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center mb-8 border border-white/10">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-6 h-6"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10" /></svg>
-                        </div>
-                        <h3 className="text-2xl font-funky mb-4 italic">Data Accuracy</h3>
-                        <p className="text-sm font-medium leading-relaxed italic opacity-70">
-                            The metrics shared for &quot;{institution.name}&quot; are verified with official outcomes and the latest academic taxonomy.
-                        </p>
-                    </div>
+                    <p className="text-[10px] font-bold text-earth-burgundy uppercase tracking-widest italic">
+                        Verified Data: Metrics for &quot;{institution.name}&quot; are synchronized with official outcomes and academic taxonomy.
+                    </p>
                 </div>
+            </div>
 
-                <div className="lg:col-span-7">
-                    <ProgramIndex
-                        majors={uniqueMajors}
-                        unitid={institution.unitid}
-                        totalPages={totalPages}
-                        currentPage={page}
-                        query={query}
-                    />
-                </div>
+            <div className="mb-16">
+                <ProgramIndex
+                    majors={uniqueMajors}
+                    unitid={institution.unitid}
+                    totalPages={totalPages}
+                    currentPage={page}
+                    query={query}
+                />
             </div>
         </div>
     );

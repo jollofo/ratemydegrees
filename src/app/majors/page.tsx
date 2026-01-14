@@ -106,7 +106,7 @@ export default async function MajorsPage({
     };
 
     return (
-        <div className="container mx-auto px-6 py-16 max-w-7xl">
+        <div className="container mx-auto px-6 py-10 max-w-7xl">
             <a
                 href="/"
                 className="inline-flex items-center text-sm font-bold text-earth-terracotta hover:underline mb-12"
@@ -115,7 +115,7 @@ export default async function MajorsPage({
                 Back to Home
             </a>
 
-            <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-12 mb-20">
+            <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 mb-12">
                 <div className="max-w-2xl">
                     <h1 className="text-6xl font-funky text-foreground tracking-tight leading-[0.9] mb-6">
                         {query ? `Seeking: ${query}` : 'Academic Collections'}
@@ -148,7 +148,7 @@ export default async function MajorsPage({
                 </div>
             ) : (
                 <>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 mb-20">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
                         {majorsWithStats.map((major: any) => (
                             <a
                                 key={major.id}

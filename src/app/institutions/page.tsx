@@ -58,16 +58,16 @@ export default async function InstitutionsPage({
     };
 
     return (
-        <div className="container mx-auto px-6 py-16 max-w-7xl">
+        <div className="container mx-auto px-6 py-10 max-w-7xl">
             <a
                 href="/"
                 className="inline-flex items-center text-sm font-bold text-earth-terracotta hover:underline mb-12"
             >
                 <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Gathering
+                Back to Home
             </a>
 
-            <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-12 mb-20">
+            <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 mb-12">
                 <div className="max-w-2xl">
                     <h1 className="text-6xl font-funky text-foreground tracking-tight leading-[0.9] mb-6">
                         {query ? `Seeking: ${query}` : 'Academic Institutions'}
@@ -78,7 +78,7 @@ export default async function InstitutionsPage({
                 </div>
                 <div className="flex flex-col items-start lg:items-end gap-8 w-full max-w-md">
                     <div className="bg-earth-parchment border-2 border-foreground p-1.5 flex gap-1 rounded-full w-fit">
-                        <a href="/majors" className="px-6 py-2.5 text-foreground hover:bg-foreground/5 rounded-full transition-colors text-xs font-bold uppercase tracking-widest">Catalog</a>
+                        <a href="/majors" className="px-6 py-2.5 text-foreground hover:bg-foreground/5 rounded-full transition-colors text-xs font-bold uppercase tracking-widest">Majors</a>
                         <button className="px-6 py-2.5 bg-foreground text-white rounded-full text-xs font-bold uppercase tracking-widest cursor-default">Institutions</button>
                     </div>
 
@@ -103,7 +103,7 @@ export default async function InstitutionsPage({
                 </div>
             ) : (
                 <>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 mb-20">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
                         {institutions.map((inst) => (
                             <a
                                 key={inst.unitid}

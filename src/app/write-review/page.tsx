@@ -17,11 +17,11 @@ export default async function WriteReviewPage() {
     ]);
 
     return (
-        <div className="container mx-auto px-6 py-20 max-w-4xl">
-            <div className="mb-20 text-center">
+        <div className="container mx-auto px-6 py-10 max-w-4xl">
+            <div className="mb-12 text-center">
                 <h1 className="text-6xl font-funky text-foreground mb-6 tracking-tight italic">Share Your Experience</h1>
                 <p className="text-xl text-earth-sage max-w-2xl mx-auto leading-relaxed italic opacity-80">
-                    Help other students understand your academic journey. Focus on departmental rigor, curriculum depth, and the faculty that shaped your program.
+                    Help other students understand your academic journey. Focus on academic rigor, curriculum depth, and the faculty that shaped your program.
                 </p>
             </div>
 

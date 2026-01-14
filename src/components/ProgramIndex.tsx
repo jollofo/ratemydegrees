@@ -56,8 +56,8 @@ export default function ProgramIndex({
     };
 
     return (
-        <div className="mb-12">
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-10 mb-16">
+        <div className="mb-8">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-10">
                 <div>
                     <h2 className="text-4xl font-funky text-foreground tracking-tight mb-3 italic">Pathways Found</h2>
                     <span className="text-earth-sage text-[10px] font-bold uppercase tracking-widest italic">{majors.length > 0 ? 'Academic Areas Available' : 'Searching for paths...'}</span>
@@ -79,15 +79,18 @@ export default function ProgramIndex({
 
             {majors.length > 0 ? (
                 <>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {majors.map((major) => (
                             <a
                                 key={major.id}
                                 href={`/majors/${major.id}/${unitid}`}
-                                className="coffee-card group !p-10 hover:shadow-[10px_10px_0px_#8b9467] flex flex-col justify-between h-full bg-[#fffefb]/50"
+                                className="coffee-card group !p-6 hover:shadow-[10px_10px_0px_#8b9467] flex flex-col justify-between h-full bg-[#fffefb]/50 transition-all border-earth-sage/20"
                             >
                                 <div>
-                                    <span className="text-[10px] font-bold text-earth-sage uppercase tracking-widest block mb-6 italic">{major.category || 'Gathering Area'}</span>
+                                    <div className="flex items-center justify-between mb-6">
+                                        <span className="text-[10px] font-bold text-earth-sage uppercase tracking-widest italic">{major.category || 'Gathering Area'}</span>
+                                        <span className="text-[9px] font-bold text-foreground/20 uppercase tracking-widest">{major.id}</span>
+                                    </div>
                                     <h4 className="text-2xl font-funky text-foreground group-hover:text-earth-terracotta transition-all leading-tight mb-10 italic break-words overflow-hidden">{major.name}</h4>
                                 </div>
                                 <div className="flex items-center justify-between pt-8 border-t border-foreground/5 mt-auto">
