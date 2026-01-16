@@ -89,10 +89,6 @@ export default async function InstitutionPage({
                         </div>
                         <h1 className="text-7xl font-funky text-foreground tracking-tight leading-[0.85]">{institution.name}</h1>
                     </div>
-                    <div className="bg-earth-parchment border-2 border-foreground p-1.5 flex gap-1 rounded-full w-fit h-fit">
-                        <div className="px-6 py-2.5 bg-foreground text-white rounded-full text-xs font-bold uppercase tracking-widest">Profiles</div>
-                        <div className="px-6 py-2.5 text-foreground opacity-40 rounded-full text-xs font-bold uppercase tracking-widest cursor-not-allowed">Map</div>
-                    </div>
                 </div>
 
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-6">

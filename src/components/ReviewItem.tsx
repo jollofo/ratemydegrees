@@ -45,11 +45,11 @@ export default function ReviewItem({ review, userId }: { review: any, userId?: s
     }
 
     return (
-        <div className="coffee-card bg-white/40 mb-10 border-foreground/10">
-            <div className="flex justify-between items-start mb-10">
+        <div className="coffee-card bg-white/40 mb-6 border-foreground/10 !p-6">
+            <div className="flex justify-between items-start mb-6">
                 <div>
-                    <div className="flex items-center gap-4 mb-4">
-                        <span className="font-funky text-foreground text-2xl italic">Anonymous Student</span>
+                    <div className="flex items-center gap-4 mb-2">
+                        <span className="font-funky text-foreground text-xl italic">Anonymous Student</span>
                         {review.graduationStatus && (
                             <span className="px-3 py-1 bg-earth-mustard text-foreground text-[10px] font-bold uppercase tracking-widest rounded-full border border-foreground/10">
                                 {review.graduationStatus}
@@ -57,7 +57,7 @@ export default function ReviewItem({ review, userId }: { review: any, userId?: s
                         )}
                     </div>
                     {review.major && review.institution && (
-                        <div className="text-[10px] font-bold text-earth-sage uppercase tracking-widest mb-6 italic">
+                        <div className="text-[10px] font-bold text-earth-sage uppercase tracking-widest mb-4 italic">
                             {review.major.name} @ {review.institution.name}
                         </div>
                     )}
@@ -72,22 +72,22 @@ export default function ReviewItem({ review, userId }: { review: any, userId?: s
                 </div>
             </div>
 
-            <div className="space-y-10">
+            <div className="space-y-6">
                 {responses.fit && (
-                    <div className="border-l-4 border-earth-sage pl-8">
-                        <h4 className="text-[10px] font-bold text-earth-sage uppercase tracking-widest mb-3 italic">Program Fit</h4>
-                        <p className="text-foreground font-medium leading-[1.8] italic text-lg">{responses.fit}</p>
+                    <div className="border-l-4 border-earth-sage pl-6">
+                        <h4 className="text-[10px] font-bold text-earth-sage uppercase tracking-widest mb-2 italic">Program Fit</h4>
+                        <p className="text-foreground font-medium leading-[1.6] italic text-base">{responses.fit}</p>
                     </div>
                 )}
                 {responses.challenge && (
-                    <div className="border-l-4 border-earth-terracotta pl-8">
-                        <h4 className="text-[10px] font-bold text-earth-terracotta uppercase tracking-widest mb-3 italic">Biggest Challenge</h4>
-                        <p className="text-foreground font-medium leading-[1.8] italic text-lg">{responses.challenge}</p>
+                    <div className="border-l-4 border-earth-terracotta pl-6">
+                        <h4 className="text-[10px] font-bold text-earth-terracotta uppercase tracking-widest mb-2 italic">Biggest Challenge</h4>
+                        <p className="text-foreground font-medium leading-[1.6] italic text-base">{responses.challenge}</p>
                     </div>
                 )}
             </div>
 
-            <div className="mt-12 pt-8 border-t border-foreground/5 flex items-center justify-between">
+            <div className="mt-8 pt-5 border-t border-foreground/5 flex items-center justify-between">
                 <button
                     onClick={handleVote}
                     disabled={hasVoted}

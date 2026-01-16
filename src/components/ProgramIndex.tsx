@@ -59,7 +59,7 @@ export default function ProgramIndex({
         <div className="mb-8">
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-10">
                 <div>
-                    <h2 className="text-4xl font-funky text-foreground tracking-tight mb-3 italic">Pathways Found</h2>
+                    <h2 className="text-4xl font-funky text-foreground tracking-tight mb-3 italic">Majors Found</h2>
                     <span className="text-earth-sage text-[10px] font-bold uppercase tracking-widest italic">{majors.length > 0 ? 'Academic Areas Available' : 'Searching for paths...'}</span>
                 </div>
 
