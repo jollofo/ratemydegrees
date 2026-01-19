@@ -8,6 +8,7 @@ export async function getDbUser(userId: string) {
             select: {
                 id: true,
                 role: true,
+                email: true,
             }
         });
     } catch (error) {
