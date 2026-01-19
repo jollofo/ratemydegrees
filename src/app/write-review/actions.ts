@@ -56,6 +56,19 @@ export async function submitReview(formData: any) {
         }
     });
 
+    if (formData.status === 'graduated' && formData.outcomeStatus) {
+        await prisma.reviewOutcome.create({
+            data: {
+                reviewId: review.id,
+                status: formData.outcomeStatus,
+                jobTitle: formData.jobTitle,
+                industry: formData.industry,
+                gradSchool: formData.gradSchool,
+                timeToOutcome: formData.timeToOutcome
+            }
+        });
+    }
+
     revalidatePath(`/majors/${formData.majorId}`);
     revalidatePath(`/majors/${formData.majorId}/${formData.institutionId}`);
     revalidatePath(`/institutions/${formData.institutionId}`);
@@ -88,8 +101,8 @@ export async function searchInstitutions(query: string) {
         where: {
             active: true,
             OR: [
-                { name: { contains: query, mode: 'insensitive' } },
-                { unitid: { contains: query, mode: 'insensitive' } }
+                { name: { contains: query } },
+                { unitid: { contains: query } }
             ]
         },
         select: { unitid: true, name: true, state: true },
@@ -104,8 +117,8 @@ export async function searchMajors(query: string) {
     return await prisma.major.findMany({
         where: {
             OR: [
-                { title: { contains: query, mode: 'insensitive' } },
-                { cip4: { contains: query, mode: 'insensitive' } }
+                { title: { contains: query } },
+                { cip4: { contains: query } }
             ]
         },
         select: { cip4: true, title: true, category: true },

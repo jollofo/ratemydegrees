@@ -1,11 +1,8 @@
 import HomeSearch from '@/components/HomeSearch';
-import prisma from '@/lib/prisma';
+import { getHomepageStats } from '@/lib/stats';
 
 export default async function Home() {
-    const [majorCount, institutionCount] = await Promise.all([
-        prisma.major.count(),
-        prisma.institution.count({ where: { active: true } })
-    ]);
+    const { majorCount, institutionCount } = await getHomepageStats();
 
     return (
         <div className="relative isolate overflow-hidden">

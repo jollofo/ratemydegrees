@@ -8,8 +8,8 @@ export async function searchInstitutions(query: string) {
     return prisma.institution.findMany({
         where: {
             OR: [
-                { name: { contains: query, mode: 'insensitive' } },
-                { city: { contains: query, mode: 'insensitive' } },
+                { name: { contains: query } },
+                { city: { contains: query } },
             ],
             active: true
         },
@@ -24,7 +24,7 @@ export async function searchMajors(query: string) {
     return prisma.major.findMany({
         where: {
             OR: [
-                { title: { contains: query, mode: 'insensitive' } },
+                { title: { contains: query } },
             ]
         },
         orderBy: { title: 'asc' },

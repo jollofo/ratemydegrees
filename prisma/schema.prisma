@@ -3,11 +3,11 @@
 
 generator client {
   provider        = "prisma-client-js"
-  previewFeatures = ["driverAdapters"]
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
 }
 
 model User {
@@ -59,6 +59,7 @@ model Major {
   updatedAt   DateTime @updatedAt
   reviews     Review[]
   institutions InstitutionMajor[]
+  outcomeSummary MajorOutcomeSummary?
 }
 
 model InstitutionMajor {
@@ -96,6 +97,7 @@ model Review {
   votes               Vote[]
   reports             Report[]
   moderationActions   ModerationAction[]
+  outcome             ReviewOutcome?
 
   @@index([cip4])
   @@index([unitid])
@@ -140,4 +142,37 @@ model ModerationAction {
 
   @@index([reviewId])
   @@index([moderatorId])
+}
+
+model ReviewOutcome {
+  id              String   @id @default(cuid())
+  reviewId        String   @unique
+  review          Review   @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  
+  status          String   // employed_full, employed_part, grad_school, professional_school, founder, seeking
+  jobTitle        String?
+  industry        String?
+  gradSchool      String?
+  timeToOutcome   String?  // 0-3_mo, 3-6_mo, 6-12_mo, 12_mo_plus
+  
+  createdAt       DateTime @default(now())
+}
+
+model MajorOutcomeSummary {
+  id             String   @id @default(cuid())
+  cip4           String   @unique
+  major          Major    @relation(fields: [cip4], references: [cip4])
+  
+  employmentPct  Float    @default(0)
+  gradSchoolPct  Float    @default(0)
+  founderPct     Float    @default(0)
+  seekingPct     Float    @default(0)
+  
+  topJobTitles   String   // JSON array of strings
+  topIndustries  String   // JSON array of strings
+  
+  sampleSize     Int      @default(0)
+  confidence     Float    @default(0) // 0-1
+  
+  lastUpdated    DateTime @default(now())
 }

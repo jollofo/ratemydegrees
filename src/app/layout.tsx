@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Bricolage_Grotesque, Courier_Prime } from "next/font/google";
 import "./globals.css";
-import prisma from "@/lib/prisma";
+import { getDbUser } from "@/lib/user";
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 import Image from "next/image";
@@ -32,7 +32,7 @@ export default async function RootLayout({
 
     let dbUser = null;
     if (user) {
-        dbUser = await prisma.user.findUnique({ where: { id: user.id } });
+        dbUser = await getDbUser(user.id);
     }
 
     return (

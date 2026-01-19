@@ -1,5 +1,5 @@
 import { createClient } from '@/utils/supabase/server';
-import prisma from '@/lib/prisma';
+import { getDbUser } from '@/lib/user';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 
@@ -15,9 +15,7 @@ export default async function AdminLayout({
         redirect('/login?returnTo=/admin');
     }
 
-    const dbUser = await prisma.user.findUnique({
-        where: { id: user.id }
-    });
+    const dbUser = await getDbUser(user.id);
 
     if (!dbUser || (dbUser.role !== 'ADMIN' && dbUser.role !== 'MODERATOR')) {
         redirect('/');
