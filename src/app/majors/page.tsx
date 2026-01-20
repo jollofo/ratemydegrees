@@ -21,7 +21,6 @@ export default async function MajorsPage({
         andConditions.push({
             title: {
                 contains: query,
-                mode: 'insensitive' as Prisma.QueryMode
             }
         });
     }

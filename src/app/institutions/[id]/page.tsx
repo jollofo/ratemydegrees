@@ -41,9 +41,9 @@ export default async function InstitutionPage({
         unitid: params.id,
         major: {
             OR: [
-                { title: { contains: query, mode: 'insensitive' as const } },
-                { cip4: { contains: query, mode: 'insensitive' as const } },
-                { category: { contains: query, mode: 'insensitive' as const } }
+                { title: { contains: query } },
+                { cip4: { contains: query } },
+                { category: { contains: query } }
             ]
         }
     };

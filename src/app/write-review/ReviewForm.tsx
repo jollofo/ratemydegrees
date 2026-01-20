@@ -37,7 +37,13 @@ export default function WriteReviewForm({ majors: initialMajors, institutions: i
         fit: '',
         challenge: '',
         misconception: '',
-        differently: ''
+        differently: '',
+        // Outcome fields
+        outcomeStatus: '',
+        jobTitle: '',
+        industry: '',
+        gradSchool: '',
+        timeToOutcome: ''
     });
 
     // Handle clicks outside search results
@@ -126,50 +132,50 @@ export default function WriteReviewForm({ majors: initialMajors, institutions: i
     return (
         <div className="relative">
             {/* Anonymity Notice banner */}
-            <div className="mb-16 coffee-card bg-earth-sage/10 border-earth-sage/30 p-8 flex items-center gap-8">
-                <div className="w-14 h-14 bg-white wavy-border flex items-center justify-center text-earth-sage shrink-0">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /><path d="m9 12 2 2 4-4" /></svg>
+            <div className="mb-8 coffee-card bg-earth-sage/10 border-earth-sage/30 p-6 flex items-center gap-6">
+                <div className="w-12 h-12 bg-white wavy-border flex items-center justify-center text-earth-sage shrink-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /><path d="m9 12 2 2 4-4" /></svg>
                 </div>
                 <div>
-                    <p className="text-xl font-funky text-foreground italic mb-1">Verified Anonymity</p>
-                    <p className="text-sm font-medium text-foreground opacity-60 leading-relaxed italic">Your identity is protected. We only use your account to ensure the integrity of our reviews.</p>
+                    <p className="text-lg font-funky text-foreground italic mb-0.5">Verified Anonymity</p>
+                    <p className="text-xs font-medium text-foreground opacity-60 leading-relaxed italic">Your identity is protected. We only use your account to verify review integrity.</p>
                 </div>
             </div>
 
             {/* Progress Bar */}
-            <div className="mb-20 flex items-center justify-center gap-10">
+            <div className="mb-10 flex items-center justify-center gap-8">
                 {[1, 2, 3].map((i) => (
                     <div key={i} className="flex items-center">
-                        <div className={`w-14 h-14 rounded-2xl border-2 flex items-center justify-center font-bold text-lg transition-all ${step >= i
-                            ? 'bg-earth-terracotta border-earth-terracotta text-white shadow-lg scale-110'
+                        <div className={`w-12 h-12 rounded-xl border-2 flex items-center justify-center font-bold text-base transition-all ${step >= i
+                            ? 'bg-earth-terracotta border-earth-terracotta text-white shadow-md scale-105'
                             : 'bg-white border-foreground/10 text-foreground/20'
                             }`}>
                             {i}
                         </div>
                         {i < 3 && (
-                            <div className={`w-20 h-0.5 border-t-2 border-foreground/10 border-dashed mx-4 ${step > i ? 'border-earth-terracotta opacity-100' : 'opacity-20'}`} />
+                            <div className={`w-12 h-0.5 border-t-2 border-foreground/10 border-dashed mx-3 ${step > i ? 'border-earth-terracotta opacity-100' : 'opacity-20'}`} />
                         )}
                     </div>
                 ))}
             </div>
 
-            <div className="coffee-card !p-12 bg-[#fffefb]/80 backdrop-blur-sm">
+            <div className="coffee-card !p-8 bg-[#fffefb]/80 backdrop-blur-sm">
                 {step === 1 && (
-                    <div className="space-y-16 animate-in fade-in slide-in-from-bottom-6 duration-700">
-                        <div className="border-b border-foreground/5 pb-10">
-                            <h2 className="text-5xl font-funky text-foreground tracking-tight italic mb-4">1. Basic Information</h2>
-                            <p className="text-earth-sage text-xs font-bold uppercase tracking-[0.2em] italic">Where did you study?</p>
+                    <div className="space-y-10 animate-in fade-in slide-in-from-bottom-6 duration-700">
+                        <div className="border-b border-foreground/5 pb-6">
+                            <h2 className="text-3xl font-funky text-foreground tracking-tight italic mb-2">1. Basic Information [UPDATED]</h2>
+                            <p className="text-earth-sage text-[10px] font-bold uppercase tracking-[0.2em] italic">Where did you study?</p>
                         </div>
 
-                        <div className="space-y-12">
+                        <div className="space-y-10">
                             <div className="relative" ref={instSearchRef}>
                                 <label className="block">
-                                    <span className="text-[10px] font-bold text-earth-sage uppercase tracking-widest block mb-4 italic">Institution / University</span>
+                                    <span className="text-[10px] font-bold text-earth-sage uppercase tracking-widest block mb-2 italic">Institution / University</span>
                                     <div className="relative">
                                         <input
                                             type="text"
-                                            placeholder="Search for your college..."
-                                            className="coffee-input pr-14 !py-5 shadow-[4px_4px_0px_#8b9467] text-lg"
+                                            placeholder="Search university..."
+                                            className="coffee-input pr-12 !py-4 shadow-[3px_3px_0px_#8b9467] text-base"
                                             value={instQuery}
                                             onChange={(e) => {
                                                 setInstQuery(e.target.value);
@@ -218,12 +224,12 @@ export default function WriteReviewForm({ majors: initialMajors, institutions: i
 
                             <div className="relative" ref={majorSearchRef}>
                                 <label className="block">
-                                    <span className="text-[10px] font-bold text-earth-sage uppercase tracking-widest block mb-4 italic">Degree / Major</span>
+                                    <span className="text-[10px] font-bold text-earth-sage uppercase tracking-widest block mb-2 italic">Degree / Major</span>
                                     <div className="relative">
                                         <input
                                             type="text"
-                                            placeholder="Search for your program..."
-                                            className="coffee-input pr-14 !py-5 shadow-[4px_4px_0px_#d4a017] text-lg"
+                                            placeholder="Search program..."
+                                            className="coffee-input pr-12 !py-4 shadow-[3px_3px_0px_#d4a017] text-base"
                                             value={majorQuery}
                                             onChange={(e) => {
                                                 setMajorQuery(e.target.value);
@@ -270,12 +276,12 @@ export default function WriteReviewForm({ majors: initialMajors, institutions: i
                                 )}
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                 <label className="block">
-                                    <span className="text-[10px] font-bold text-earth-sage uppercase tracking-widest block mb-4 italic">Education Status</span>
+                                    <span className="text-[10px] font-bold text-earth-sage uppercase tracking-widest block mb-2 italic">Education Status</span>
                                     <div className="relative">
                                         <select
-                                            className="coffee-input !py-5 shadow-[4px_4px_0px_#433422] text-sm font-bold appearance-none cursor-pointer pr-12"
+                                            className="coffee-input !py-4 shadow-[3px_3px_0px_#433422] text-sm font-bold appearance-none cursor-pointer pr-10"
                                             value={formData.status}
                                             onChange={(e) => setFormData({ ...formData, status: e.target.value })}
                                         >
@@ -283,34 +289,119 @@ export default function WriteReviewForm({ majors: initialMajors, institutions: i
                                             <option value="current">CURRENT STUDENT</option>
                                             <option value="switched">SWITCHED MAJOR / DROPPED OUT</option>
                                         </select>
-                                        <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-foreground opacity-30">
-                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="w-5 h-5"><path d="M19 9l-7 7-7-7" /></svg>
+                                        <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-foreground opacity-30">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="w-4 h-4"><path d="M19 9l-7 7-7-7" /></svg>
                                         </div>
                                     </div>
                                 </label>
                                 <label className="block">
-                                    <span className="text-[10px] font-bold text-earth-sage uppercase tracking-widest block mb-4 italic">Graduation Year / Range</span>
+                                    <span className="text-[10px] font-bold text-earth-sage uppercase tracking-widest block mb-2 italic">Graduation Year / Range</span>
                                     <input
                                         type="text"
                                         placeholder="e.g. 2020 — 2024"
-                                        className="coffee-input !py-5 shadow-[4px_4px_0px_#433422] text-sm font-bold"
+                                        className="coffee-input !py-4 shadow-[3px_3px_0px_#433422] text-sm font-bold"
                                         value={formData.graduationYear}
                                         onChange={(e) => setFormData({ ...formData, graduationYear: e.target.value })}
                                     />
                                 </label>
                             </div>
+
+                            {formData.status === 'graduated' && (
+                                <div className="space-y-6 pt-6 border-t border-foreground/5 animate-in fade-in slide-in-from-top-4">
+                                    <h3 className="text-xl font-funky text-foreground italic leading-none">Post-Graduation Journey</h3>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <label className="block">
+                                            <span className="text-[10px] font-bold text-earth-sage uppercase tracking-widest block mb-2 italic">Current Status</span>
+                                            <select
+                                                className="coffee-input !py-4 text-sm font-bold appearance-none cursor-pointer"
+                                                value={(formData as any).outcomeStatus || ''}
+                                                onChange={(e) => setFormData({ ...formData, outcomeStatus: e.target.value } as any)}
+                                            >
+                                                <option value="">Select Status...</option>
+                                                <option value="employed_full">Employed Full-Time</option>
+                                                <option value="employed_part">Employed Part-Time</option>
+                                                <option value="grad_school">Graduate School</option>
+                                                <option value="professional_school">Professional School (Med/Law/etc)</option>
+                                                <option value="founder">Self-Employed / Founder</option>
+                                                <option value="seeking">Still Seeking</option>
+                                            </select>
+                                        </label>
+
+                                        {['employed_full', 'employed_part', 'founder'].includes((formData as any).outcomeStatus) && (
+                                            <>
+                                                <label className="block">
+                                                    <span className="text-[10px] font-bold text-earth-sage uppercase tracking-widest block mb-2 italic">First Role Title</span>
+                                                    <input
+                                                        type="text"
+                                                        placeholder="e.g. Junior Analyst"
+                                                        className="coffee-input !py-4 text-sm font-bold"
+                                                        value={(formData as any).jobTitle || ''}
+                                                        onChange={(e) => setFormData({ ...formData, jobTitle: e.target.value } as any)}
+                                                    />
+                                                </label>
+                                                <label className="block">
+                                                    <span className="text-[10px] font-bold text-earth-sage uppercase tracking-widest block mb-2 italic">Industry</span>
+                                                    <select
+                                                        className="coffee-input !py-4 text-sm font-bold appearance-none cursor-pointer"
+                                                        value={(formData as any).industry || ''}
+                                                        onChange={(e) => setFormData({ ...formData, industry: e.target.value } as any)}
+                                                    >
+                                                        <option value="">Select Industry...</option>
+                                                        <option value="tech">Technology</option>
+                                                        <option value="finance">Finance</option>
+                                                        <option value="health">Healthcare</option>
+                                                        <option value="education">Education</option>
+                                                        <option value="manufacturing">Manufacturing</option>
+                                                        <option value="arts">Arts & Design</option>
+                                                        <option value="other">Other</option>
+                                                    </select>
+                                                </label>
+                                            </>
+                                        )}
+
+                                        {['grad_school', 'professional_school'].includes((formData as any).outcomeStatus) && (
+                                            <label className="block">
+                                                <span className="text-[10px] font-bold text-earth-sage uppercase tracking-widest block mb-2 italic">Program / Degree</span>
+                                                <input
+                                                    type="text"
+                                                    placeholder="e.g. MBA, PhD in Physics"
+                                                    className="coffee-input !py-4 text-sm font-bold"
+                                                    value={(formData as any).gradSchool || ''}
+                                                    onChange={(e) => setFormData({ ...formData, gradSchool: e.target.value } as any)}
+                                                />
+                                            </label>
+                                        )}
+
+                                        <label className="block">
+                                            <span className="text-[10px] font-bold text-earth-sage uppercase tracking-widest block mb-2 italic">Time to First Outcome</span>
+                                            <select
+                                                className="coffee-input !py-4 text-sm font-bold appearance-none cursor-pointer"
+                                                value={(formData as any).timeToOutcome || ''}
+                                                onChange={(e) => setFormData({ ...formData, timeToOutcome: e.target.value } as any)}
+                                            >
+                                                <option value="">Select Duration...</option>
+                                                <option value="0-3_mo">Less than 3 months</option>
+                                                <option value="3-6_mo">3 - 6 months</option>
+                                                <option value="6-12_mo">6 - 12 months</option>
+                                                <option value="12_mo_plus">Over a year</option>
+                                            </select>
+                                        </label>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
                 )}
 
                 {step === 2 && (
-                    <div className="space-y-16 animate-in fade-in slide-in-from-bottom-6 duration-700">
-                        <div className="border-b border-foreground/5 pb-10">
-                            <h2 className="text-5xl font-funky text-foreground tracking-tight italic mb-4">2. Academic Ratings</h2>
-                            <p className="text-earth-sage text-xs font-bold uppercase tracking-[0.2em] italic">Rate the academic program based on your experience.</p>
+                    <div className="space-y-10 animate-in fade-in slide-in-from-bottom-6 duration-700">
+                        <div className="border-b border-foreground/5 pb-6">
+                            <h2 className="text-3xl font-funky text-foreground tracking-tight italic mb-2">2. Academic Ratings</h2>
+                            <p className="text-earth-sage text-[10px] font-bold uppercase tracking-[0.2em] italic">Rate the academic program based on your experience.</p>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-20 gap-y-16">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-10">
                             {ratingCategories.map((cat) => (
                                 <div key={cat.key} className="space-y-8">
                                     <div className="flex justify-between items-end">
@@ -339,42 +430,42 @@ export default function WriteReviewForm({ majors: initialMajors, institutions: i
                 )}
 
                 {step === 3 && (
-                    <div className="space-y-16 animate-in fade-in slide-in-from-bottom-6 duration-700">
-                        <div className="border-b border-foreground/5 pb-10">
-                            <h2 className="text-5xl font-funky text-foreground tracking-tight italic mb-4">3. Detailed Feedback</h2>
-                            <p className="text-earth-sage text-xs font-bold uppercase tracking-[0.2em] italic">Help other students by providing more context.</p>
+                    <div className="space-y-10 animate-in fade-in slide-in-from-bottom-6 duration-700">
+                        <div className="border-b border-foreground/5 pb-6">
+                            <h2 className="text-3xl font-funky text-foreground tracking-tight italic mb-2">3. Detailed Feedback</h2>
+                            <p className="text-earth-sage text-[10px] font-bold uppercase tracking-[0.2em] italic">Help other students by providing more context.</p>
                         </div>
 
-                        <div className="space-y-12">
+                        <div className="space-y-10">
                             <label className="block">
-                                <span className="text-xs font-bold text-earth-sage uppercase tracking-widest block mb-6 italic">Who is this program for?</span>
+                                <span className="text-[10px] font-bold text-earth-sage uppercase tracking-widest block mb-4 italic">Who is this program for?</span>
                                 <textarea
-                                    rows={5}
-                                    className="coffee-input shadow-[6px_6px_0px_#8b9467] text-lg font-medium italic resize-none min-h-[160px] bg-white/50"
+                                    rows={4}
+                                    className="coffee-input shadow-[4px_4px_0px_#8b9467] text-base font-medium italic resize-none min-h-[120px] bg-white/50"
                                     placeholder="Students who prefer hands-on learning over theory..."
                                     value={formData.fit}
                                     onChange={(e) => setFormData({ ...formData, fit: e.target.value })}
                                 ></textarea>
                             </label>
                             <label className="block">
-                                <span className="text-xs font-bold text-earth-sage uppercase tracking-widest block mb-6 italic">Most Significant Challenge</span>
+                                <span className="text-[10px] font-bold text-earth-sage uppercase tracking-widest block mb-4 italic">Most Significant Challenge</span>
                                 <textarea
-                                    rows={5}
-                                    className="coffee-input shadow-[6px_6px_0px_#c36b4e] text-lg font-medium italic resize-none min-h-[160px] bg-white/50"
-                                    placeholder="Navigating the intense workload during the clinical rotation phase..."
+                                    rows={4}
+                                    className="coffee-input shadow-[4px_4px_0px_#c36b4e] text-base font-medium italic resize-none min-h-[120px] bg-white/50"
+                                    placeholder="e.g. Navigating workload during clinicals..."
                                     value={formData.challenge}
                                     onChange={(e) => setFormData({ ...formData, challenge: e.target.value })}
                                 ></textarea>
                             </label>
 
-                            <div className="p-10 coffee-card border-dashed bg-earth-parchment/30 flex gap-8 items-start mt-20">
-                                <div className="shrink-0 w-14 h-14 bg-earth-burgundy text-earth-parchment wavy-border flex items-center justify-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" /><circle cx="12" cy="12" r="4" /></svg>
+                            <div className="p-6 coffee-card border-dashed bg-earth-parchment/30 flex gap-6 items-start mt-10">
+                                <div className="shrink-0 w-12 h-12 bg-earth-burgundy text-earth-parchment wavy-border flex items-center justify-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" /><circle cx="12" cy="12" r="4" /></svg>
                                 </div>
                                 <div>
-                                    <p className="text-xl font-funky text-foreground italic mb-2 tracking-tight">Review Guidelines</p>
-                                    <p className="text-sm font-medium leading-relaxed text-foreground opacity-60 italic">
-                                        By submitting this review, you help our community. Focus on the academic experience. Reviews about campus politics or unrelated services may be removed.
+                                    <p className="text-lg font-funky text-foreground italic mb-1 tracking-tight">Review Guidelines</p>
+                                    <p className="text-xs font-medium leading-relaxed text-foreground opacity-60 italic">
+                                        Focus on the academic experience. Unrelated reviews may be removed. Identity protected.
                                     </p>
                                 </div>
                             </div>
@@ -382,7 +473,7 @@ export default function WriteReviewForm({ majors: initialMajors, institutions: i
                     </div>
                 )}
 
-                <div className="mt-24 flex justify-between items-center pt-16 border-t border-secondary-100">
+                <div className="mt-12 flex justify-between items-center pt-8 border-t border-secondary-100">
                     <button
                         type="button"
                         onClick={prevStep}

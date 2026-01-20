@@ -52,7 +52,6 @@ export default async function MajorDetailPage({
         institution: {
             name: {
                 contains: query,
-                mode: 'insensitive' as any
             }
         }
     };
