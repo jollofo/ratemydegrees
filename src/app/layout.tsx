@@ -45,7 +45,7 @@ export default async function RootLayout({
                                 <div className="w-10 h-10 bg-earth-terracotta wavy-border flex items-center justify-center text-white scale-90">
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-6 h-6"><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" /><circle cx="12" cy="12" r="4" /></svg>
                                 </div>
-                                RateMyDegree
+                                RMD
                             </a>
                             <nav className="hidden md:flex items-center space-x-10">
                                 <a href="/majors" className="text-sm font-bold hover:text-earth-terracotta transition-colors">Programs</a>
