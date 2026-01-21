@@ -1,9 +1,15 @@
 import "server-only";
 import prisma from "./prisma";
 
-export async function getDbUser(userId: string) {
+export interface DbUser {
+    id: string;
+    role: string;
+    email: string | null;
+}
+
+export async function getDbUser(userId: string): Promise<DbUser | null> {
     try {
-        return await prisma.user.findUnique({
+        const user = await prisma.user.findUnique({
             where: { id: userId },
             select: {
                 id: true,
@@ -11,6 +17,7 @@ export async function getDbUser(userId: string) {
                 email: true,
             }
         });
+        return user as DbUser | null;
     } catch (error) {
         console.error("Error fetching DB user:", error);
         return null;
