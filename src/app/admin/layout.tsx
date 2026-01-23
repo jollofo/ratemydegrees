@@ -15,7 +15,7 @@ export default async function AdminLayout({
         redirect('/login?returnTo=/admin');
     }
 
-    const dbUser = await getDbUser(user.id);
+    const dbUser = await getDbUser(user.id) as any;
 
     if (!dbUser || (dbUser.role !== 'ADMIN' && dbUser.role !== 'MODERATOR')) {
         redirect('/');

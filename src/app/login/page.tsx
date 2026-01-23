@@ -11,10 +11,7 @@ export default function LoginPage({
         'use server'
         const supabase = createClient()
 
-        // Robust origin detection for deployment
-        const host = headers().get('host')
-        const protocol = headers().get('x-forwarded-proto') || 'http'
-        const origin = process.env.NEXT_PUBLIC_SITE_URL || `${protocol}://${host}`
+        const origin = process.env.NEXT_PUBLIC_SITE_URL
 
         console.log('Redirecting to origin:', origin)
 
