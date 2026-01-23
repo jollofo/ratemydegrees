@@ -1,4 +1,3 @@
-import "server-only";
 import prisma from "./prisma";
 
 export async function getDbUser(userId: string) {
