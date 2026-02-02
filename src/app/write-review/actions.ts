@@ -5,8 +5,9 @@ import { createClient } from '@/utils/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { checkReviewContent } from '@/lib/moderation';
+import { ReviewFormData, InstitutionSearchResult, MajorSearchResult } from './types';
 
-export async function submitReview(formData: any) {
+export async function submitReview(formData: ReviewFormData) {
     if (!formData.majorId || !formData.institutionId) {
         throw new Error('Major and Institution are required');
     }
@@ -77,7 +78,7 @@ export async function submitReview(formData: any) {
     redirect(`/majors/${formData.majorId}/${formData.institutionId}?success=true`);
 }
 
-export async function getMajorsForSearch() {
+export async function getMajorsForSearch(): Promise<MajorSearchResult[]> {
     return await prisma.major.findMany({
         select: { cip4: true, title: true, category: true },
         orderBy: { title: 'asc' },
@@ -85,16 +86,16 @@ export async function getMajorsForSearch() {
     });
 }
 
-export async function getInstitutionsForSearch() {
+export async function getInstitutionsForSearch(): Promise<InstitutionSearchResult[]> {
     return await prisma.institution.findMany({
         where: { active: true },
-        select: { unitid: true, name: true, state: true },
+        select: { unitid: true, name: true, state: true, city: true },
         orderBy: { name: 'asc' },
         take: 50 // Just some initial ones
     });
 }
 
-export async function searchInstitutions(query: string) {
+export async function searchInstitutions(query: string): Promise<InstitutionSearchResult[]> {
     if (!query || query.length < 2) return [];
 
     return await prisma.institution.findMany({
@@ -105,13 +106,13 @@ export async function searchInstitutions(query: string) {
                 { unitid: { contains: query } }
             ]
         },
-        select: { unitid: true, name: true, state: true },
+        select: { unitid: true, name: true, state: true, city: true },
         orderBy: { name: 'asc' },
         take: 10
     });
 }
 
-export async function searchMajors(query: string) {
+export async function searchMajors(query: string): Promise<MajorSearchResult[]> {
     if (!query || query.length < 2) return [];
 
     return await prisma.major.findMany({

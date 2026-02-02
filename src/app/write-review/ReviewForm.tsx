@@ -2,26 +2,27 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { submitReview, searchInstitutions, searchMajors } from './actions';
+import { ReviewFormData, InstitutionSearchResult, MajorSearchResult } from './types';
 
-export default function WriteReviewForm({ majors: initialMajors, institutions: initialInstitutions }: { majors: any[], institutions: any[] }) {
+export default function WriteReviewForm({ majors: initialMajors, institutions: initialInstitutions }: { majors: MajorSearchResult[], institutions: InstitutionSearchResult[] }) {
     const [step, setStep] = useState(1);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     // Search states
     const [instQuery, setInstQuery] = useState('');
-    const [instResults, setInstResults] = useState(initialInstitutions);
+    const [instResults, setInstResults] = useState<InstitutionSearchResult[]>(initialInstitutions);
     const [isSearchingInst, setIsSearchingInst] = useState(false);
     const [showInstResults, setShowInstResults] = useState(false);
 
     const [majorQuery, setMajorQuery] = useState('');
-    const [majorResults, setMajorResults] = useState(initialMajors);
+    const [majorResults, setMajorResults] = useState<MajorSearchResult[]>(initialMajors);
     const [isSearchingMajor, setIsSearchingMajor] = useState(false);
     const [showMajorResults, setShowMajorResults] = useState(false);
 
     const instSearchRef = useRef<HTMLDivElement>(null);
     const majorSearchRef = useRef<HTMLDivElement>(null);
 
-    const [formData, setFormData] = useState({
+    const [formData, setFormData] = useState<ReviewFormData>({
         majorId: '',
         institutionId: '',
         status: 'graduated',
@@ -315,8 +316,8 @@ export default function WriteReviewForm({ majors: initialMajors, institutions: i
                                             <span className="text-[10px] font-bold text-earth-sage uppercase tracking-widest block mb-2 italic">Current Status</span>
                                             <select
                                                 className="coffee-input !py-4 text-sm font-bold appearance-none cursor-pointer"
-                                                value={(formData as any).outcomeStatus || ''}
-                                                onChange={(e) => setFormData({ ...formData, outcomeStatus: e.target.value } as any)}
+                                                value={formData.outcomeStatus || ''}
+                                                onChange={(e) => setFormData({ ...formData, outcomeStatus: e.target.value })}
                                             >
                                                 <option value="">Select Status...</option>
                                                 <option value="employed_full">Employed Full-Time</option>
@@ -328,7 +329,7 @@ export default function WriteReviewForm({ majors: initialMajors, institutions: i
                                             </select>
                                         </label>
 
-                                        {['employed_full', 'employed_part', 'founder'].includes((formData as any).outcomeStatus) && (
+                                        {['employed_full', 'employed_part', 'founder'].includes(formData.outcomeStatus) && (
                                             <>
                                                 <label className="block">
                                                     <span className="text-[10px] font-bold text-earth-sage uppercase tracking-widest block mb-2 italic">First Role Title</span>
@@ -336,16 +337,16 @@ export default function WriteReviewForm({ majors: initialMajors, institutions: i
                                                         type="text"
                                                         placeholder="e.g. Junior Analyst"
                                                         className="coffee-input !py-4 text-sm font-bold"
-                                                        value={(formData as any).jobTitle || ''}
-                                                        onChange={(e) => setFormData({ ...formData, jobTitle: e.target.value } as any)}
+                                                        value={formData.jobTitle || ''}
+                                                        onChange={(e) => setFormData({ ...formData, jobTitle: e.target.value })}
                                                     />
                                                 </label>
                                                 <label className="block">
                                                     <span className="text-[10px] font-bold text-earth-sage uppercase tracking-widest block mb-2 italic">Industry</span>
                                                     <select
                                                         className="coffee-input !py-4 text-sm font-bold appearance-none cursor-pointer"
-                                                        value={(formData as any).industry || ''}
-                                                        onChange={(e) => setFormData({ ...formData, industry: e.target.value } as any)}
+                                                        value={formData.industry || ''}
+                                                        onChange={(e) => setFormData({ ...formData, industry: e.target.value })}
                                                     >
                                                         <option value="">Select Industry...</option>
                                                         <option value="tech">Technology</option>
@@ -360,15 +361,15 @@ export default function WriteReviewForm({ majors: initialMajors, institutions: i
                                             </>
                                         )}
 
-                                        {['grad_school', 'professional_school'].includes((formData as any).outcomeStatus) && (
+                                        {['grad_school', 'professional_school'].includes(formData.outcomeStatus) && (
                                             <label className="block">
                                                 <span className="text-[10px] font-bold text-earth-sage uppercase tracking-widest block mb-2 italic">Program / Degree</span>
                                                 <input
                                                     type="text"
                                                     placeholder="e.g. MBA, PhD in Physics"
                                                     className="coffee-input !py-4 text-sm font-bold"
-                                                    value={(formData as any).gradSchool || ''}
-                                                    onChange={(e) => setFormData({ ...formData, gradSchool: e.target.value } as any)}
+                                                    value={formData.gradSchool || ''}
+                                                    onChange={(e) => setFormData({ ...formData, gradSchool: e.target.value })}
                                                 />
                                             </label>
                                         )}
@@ -377,8 +378,8 @@ export default function WriteReviewForm({ majors: initialMajors, institutions: i
                                             <span className="text-[10px] font-bold text-earth-sage uppercase tracking-widest block mb-2 italic">Time to First Outcome</span>
                                             <select
                                                 className="coffee-input !py-4 text-sm font-bold appearance-none cursor-pointer"
-                                                value={(formData as any).timeToOutcome || ''}
-                                                onChange={(e) => setFormData({ ...formData, timeToOutcome: e.target.value } as any)}
+                                                value={formData.timeToOutcome || ''}
+                                                onChange={(e) => setFormData({ ...formData, timeToOutcome: e.target.value })}
                                             >
                                                 <option value="">Select Duration...</option>
                                                 <option value="0-3_mo">Less than 3 months</option>
