@@ -106,7 +106,7 @@ export default function WriteReviewForm({ majors: initialMajors, institutions: i
     const ratingCategories = [
         { key: 'rigor', label: 'Academic Rigor' },
         { key: 'flexibility', label: 'Curriculum Relevance' },
-        { key: 'value', label: 'Faculty Accessibility (no names)' },
+        { key: 'value', label: 'Faculty Accessibility' },
         { key: 'difficulty', label: 'Workload vs Payoff' },
         { key: 'career', label: 'Career Preparedness' },
         { key: 'satisfaction', label: 'Overall Satisfaction' },
@@ -163,7 +163,7 @@ export default function WriteReviewForm({ majors: initialMajors, institutions: i
                 {step === 1 && (
                     <div className="space-y-10 animate-in fade-in slide-in-from-bottom-6 duration-700">
                         <div className="border-b border-foreground/5 pb-6">
-                            <h2 className="text-3xl font-funky text-foreground tracking-tight italic mb-2">1. Basic Information [UPDATED]</h2>
+                            <h2 className="text-3xl font-funky text-foreground tracking-tight italic mb-2">1. Basic Information</h2>
                             <p className="text-earth-sage text-[10px] font-bold uppercase tracking-[0.2em] italic">Where did you study?</p>
                         </div>
 
