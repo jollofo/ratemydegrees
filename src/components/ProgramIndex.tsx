@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Search, ArrowRight, BookOpen, ArrowLeft } from 'lucide-react';
+import { Search, ArrowRight, BookOpen, ArrowLeft, Sparkles } from 'lucide-react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
+import MajorResolverModal from './MajorResolverModal';
 
 interface Major {
     id: string;
@@ -31,6 +32,7 @@ export default function ProgramIndex({
     const pathname = usePathname();
     const searchParams = useSearchParams();
     const [searchQuery, setSearchQuery] = useState(query);
+    const [isResolverOpen, setIsResolverOpen] = useState(false);
 
     // Update local state when prop changes
     useEffect(() => {
@@ -75,6 +77,13 @@ export default function ProgramIndex({
                         onChange={(e) => setSearchQuery(e.target.value)}
                     />
                 </form>
+                <button
+                    onClick={() => setIsResolverOpen(true)}
+                    className="absolute -bottom-8 right-0 text-xs font-bold text-earth-terracotta underline decoration-2 underline-offset-4 hover:text-earth-mustard transition-colors flex items-center gap-1"
+                >
+                    <Sparkles className="h-3 w-3" />
+                    Not sure what your major is called?
+                </button>
             </div>
 
             {majors.length > 0 ? (
@@ -161,7 +170,15 @@ export default function ProgramIndex({
                     <div className="w-20 h-20 bg-white wavy-border flex items-center justify-center mx-auto mb-10 text-earth-terracotta">
                         <BookOpen className="h-10 w-10" />
                     </div>
-                    <p className="text-foreground font-bold uppercase tracking-widest mb-8 italic">No matching paths reveal themselves.</p>
+                    <p className="text-foreground font-bold uppercase tracking-widest mb-4 italic">No matching paths reveal themselves.</p>
+                    <div className="mb-8">
+                        <button
+                            onClick={() => setIsResolverOpen(true)}
+                            className="text-earth-terracotta font-bold text-lg hover:underline decoration-2 underline-offset-4 italic"
+                        >
+                            Can’t find your major? Try the Major Resolver.
+                        </button>
+                    </div>
                     {query && (
                         <button
                             onClick={() => {
@@ -175,6 +192,7 @@ export default function ProgramIndex({
                     )}
                 </div>
             )}
+            <MajorResolverModal isOpen={isResolverOpen} onClose={() => setIsResolverOpen(false)} />
         </div>
     );
 }

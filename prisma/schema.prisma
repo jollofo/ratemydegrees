@@ -2,7 +2,8 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider        = "prisma-client-js"
+  provider = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
 }
 
 datasource db {
@@ -12,93 +13,147 @@ datasource db {
 }
 
 model User {
-  id            String    @id
-  email         String?   @unique
+  id            String             @id
+  email         String?            @unique
   emailVerified DateTime?
   image         String?
-  role          String    @default("USER") // USER, MODERATOR, ADMIN
-  banned        Boolean   @default(false)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  role          String             @default("USER") // USER, MODERATOR, ADMIN
+  banned        Boolean            @default(false)
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
   reviews       Review[]
   votes         Vote[]
-  reports       Report[]  @relation("Reporter")
+  reports       Report[]           @relation("Reporter")
   actions       ModerationAction[]
 }
 
 model Institution {
-  unitid                 String   @id // IPEDS UNITID
-  name                   String
-  city                   String?
-  state                  String?
-  control                String?   // PUBLIC, PRIVATE
-  sector                 String?
-  website                String?
-  active                 Boolean   @default(true)
-  createdAt              DateTime @default(now())
-  updatedAt              DateTime @updatedAt
-  reviews                Review[]
-  offeredMajors          InstitutionMajor[]
+  unitid        String             @id // IPEDS UNITID
+  name          String
+  city          String?
+  state         String?
+  control       String? // PUBLIC, PRIVATE
+  sector        String?
+  website       String?
+  active        Boolean            @default(true)
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+  reviews       Review[]
+  offeredMajors InstitutionMajor[]
 }
 
 model Cip6 {
-  cip6        String   @id // e.g. 14.0901
-  title       String
-  definition  String?
-  cip2        String
-  cip4        String
+  cip6       String  @id // e.g. 14.0901
+  title      String
+  definition String?
+  cip2       String
+  cip4       String
 }
 
 model Major {
-  cip4        String   @id // e.g. 14.09
-  title       String
-  category    String?
-  slug        String?   @unique
-  description String?
-  outcomes    String?  // JSON string: { commonJobs: [], salaryRange: "", gradPaths: [] }
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  reviews     Review[]
-  institutions InstitutionMajor[]
+  cip4           String               @id // e.g. 14.09
+  title          String
+  category       String?
+  slug           String?              @unique
+  description    String?
+  outcomes       String? // JSON string: { commonJobs: [], salaryRange: "", gradPaths: [] }
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+  reviews        Review[]
+  institutions   InstitutionMajor[]
   outcomeSummary MajorOutcomeSummary?
+  aliases        MajorAlias[]
+  pathways       MajorPathway[]
+  meta           MajorMeta?
+}
+
+enum AliasType {
+  synonym
+  slang
+  abbreviation
+  program_name
+}
+
+model MajorAlias {
+  id        String    @id @default(cuid())
+  alias     String    @unique
+  cip4      String
+  type      AliasType
+  notes     String?
+  major     Major     @relation(fields: [cip4], references: [cip4])
+  createdAt DateTime  @default(now())
+
+  @@index([alias])
+  @@index([cip4])
+}
+
+model MajorPathway {
+  id        String   @id @default(cuid())
+  pathway   String
+  cip4      String
+  weight    Int      @default(1)
+  major     Major    @relation(fields: [cip4], references: [cip4])
+  createdAt DateTime @default(now())
+
+  @@index([pathway])
+  @@index([cip4])
+}
+
+model MajorMeta {
+  cip4               String   @id
+  requiresGradDegree Boolean  @default(false)
+  gradDegreeNotes    String?
+  commonRelatedCip4  String[]
+  major              Major    @relation(fields: [cip4], references: [cip4])
+}
+
+model ResolverEvent {
+  id              String   @id @default(cuid())
+  queryRaw        String
+  queryNormalized String
+  institutionHint String?
+  topResultCip4   String?
+  clickedCip4     String?
+  clickedType     String?
+  createdAt       DateTime @default(now())
 }
 
 model InstitutionMajor {
-  unitid                     String
-  cip4                       String
-  institution                Institution @relation(fields: [unitid], references: [unitid])
-  major                      Major       @relation(fields: [cip4], references: [cip4])
-  latestYear                 String?
-  completionsTotal           Int        @default(0)
+  unitid           String
+  cip4             String
+  institution      Institution @relation(fields: [unitid], references: [unitid])
+  major            Major       @relation(fields: [cip4], references: [cip4])
+  latestYear       String?
+  completionsTotal Int         @default(0)
 
   @@id([unitid, cip4])
 }
 
 model Review {
-  id                  String   @id @default(cuid())
+  id                  String      @id @default(cuid())
   cip4                String
-  major               Major    @relation(fields: [cip4], references: [cip4])
+  major               Major       @relation(fields: [cip4], references: [cip4])
   unitid              String
   institution         Institution @relation(fields: [unitid], references: [unitid])
   userId              String
-  user                User     @relation(fields: [userId], references: [id])
-  graduationStatus    String   // graduated, current, switched
-  graduationYearRange String?  // e.g., "2018–2020"
-  ratings             String   // JSON string of ratings
-  writtenResponses    String   // JSON string of answers to prompts
-  
-  status              String   @default("PENDING") // PENDING, APPROVED, REMOVED, REJECTED, SHADOW_HIDDEN
-  flagReasons         String?  // JSON array of strings
-  riskScore           Int      @default(0)
-  toxicityScore       Float?
-  lastModeratedAt     DateTime?
+  user                User        @relation(fields: [userId], references: [id])
+  graduationStatus    String // graduated, current, switched
+  graduationYearRange String? // e.g., "2018–2020"
+  ratings             String // JSON string of ratings
+  writtenResponses    String // JSON string of answers to prompts
 
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
-  votes               Vote[]
-  reports             Report[]
-  moderationActions   ModerationAction[]
-  outcome             ReviewOutcome?
+  status          String    @default("PENDING") // PENDING, APPROVED, REMOVED, REJECTED, SHADOW_HIDDEN
+  flagReasons     String? // JSON array of strings
+  riskScore       Int       @default(0)
+  toxicityScore   Float?
+  lastModeratedAt DateTime?
+
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  votes             Vote[]
+  reports           Report[]
+  moderationActions ModerationAction[]
+  outcome           ReviewOutcome?
 
   @@index([cip4])
   @@index([unitid])
@@ -131,49 +186,49 @@ model Report {
 }
 
 model ModerationAction {
-  id              String   @id @default(cuid())
-  reviewId        String
-  review          Review   @relation(fields: [reviewId], references: [id])
-  moderatorId     String
-  moderator       User     @relation(fields: [moderatorId], references: [id])
-  action          String   // APPROVE, REMOVE, SHADOW_HIDE, REJECT
-  notes           String?
-  metadata        String?  // JSON string
-  createdAt       DateTime @default(now())
+  id          String   @id @default(cuid())
+  reviewId    String
+  review      Review   @relation(fields: [reviewId], references: [id])
+  moderatorId String
+  moderator   User     @relation(fields: [moderatorId], references: [id])
+  action      String // APPROVE, REMOVE, SHADOW_HIDE, REJECT
+  notes       String?
+  metadata    String? // JSON string
+  createdAt   DateTime @default(now())
 
   @@index([reviewId])
   @@index([moderatorId])
 }
 
 model ReviewOutcome {
-  id              String   @id @default(cuid())
-  reviewId        String   @unique
-  review          Review   @relation(fields: [reviewId], references: [id], onDelete: Cascade)
-  
-  status          String   // employed_full, employed_part, grad_school, professional_school, founder, seeking
-  jobTitle        String?
-  industry        String?
-  gradSchool      String?
-  timeToOutcome   String?  // 0-3_mo, 3-6_mo, 6-12_mo, 12_mo_plus
-  
-  createdAt       DateTime @default(now())
+  id       String @id @default(cuid())
+  reviewId String @unique
+  review   Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+
+  status        String // employed_full, employed_part, grad_school, professional_school, founder, seeking
+  jobTitle      String?
+  industry      String?
+  gradSchool    String?
+  timeToOutcome String? // 0-3_mo, 3-6_mo, 6-12_mo, 12_mo_plus
+
+  createdAt DateTime @default(now())
 }
 
 model MajorOutcomeSummary {
-  id             String   @id @default(cuid())
-  cip4           String   @unique
-  major          Major    @relation(fields: [cip4], references: [cip4])
-  
-  employmentPct  Float    @default(0)
-  gradSchoolPct  Float    @default(0)
-  founderPct     Float    @default(0)
-  seekingPct     Float    @default(0)
-  
-  topJobTitles   String   // JSON array of strings
-  topIndustries  String   // JSON array of strings
-  
-  sampleSize     Int      @default(0)
-  confidence     Float    @default(0) // 0-1
-  
-  lastUpdated    DateTime @default(now())
+  id    String @id @default(cuid())
+  cip4  String @unique
+  major Major  @relation(fields: [cip4], references: [cip4])
+
+  employmentPct Float @default(0)
+  gradSchoolPct Float @default(0)
+  founderPct    Float @default(0)
+  seekingPct    Float @default(0)
+
+  topJobTitles  String // JSON array of strings
+  topIndustries String // JSON array of strings
+
+  sampleSize Int   @default(0)
+  confidence Float @default(0) // 0-1
+
+  lastUpdated DateTime @default(now())
 }

@@ -3,12 +3,17 @@ import { notFound } from 'next/navigation';
 import { createClient } from '@/utils/supabase/server';
 import ReviewItem from '@/components/ReviewItem';
 import { Metadata } from 'next';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Sparkles } from 'lucide-react';
 
 export async function generateMetadata({ params }: { params: { id: string, institutionId: string } }): Promise<Metadata> {
-    const [major, institution] = await Promise.all([
+    const [major, institution, institutionMajor] = await Promise.all([
         prisma.major.findUnique({ where: { cip4: params.id } }),
-        prisma.institution.findUnique({ where: { unitid: params.institutionId } })
+        prisma.institution.findUnique({ where: { unitid: params.institutionId } }),
+        prisma.institutionMajor.findUnique({
+            where: {
+                unitid_cip4: { unitid: params.institutionId, cip4: params.id }
+            }
+        })
     ]);
     return {
         title: `${major?.title} at ${institution?.name} | Program Reviews`,
@@ -26,6 +31,12 @@ export default async function ProgramDetailPage({ params }: { params: { id: stri
 
     const institution = await prisma.institution.findUnique({
         where: { unitid: params.institutionId },
+    });
+
+    const institutionMajor = await prisma.institutionMajor.findUnique({
+        where: {
+            unitid_cip4: { unitid: params.institutionId, cip4: params.id }
+        }
     });
 
     if (!major || !institution) {
@@ -101,6 +112,19 @@ export default async function ProgramDetailPage({ params }: { params: { id: stri
                         <span className="bg-earth-mustard/20 border border-earth-mustard/30 px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest text-foreground rounded-full italic">{major.title}</span>
                         <span className="text-foreground font-bold uppercase tracking-widest text-[10px] opacity-60">Taxonomy: {major.cip4}</span>
                     </div>
+                    {!institutionMajor && (
+                        <div className="mb-6 bg-earth-terracotta/10 border border-earth-terracotta/20 rounded-xl p-4 flex items-start gap-4">
+                            <div className="bg-earth-terracotta/20 p-2 rounded-lg">
+                                <Sparkles className="h-5 w-5 text-earth-terracotta" />
+                            </div>
+                            <div>
+                                <h4 className="text-earth-terracotta font-bold uppercase tracking-widest text-xs mb-1 italic">Unverified Program</h4>
+                                <p className="text-sm font-medium text-foreground/80 leading-relaxed">
+                                    We don’t yet have graduation data confirming this major at this institution. This may be a preparatory or newly established program.
+                                </p>
+                            </div>
+                        </div>
+                    )}
                     <h1 className="text-5xl md:text-6xl font-funky text-foreground tracking-tight leading-[0.85] mb-4">{institution.name}</h1>
                     <p className="text-xl font-funky text-earth-terracotta italic tracking-tight">Academic Department Insights</p>
                 </div>
