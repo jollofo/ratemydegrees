@@ -100,7 +100,7 @@ export default function MajorResolverModal({ isOpen, onClose }: MajorResolverMod
                             <div>
                                 <p className="text-sm font-bold text-earth-sage uppercase tracking-wide">Institution Detected</p>
                                 <p className="text-foreground font-semibold">Looking for matches at <span className="text-earth-terracotta">{institutionHint}</span></p>
-                                {!institution && <p className="text-xs text-red-500 mt-1">Warning: We couldn't find this institution in our database.</p>}
+                                {!institution && <p className="text-xs text-red-500 mt-1">Warning: We couldn&apos;t find this institution in our database.</p>}
                             </div>
                         </div>
                     )}
@@ -111,8 +111,8 @@ export default function MajorResolverModal({ isOpen, onClose }: MajorResolverMod
                                 <div>
                                     <div className="flex items-center gap-2 mb-1">
                                         <span className={`text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full ${result.label === 'Exact match' ? 'bg-green-100 text-green-700' :
-                                                result.label === 'Alias match' ? 'bg-blue-100 text-blue-700' :
-                                                    'bg-amber-100 text-amber-700'
+                                            result.label === 'Alias match' ? 'bg-blue-100 text-blue-700' :
+                                                'bg-amber-100 text-amber-700'
                                             }`}>
                                             {result.label}
                                         </span>
@@ -124,7 +124,7 @@ export default function MajorResolverModal({ isOpen, onClose }: MajorResolverMod
                                     <div className="flex flex-col items-end">
                                         <span className="text-[10px] font-bold uppercase tracking-widest text-foreground/40">Confidence</span>
                                         <span className={`text-xs font-bold ${result.confidence === 'High' ? 'text-green-600' :
-                                                result.confidence === 'Medium' ? 'text-amber-600' : 'text-red-500'
+                                            result.confidence === 'Medium' ? 'text-amber-600' : 'text-red-500'
                                             }`}>{result.confidence}</span>
                                     </div>
                                 </div>
@@ -132,7 +132,7 @@ export default function MajorResolverModal({ isOpen, onClose }: MajorResolverMod
 
                             {result.note && (
                                 <div className="mb-4 bg-foreground/5 rounded-lg p-3 text-sm text-foreground/70 italic border-l-2 border-foreground/20">
-                                    "{result.note}"
+                                    &quot;{result.note}&quot;
                                 </div>
                             )}
 
