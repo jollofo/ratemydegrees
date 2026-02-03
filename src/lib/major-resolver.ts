@@ -7,6 +7,7 @@ export type MajorResolutionMatch = {
     confidence: 'HIGH' | 'MEDIUM' | 'LOW';
     matchType: 'DIRECT' | 'ALIAS' | 'PATHWAY' | 'RELATED';
     source: string;
+    category?: string | null;
 };
 
 export type MajorResolutionResult = {
@@ -61,7 +62,8 @@ export async function resolveMajorQuery(
             title: m.title,
             confidence,
             matchType: 'DIRECT',
-            source: m.title
+            source: m.title,
+            category: m.category
         });
         seenCip4.add(m.cip4);
     }
@@ -89,7 +91,8 @@ export async function resolveMajorQuery(
                 title: a.major.title,
                 confidence,
                 matchType: 'ALIAS',
-                source: a.alias
+                source: a.alias,
+                category: a.major.category
             });
             seenCip4.add(a.cip4);
         }
@@ -114,7 +117,8 @@ export async function resolveMajorQuery(
                 title: p.major.title,
                 confidence: 'MEDIUM', // Pathways are inherently less certain
                 matchType: 'PATHWAY',
-                source: p.pathway
+                source: p.pathway,
+                category: p.major.category
             });
             seenCip4.add(p.cip4);
         }
@@ -187,7 +191,8 @@ export async function resolveMajorQuery(
                     title: related.title,
                     confidence: 'LOW',
                     matchType: 'RELATED',
-                    source: 'Related Major Expansion'
+                    source: 'Related Major Expansion',
+                    category: related.category
                 });
             }
         }

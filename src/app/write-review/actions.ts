@@ -112,18 +112,16 @@ export async function searchInstitutions(query: string): Promise<InstitutionSear
     });
 }
 
-export async function searchMajors(query: string): Promise<MajorSearchResult[]> {
+import { resolveMajorQuery } from '@/lib/major-resolver';
+
+export async function searchMajors(query: string, institutionId?: string): Promise<MajorSearchResult[]> {
     if (!query || query.length < 2) return [];
 
-    return await prisma.major.findMany({
-        where: {
-            OR: [
-                { title: { contains: query, mode: 'insensitive' } },
-                { cip4: { contains: query, mode: 'insensitive' } }
-            ]
-        },
-        select: { cip4: true, title: true, category: true },
-        orderBy: { title: 'asc' },
-        take: 10
-    });
+    const resolution = await resolveMajorQuery(query, institutionId);
+
+    return resolution.matches.map(m => ({
+        cip4: m.cip4,
+        title: m.title,
+        category: m.category ?? null
+    }));
 }

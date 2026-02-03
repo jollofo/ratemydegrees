@@ -91,7 +91,7 @@ export default function WriteReviewForm({ majors: initialMajors, institutions: i
         const timer = setTimeout(async () => {
             setIsSearchingMajor(true);
             try {
-                const results = await searchMajors(majorQuery);
+                const results = await searchMajors(majorQuery, formData.institutionId);
                 setMajorResults(results);
             } finally {
                 setIsSearchingMajor(false);
@@ -99,7 +99,7 @@ export default function WriteReviewForm({ majors: initialMajors, institutions: i
         }, 300);
 
         return () => clearTimeout(timer);
-    }, [majorQuery, initialMajors]);
+    }, [majorQuery, formData.institutionId, initialMajors]);
 
     const nextStep = () => setStep(s => Math.min(s + 1, 3));
     const prevStep = () => setStep(s => Math.max(s - 1, 1));
