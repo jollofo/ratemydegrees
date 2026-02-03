@@ -20,6 +20,7 @@ export default async function InstitutionsPage({
         andConditions.push({
             name: {
                 contains: query,
+                mode: 'insensitive',
             }
         });
     }

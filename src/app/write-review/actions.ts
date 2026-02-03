@@ -102,8 +102,8 @@ export async function searchInstitutions(query: string): Promise<InstitutionSear
         where: {
             active: true,
             OR: [
-                { name: { contains: query } },
-                { unitid: { contains: query } }
+                { name: { contains: query, mode: 'insensitive' } },
+                { unitid: { contains: query, mode: 'insensitive' } }
             ]
         },
         select: { unitid: true, name: true, state: true, city: true },
@@ -118,8 +118,8 @@ export async function searchMajors(query: string): Promise<MajorSearchResult[]> 
     return await prisma.major.findMany({
         where: {
             OR: [
-                { title: { contains: query } },
-                { cip4: { contains: query } }
+                { title: { contains: query, mode: 'insensitive' } },
+                { cip4: { contains: query, mode: 'insensitive' } }
             ]
         },
         select: { cip4: true, title: true, category: true },

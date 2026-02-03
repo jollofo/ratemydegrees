@@ -1,9 +1,13 @@
+import dotenv from 'dotenv';
+dotenv.config({ path: '.env.local' });
 import prisma from '../../src/lib/prisma';
 import fs from 'fs';
 import path from 'path';
 import { parseCsv } from './utils/parseCsv';
 
 async function main() {
+    process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'; // Fix for SSL self-signed issues if any
+
     const filePath = path.join(process.cwd(), 'data', 'IPEDS.csv');
     if (!fs.existsSync(filePath)) {
         console.error(`File not found: ${filePath}`);
