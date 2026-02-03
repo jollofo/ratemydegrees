@@ -19,9 +19,26 @@ export default async function MajorsPage({
 
     if (query) {
         andConditions.push({
-            title: {
-                contains: query,
-            }
+            OR: [
+                {
+                    title: {
+                        contains: query,
+                        mode: 'insensitive',
+                    }
+                },
+                {
+                    institutions: {
+                        some: {
+                            institution: {
+                                name: {
+                                    contains: query,
+                                    mode: 'insensitive'
+                                }
+                            }
+                        }
+                    }
+                }
+            ]
         });
     }
 
