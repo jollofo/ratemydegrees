@@ -38,7 +38,7 @@ export default async function RootLayout({
 
     return (
         <html lang="en" className={`${inter.variable} ${funky.variable} ${mono.variable}`}>
-            <head>
+            <body className="font-sans selection:bg-earth-sage/30">
                 <Script
                     strategy="afterInteractive"
                     src="https://www.googletagmanager.com/gtag/js?id=G-N6LJN2TRCF"
@@ -52,8 +52,6 @@ export default async function RootLayout({
                     gtag('config', 'G-N6LJN2TRCF');
                     `}
                 </Script>
-            </head>
-            <body className="font-sans selection:bg-earth-sage/30">
                 <div className="min-h-screen flex flex-col">
                     <header className="border-b-2 border-earth-sage bg-[#fffefb] sticky top-0 z-50">
                         <div className="container mx-auto px-6 h-20 flex items-center justify-between">
