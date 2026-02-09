@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { submitReview, searchInstitutions, searchMajors } from './actions';
 import { ReviewFormData, InstitutionSearchResult, MajorSearchResult } from './types';
+import MajorResolverModal from '@/components/MajorResolverModal';
 
 export default function WriteReviewForm({ majors: initialMajors, institutions: initialInstitutions }: { majors: MajorSearchResult[], institutions: InstitutionSearchResult[] }) {
     const [step, setStep] = useState(1);
@@ -18,6 +19,7 @@ export default function WriteReviewForm({ majors: initialMajors, institutions: i
     const [majorResults, setMajorResults] = useState<MajorSearchResult[]>(initialMajors);
     const [isSearchingMajor, setIsSearchingMajor] = useState(false);
     const [showMajorResults, setShowMajorResults] = useState(false);
+    const [isResolverOpen, setIsResolverOpen] = useState(false);
 
     const instSearchRef = useRef<HTMLDivElement>(null);
     const majorSearchRef = useRef<HTMLDivElement>(null);
@@ -208,7 +210,8 @@ export default function WriteReviewForm({ majors: initialMajors, institutions: i
                                                         type="button"
                                                         className="w-full text-left px-8 py-6 hover:bg-earth-parchment transition-colors border-b border-foreground/5 last:border-0 group"
                                                         onClick={() => {
-                                                            setFormData({ ...formData, institutionId: inst.unitid });
+                                                            setFormData({ ...formData, institutionId: inst.unitid, majorId: '' }); // Clear major on institution change
+                                                            setMajorQuery(''); // Clear major query visual
                                                             setInstQuery(inst.name);
                                                             setShowInstResults(false);
                                                         }}
@@ -250,11 +253,11 @@ export default function WriteReviewForm({ majors: initialMajors, institutions: i
                                     )}
                                 </label>
 
-                                {showMajorResults && (majorResults.length > 0 || isSearchingMajor) && (
+                                {showMajorResults && (
                                     <div className="absolute z-50 w-full mt-6 bg-[#fffefb] border-2 border-foreground rounded-[2rem] shadow-[12px_12px_0px_rgba(67,52,34,0.1)] overflow-hidden">
                                         {isSearchingMajor ? (
                                             <div className="p-10 text-center text-xs font-bold uppercase tracking-widest text-earth-mustard animate-pulse italic">Searching...</div>
-                                        ) : (
+                                        ) : majorResults.length > 0 ? (
                                             <div className="max-h-80 overflow-y-auto custom-scrollbar">
                                                 {majorResults.map(m => (
                                                     <button
@@ -268,9 +271,32 @@ export default function WriteReviewForm({ majors: initialMajors, institutions: i
                                                         }}
                                                     >
                                                         <div className="font-funky text-2xl text-foreground group-hover:text-earth-terracotta transition-colors italic leading-none">{m.title}</div>
-                                                        <div className="text-[10px] text-earth-sage font-bold uppercase tracking-widest mt-3 opacity-60">{m.category}</div>
+                                                        <div className="flex items-center gap-2 mt-3">
+                                                            {m.matchType && m.matchType !== 'DIRECT' && (
+                                                                <span className={`text-[9px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded ${m.matchType === 'ALIAS' ? 'bg-blue-100 text-blue-700' : 'bg-amber-100 text-amber-700'
+                                                                    }`}>
+                                                                    {m.matchType === 'ALIAS' ? 'Alias' : 'Related'}
+                                                                </span>
+                                                            )}
+                                                            <div className="text-[10px] text-earth-sage font-bold uppercase tracking-widest opacity-60">{m.category}</div>
+                                                        </div>
                                                     </button>
                                                 ))}
+                                            </div>
+                                        ) : (
+                                            <div className="p-8 text-center bg-earth-parchment/10">
+                                                <p className="text-sm text-foreground/60 mb-4 italic">No majors found matching that name.</p>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        setShowMajorResults(false);
+                                                        setIsResolverOpen(true);
+                                                    }}
+                                                    className="inline-flex items-center gap-2 px-5 py-2.5 bg-earth-terracotta text-white rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-earth-terracotta/90 transition-all shadow-sm hover:translate-y-[-1px]"
+                                                >
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /><path d="M11 8v6" /><path d="M8 11h6" /></svg>
+                                                    Try Advanced Resolver
+                                                </button>
                                             </div>
                                         )}
                                     </div>
@@ -512,6 +538,15 @@ export default function WriteReviewForm({ majors: initialMajors, institutions: i
                     </div>
                 </div>
             </div>
+
+            <MajorResolverModal
+                isOpen={isResolverOpen}
+                onClose={() => setIsResolverOpen(false)}
+                onSelectMajor={(cip4, title) => {
+                    setFormData({ ...formData, majorId: cip4 });
+                    setMajorQuery(title);
+                }}
+            />
         </div>
     );
 }

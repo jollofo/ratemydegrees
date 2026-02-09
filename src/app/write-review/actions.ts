@@ -122,6 +122,8 @@ export async function searchMajors(query: string, institutionId?: string): Promi
     return resolution.matches.map(m => ({
         cip4: m.cip4,
         title: m.title,
-        category: m.category ?? null
+        category: m.category ?? null,
+        matchType: m.matchType,
+        confidence: m.confidence
     }));
 }

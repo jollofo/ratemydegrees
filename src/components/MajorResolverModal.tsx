@@ -14,9 +14,10 @@ interface Result {
 interface MajorResolverModalProps {
     isOpen: boolean;
     onClose: () => void;
+    onSelectMajor?: (cip4: string, title: string) => void;
 }
 
-export default function MajorResolverModal({ isOpen, onClose }: MajorResolverModalProps) {
+export default function MajorResolverModal({ isOpen, onClose, onSelectMajor }: MajorResolverModalProps) {
     const [query, setQuery] = useState('');
     const [results, setResults] = useState<Result[]>([]);
     const [loading, setLoading] = useState(false);
@@ -137,14 +138,26 @@ export default function MajorResolverModal({ isOpen, onClose }: MajorResolverMod
                             )}
 
                             <div className="flex items-center gap-3 pt-3 border-t border-foreground/5">
-                                <a href={`/majors/${result.cip4}`} className="flex-1 bg-foreground text-white text-center py-2.5 rounded-lg text-sm font-bold uppercase tracking-wide hover:bg-foreground/90 transition-colors flex items-center justify-center gap-2">
-                                    View Major <ArrowRight className="h-4 w-4" />
-                                </a>
-                                {institution ? (
+                                {onSelectMajor ? (
+                                    <button
+                                        onClick={() => {
+                                            onSelectMajor(result.cip4, result.title);
+                                            onClose();
+                                        }}
+                                        className="flex-1 bg-foreground text-white text-center py-2.5 rounded-lg text-sm font-bold uppercase tracking-wide hover:bg-foreground/90 transition-colors flex items-center justify-center gap-2"
+                                    >
+                                        Select Major <ArrowRight className="h-4 w-4" />
+                                    </button>
+                                ) : (
+                                    <a href={`/majors/${result.cip4}`} className="flex-1 bg-foreground text-white text-center py-2.5 rounded-lg text-sm font-bold uppercase tracking-wide hover:bg-foreground/90 transition-colors flex items-center justify-center gap-2">
+                                        View Major <ArrowRight className="h-4 w-4" />
+                                    </a>
+                                )}
+                                {!onSelectMajor && institution ? (
                                     <a href={`/majors/${result.cip4}/${institution.id}`} className="flex-1 bg-white border-2 border-foreground/10 text-foreground text-center py-2.5 rounded-lg text-sm font-bold uppercase tracking-wide hover:bg-earth-parchment transition-colors flex items-center justify-center gap-2 group/inst">
                                         View at {institution.name} <ArrowRight className="h-4 w-4 group-hover/inst:translate-x-1 transition-transform" />
                                     </a>
-                                ) : institutionHint ? (
+                                ) : !onSelectMajor && institutionHint ? (
                                     <a href="#" onClick={(e) => { e.preventDefault(); alert("Institution not found in database."); }} className="flex-1 bg-foreground/5 text-foreground/40 text-center py-2.5 rounded-lg text-sm font-bold uppercase tracking-wide cursor-not-allowed flex items-center justify-center gap-2">
                                         View at {institutionHint} <span className="text-[10px]">(Unknown)</span>
                                     </a>

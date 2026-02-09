@@ -5,6 +5,7 @@ import { getDbUser } from "@/lib/user";
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 import Image from "next/image";
+import Script from "next/script";
 
 const inter = Inter({ subsets: ["latin"], variable: '--font-inter' });
 const funky = Bricolage_Grotesque({ subsets: ["latin"], variable: '--font-funky' });
@@ -37,6 +38,21 @@ export default async function RootLayout({
 
     return (
         <html lang="en" className={`${inter.variable} ${funky.variable} ${mono.variable}`}>
+            <head>
+                <Script
+                    strategy="afterInteractive"
+                    src="https://www.googletagmanager.com/gtag/js?id=G-N6LJN2TRCF"
+                />
+                <Script id="google-analytics" strategy="afterInteractive">
+                    {`
+                    window.dataLayer = window.dataLayer || [];
+                    function gtag(){dataLayer.push(arguments);}
+                    gtag('js', new Date());
+
+                    gtag('config', 'G-N6LJN2TRCF');
+                    `}
+                </Script>
+            </head>
             <body className="font-sans selection:bg-earth-sage/30">
                 <div className="min-h-screen flex flex-col">
                     <header className="border-b-2 border-earth-sage bg-[#fffefb] sticky top-0 z-50">

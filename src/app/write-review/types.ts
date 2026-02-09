@@ -36,4 +36,6 @@ export interface MajorSearchResult {
     cip4: string;
     title: string;
     category: string | null;
+    matchType?: 'DIRECT' | 'ALIAS' | 'PATHWAY' | 'RELATED';
+    confidence?: 'HIGH' | 'MEDIUM' | 'LOW';
 }
