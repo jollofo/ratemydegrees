@@ -37,11 +37,18 @@ export default async function RootLayout({
                 <div className="min-h-screen flex flex-col">
                     <header className="border-b-2 border-earth-sage bg-[#fffefb] sticky top-0 z-50">
                         <div className="container mx-auto px-6 h-20 flex items-center justify-between">
-                            <a href="/" className="text-3xl font-funky text-foreground tracking-tight hover:text-earth-terracotta transition-colors flex items-center gap-2">
-                                <div className="w-10 h-10 bg-earth-terracotta wavy-border flex items-center justify-center text-white scale-90">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-6 h-6"><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" /><circle cx="12" cy="12" r="4" /></svg>
+                            <a href="/" className="flex items-center gap-3 group">
+                                <div className="w-12 h-12 relative transition-transform group-hover:scale-105">
+                                    <Image
+                                        src="/logo.svg"
+                                        alt="RateMyDegrees Logo"
+                                        fill
+                                        className="object-contain"
+                                    />
                                 </div>
-                                RMD
+                                <span className="text-2xl font-sans tracking-tight text-foreground group-hover:text-earth-terracotta transition-colors">
+                                    <span className="font-bold">Rate</span>mydegrees<span className="text-[#ff4f4f]">.</span>
+                                </span>
                             </a>
                             <nav className="hidden md:flex items-center space-x-10">
                                 <a href="/majors" className="text-sm font-bold hover:text-earth-terracotta transition-colors">Programs</a>

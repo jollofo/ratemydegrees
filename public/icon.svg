@@ -1,0 +1,34 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Stars Group -->
+  <g stroke="black" stroke-width="12" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Center Star (Largest) -->
+    <path d="M256 40 L269 80 H311 L277 105 L290 145 L256 120 L222 145 L235 105 L201 80 H243 Z" />
+    
+    <!-- Left Star -->
+    <path d="M160 80 L168 105 H194 L173 120 L181 145 L160 130 L139 145 L147 120 L126 105 H152 Z" transform="rotate(-15 160 115)"/>
+    
+    <!-- Right Star -->
+    <path d="M352 80 L360 105 H386 L365 120 L373 145 L352 130 L331 145 L339 120 L318 105 H344 Z" transform="rotate(15 352 115)"/>
+  </g>
+
+  <!-- Cap Structure -->
+  <g stroke="black" stroke-width="12" stroke-linejoin="round" fill="white">
+     <!-- Top Board (Rhombus) -->
+     <path d="M256 180 L440 260 L256 340 L72 260 Z" />
+     
+     <!-- Cap Body (Underneath) -->
+     <path d="M130 290 V340 C130 390 256 420 256 420 S382 390 382 340 V290" fill="black" stroke="none"/>
+     <!-- Outline for Cap Body -->
+     <path d="M130 286 V340 C130 390 256 420 256 420 S382 390 382 340 V286" fill="none" />
+     
+     <!-- Small details on top board (center button/mark) -->
+     <path d="M236 260 Q256 250 276 260" fill="none" stroke-width="8" stroke-linecap="round"/>
+  </g>
+
+  <!-- Tassel -->
+  <g stroke="black" stroke-width="10" fill="black">
+    <line x1="440" y1="260" x2="440" y2="360" />
+    <!-- Tassel End -->
+    <path d="M440 360 L425 420 H455 L440 360 Z" />
+  </g>
+</svg>
