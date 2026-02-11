@@ -139,10 +139,6 @@ export default function WriteReviewForm({ majors: initialMajors, institutions: i
                 <div className="w-12 h-12 bg-white wavy-border flex items-center justify-center text-earth-sage shrink-0">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /><path d="m9 12 2 2 4-4" /></svg>
                 </div>
-                <div>
-                    <p className="text-lg font-funky text-foreground italic mb-0.5">Verified Anonymity</p>
-                    <p className="text-xs font-medium text-foreground opacity-60 leading-relaxed italic">Your identity is protected. We only use your account to verify review integrity.</p>
-                </div>
             </div>
 
             {/* Progress Bar */}
@@ -461,6 +457,28 @@ export default function WriteReviewForm({ majors: initialMajors, institutions: i
                         <div className="border-b border-foreground/5 pb-6">
                             <h2 className="text-3xl font-funky text-foreground tracking-tight italic mb-2">3. Detailed Feedback</h2>
                             <p className="text-earth-sage text-[10px] font-bold uppercase tracking-[0.2em] italic">Help other students by providing more context.</p>
+                        </div>
+
+                        {/* Review Template & Sample Sidecar */}
+                        <div className="bg-earth-parchment/40 rounded-3xl p-6 border border-earth-sage/20 mb-8">
+                            <h3 className="text-lg font-funky text-foreground italic mb-4">Pro Tips for a Great Review</h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <div className="space-y-3">
+                                    <p className="text-xs font-bold text-earth-sage uppercase tracking-widest italic">What to include:</p>
+                                    <ul className="text-sm text-foreground/70 space-y-2 italic list-disc pl-4">
+                                        <li><span className="font-bold text-earth-terracotta">Workload:</span> How many hours/week?</li>
+                                        <li><span className="font-bold text-earth-terracotta">Cost:</span> Was it worth the tuition?</li>
+                                        <li><span className="font-bold text-earth-terracotta">Career:</span> Real-world impact & prep?</li>
+                                        <li><span className="font-bold text-earth-terracotta">Tips:</span> What should new students know?</li>
+                                    </ul>
+                                </div>
+                                <div className="space-y-3">
+                                    <p className="text-xs font-bold text-earth-sage uppercase tracking-widest italic">Sample Review:</p>
+                                    <div className="bg-white/60 p-4 rounded-xl text-xs text-foreground/60 italic leading-relaxed border border-earth-sage/10">
+                                        "The CS program was rigorous but rewarding. Workload was high (20+ hrs/week), but faculty were accessible. Career prep was excellent; I had a full-time offer before graduating. Tip: Start projects early!"
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         <div className="space-y-10">

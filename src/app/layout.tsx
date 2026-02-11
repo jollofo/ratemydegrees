@@ -13,8 +13,8 @@ const funky = Bricolage_Grotesque({ subsets: ["latin"], variable: '--font-funky'
 const mono = Courier_Prime({ weight: "400", subsets: ["latin"], variable: '--font-mono' });
 
 export const metadata: Metadata = {
-    title: "RateMyDegree | Student-Powered Degree Insights",
-    description: "Honest college major reviews from students and alumni. Real experiences, real insights.",
+    title: "RateMyDegree | College Major Reviews & Student Insights",
+    description: "Honest college major reviews from students and alumni. Real experiences, career outcomes, and college major reviews to help you choose the right path.",
 };
 
 export default async function RootLayout({
