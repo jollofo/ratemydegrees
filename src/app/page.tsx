@@ -19,7 +19,7 @@ export default async function Home() {
                         College Major Reviews: <span className="text-earth-terracotta italic">Find Your Best</span> Academic Path
                     </h1>
                     <p className="mt-8 text-xl leading-relaxed text-foreground/80 font-medium max-w-3xl mx-auto italic">
-                        Honest, verified reviews from students and alumni. Real college major reviews to help you choose the right program and career path across 1,714 US institutions.
+                        Honest, verified reviews from students and alumni. Real college major reviews to help you choose the right program and career path across {institutionCount} US institutions.
                     </p>
                     <div className="mt-16">
                         <HomeSearch />
@@ -138,7 +138,7 @@ export default async function Home() {
                                 </div>
                             ))}
                         </div>
-                        <p className="text-[10px] font-bold uppercase tracking-widest">+84 reviews written today</p>
+                        <p className="text-[10px] font-bold uppercase tracking-widest">+8 reviews written today</p>
                     </div>
 
                     <h3 className="text-5xl font-funky tracking-tight italic mb-8 max-w-2xl mx-auto leading-tight">Share Your College Major Experience</h3>
