@@ -93,9 +93,9 @@ export default async function InstitutionPage({
 
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                     <div className="border-r border-earth-sage/20 pr-6">
-                        <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-earth-sage block mb-1 opacity-60">Wisdom Shared</span>
+                        <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-earth-sage block mb-1 opacity-60">Insights Shared</span>
                         <div className="text-2xl font-funky text-foreground italic flex items-baseline gap-2">
-                            {institution._count.reviews} <span className="text-[10px] font-bold uppercase tracking-widest opacity-40 italic">Voices</span>
+                            {institution._count.reviews} <span className="text-[10px] font-bold uppercase tracking-widest opacity-40 italic">Reviews</span>
                         </div>
                     </div>
                     <div className="border-r border-earth-sage/20 pr-6">
@@ -110,17 +110,6 @@ export default async function InstitutionPage({
                         <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-earth-sage block mb-1 opacity-60">UNITID</span>
                         <div className="text-2xl font-funky text-foreground italic">{institution.unitid}</div>
                     </div>
-                </div>
-            </div>
-
-            <div className="mb-12">
-                <div className="bg-earth-burgundy/5 border border-earth-burgundy/10 rounded-2xl p-4 flex items-center gap-4">
-                    <div className="w-8 h-8 bg-earth-burgundy text-white rounded-lg flex items-center justify-center shrink-0">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="w-4 h-4"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10" /></svg>
-                    </div>
-                    <p className="text-[10px] font-bold text-earth-burgundy uppercase tracking-widest italic">
-                        Verified Data: Metrics for &quot;{institution.name}&quot; are synchronized with official outcomes and academic taxonomy.
-                    </p>
                 </div>
             </div>
 
