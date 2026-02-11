@@ -10,56 +10,53 @@ async function main() {
 
     console.log(`Processing ${records.length} institutions...`);
 
-    let count = 0;
+    const institutions = [];
     for (const record of records) {
-        try {
-            const unitid = record['UNITID'];
-            const name = (record['INSTNM'] || '').trim();
-            const city = record['CITY'];
-            const state = record['STABBR'];
-            const website = record['GWEBSURL'];
+        const unitid = record['UNITID'];
+        const name = (record['INSTNM'] || '').trim();
+        const city = record['CITY'];
+        const state = record['STABBR'];
+        const website = record['GWEBSURL'];
 
-            // CONTROL: 1=Public, 2=Private non-profit, 3=Private for-profit
-            const controlRaw = record['CONTROL'];
-            const control = controlRaw === '1' ? 'PUBLIC' : (controlRaw === '2' || controlRaw === '3' ? 'PRIVATE' : 'OTHER');
+        // CONTROL: 1=Public, 2=Private non-profit, 3=Private for-profit
+        const controlRaw = record['CONTROL'];
+        const control = controlRaw === '1' ? 'PUBLIC' : (controlRaw === '2' || controlRaw === '3' ? 'PRIVATE' : 'OTHER');
 
-            const sector = record['SECTOR'];
+        const sector = record['SECTOR'];
 
-            // CYACTIVE: 1=Yes, 2=No
-            const active = record['CYACTIVE'] === '1';
+        // CYACTIVE: 1=Yes, 2=No
+        const active = record['CYACTIVE'] === '1';
 
-            if (!name || !state || !unitid) continue;
+        if (!name || !state || !unitid) continue;
 
-            await prisma.institution.upsert({
-                where: { unitid: String(unitid) },
-                update: {
-                    name,
-                    city,
-                    state,
-                    control,
-                    website,
-                    sector: String(sector),
-                    active
-                },
-                create: {
-                    unitid: String(unitid),
-                    name,
-                    city,
-                    state,
-                    control,
-                    website,
-                    sector: String(sector),
-                    active
-                }
-            });
-            count++;
-            if (count % 500 === 0) console.log(`Loaded ${count} institutions...`);
-        } catch (e) {
-            console.error(`Failed to upsert institution: ${record['INSTNM']}`, e);
-        }
+        institutions.push({
+            unitid: String(unitid),
+            name,
+            city,
+            state,
+            control,
+            website,
+            sector: String(sector),
+            active,
+            updatedAt: new Date(),
+        });
     }
 
-    console.log(`Finished loading ${count} institutions.`);
+    console.log(`Prepared ${institutions.length} institutions for loading.`);
+
+    const CHUNK_SIZE = 500;
+    let count = 0;
+    for (let i = 0; i < institutions.length; i += CHUNK_SIZE) {
+        const chunk = institutions.slice(i, i + CHUNK_SIZE);
+        await prisma.institution.createMany({
+            data: chunk,
+            skipDuplicates: true,
+        });
+        count += chunk.length;
+        if (count % 1000 === 0) console.log(`Processed ${count} institutions...`);
+    }
+
+    console.log(`Finished loading ${institutions.length} institutions.`);
 }
 
 main()

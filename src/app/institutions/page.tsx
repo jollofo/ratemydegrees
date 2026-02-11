@@ -70,7 +70,7 @@ export default async function InstitutionsPage({
             <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 mb-12">
                 <div className="max-w-2xl">
                     <h1 className="text-6xl font-funky text-foreground tracking-tight leading-[0.9] mb-6">
-                        {query ? `Seeking: ${query}` : 'Academic Institutions'}
+                        {query ? `Finding: ${query}` : 'Academic Institutions'}
                     </h1>
                     <p className="text-xl text-foreground font-medium leading-relaxed italic opacity-80">
                         Explore degree rankings and program quality across national centers of learning.
@@ -99,7 +99,7 @@ export default async function InstitutionsPage({
 
             {institutions.length === 0 ? (
                 <div className="py-40 text-center coffee-card border-dashed bg-earth-parchment/30">
-                    <h2 className="text-3xl font-funky text-foreground opacity-40 italic">No institutions have gathered here yet.</h2>
+                    <h2 className="text-3xl font-funky text-foreground opacity-40 italic">No institutions have been found.</h2>
                 </div>
             ) : (
                 <>
