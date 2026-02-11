@@ -51,7 +51,7 @@ export default function HomeSearch() {
                             <div className="shrink-0 w-10 h-10 bg-earth-parchment rounded-xl flex items-center justify-center text-lg">💡</div>
                             <div>
                                 <p className="text-sm font-medium italic text-foreground/80 leading-relaxed mb-3">
-                                    "Students searching for <span className="text-earth-terracotta font-bold">"{query}"</span> often prioritize career readiness over theory. Average ROI for this path is 4.2/5 stars."
+                                    &quot;Students searching for <span className="text-earth-terracotta font-bold">&quot;{query}&quot;</span> often prioritize career readiness over theory. Average ROI for this path is 4.2/5 stars.&quot;
                                 </p>
                                 <a href={`/majors?q=${query}`} className="text-[10px] font-bold text-earth-sage uppercase tracking-widest hover:text-earth-terracotta transition-colors underline decoration-dotted underline-offset-4">
                                     View 100+ Detailed Reviews &rarr;
@@ -118,9 +118,9 @@ export default function HomeSearch() {
             <div className="flex flex-wrap items-center justify-center gap-6 mt-8">
                 <p className="text-[10px] font-bold text-earth-sage uppercase tracking-widest italic opacity-60">Popular Collections:</p>
                 <div className="flex gap-4">
-                    <a href="/majors?q=Computer Science" className="text-xs font-bold text-earth-terracotta hover:underline italic">"Computer Science"</a>
-                    <a href="/majors?q=Nursing" className="text-xs font-bold text-earth-terracotta hover:underline italic">"Nursing"</a>
-                    <a href="/majors?q=Psychology" className="text-xs font-bold text-earth-terracotta hover:underline italic">"Psychology"</a>
+                    <a href="/majors?q=Computer Science" className="text-xs font-bold text-earth-terracotta hover:underline italic">&quot;Computer Science&quot;</a>
+                    <a href="/majors?q=Nursing" className="text-xs font-bold text-earth-terracotta hover:underline italic">&quot;Nursing&quot;</a>
+                    <a href="/majors?q=Psychology" className="text-xs font-bold text-earth-terracotta hover:underline italic">&quot;Psychology&quot;</a>
                 </div>
             </div>
         </div>

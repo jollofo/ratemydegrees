@@ -98,7 +98,7 @@ export default async function Home() {
                                 <div className="w-10 h-10 bg-earth-sage/10 rounded-xl flex items-center justify-center">
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-6 h-6"><path d="M22 12h-4l-3 9L9 3l-3 9H2" /></svg>
                                 </div>
-                                <h3 className="text-xl font-funky italic tracking-tight">What you'll learn</h3>
+                                <h3 className="text-xl font-funky italic tracking-tight">What you&apos;ll learn</h3>
                             </div>
                             <p className="text-sm text-foreground/60 leading-relaxed italic">
                                 Go beyond the brochure. Discover actual workload hours, program cost-to-value ratios, career impacts, and faculty accessibility.
@@ -118,7 +118,7 @@ export default async function Home() {
                             </div>
                             <div className="bg-earth-parchment/30 p-4 rounded-2xl border border-dashed border-earth-sage/20">
                                 <p className="text-[11px] font-medium text-foreground/70 italic leading-relaxed">
-                                    "The <span className="font-bold text-earth-terracotta">Nursing</span> program has a higher than average faculty accessibility rating (4.8/5) across 12 institutions."
+                                    &quot;The <span className="font-bold text-earth-terracotta"></span> program has a higher than average faculty accessibility rating (4.8/5) across 12 institutions.&quot;
                                 </p>
                             </div>
                         </div>

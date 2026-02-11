@@ -475,7 +475,7 @@ export default function WriteReviewForm({ majors: initialMajors, institutions: i
                                 <div className="space-y-3">
                                     <p className="text-xs font-bold text-earth-sage uppercase tracking-widest italic">Sample Review:</p>
                                     <div className="bg-white/60 p-4 rounded-xl text-xs text-foreground/60 italic leading-relaxed border border-earth-sage/10">
-                                        "The CS program was rigorous but rewarding. Workload was high (20+ hrs/week), but faculty were accessible. Career prep was excellent; I had a full-time offer before graduating. Tip: Start projects early!"
+                                        &quot;The CS program was rigorous but rewarding. Workload was high (20+ hrs/week), but faculty were accessible. Career prep was excellent; I had a full-time offer before graduating. Tip: Start projects early!&quot;
                                     </div>
                                 </div>
                             </div>
