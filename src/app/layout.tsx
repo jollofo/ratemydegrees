@@ -52,7 +52,7 @@ export default async function RootLayout({
                             </a>
                             <nav className="hidden md:flex items-center space-x-10">
                                 <a href="/majors" className="text-sm font-bold hover:text-earth-terracotta transition-colors">Programs</a>
-                                <a href="/institutions" className="text-sm font-bold hover:text-earth-terracotta transition-colors">Universities</a>
+                                <a href="/institutions" className="text-sm font-bold hover:text-earth-terracotta transition-colors">Institutions</a>
                                 <a href="/write-review" className="text-sm font-bold hover:text-earth-terracotta transition-colors">Share Experience</a>
 
                                 {dbUser && (dbUser.role === 'ADMIN' || dbUser.role === 'MODERATOR') && (

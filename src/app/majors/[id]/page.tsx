@@ -145,7 +145,7 @@ export default async function MajorDetailPage({
                         {hideStats ? (
                             <div className="text-center py-10 bg-white/50 border-2 border-dashed border-earth-sage/30 rounded-3xl">
                                 <p className="text-[10px] font-bold uppercase tracking-widest text-earth-sage/60 mb-6 italic">
-                                    Gathering 5+ Reviews for Wisdom
+                                    Gathering 5+ Reviews for Insights
                                 </p>
                                 <div className="h-4 w-full bg-white border border-foreground/10 rounded-full overflow-hidden mx-auto max-w-[240px]">
                                     <div className="h-full bg-earth-terracotta" style={{ width: `${(reviewCount / 5) * 100}%` }}></div>
@@ -187,7 +187,7 @@ export default async function MajorDetailPage({
 
                     {/* Contextual Outcomes */}
                     <div className="coffee-card bg-earth-burgundy text-earth-parchment shadow-[6px_6px_0px_#433422]">
-                        <h3 className="text-2xl font-funky mb-10 italic border-b border-white/5 pb-6">Life After the Path</h3>
+                        <h3 className="text-2xl font-funky mb-10 italic border-b border-white/5 pb-6">Life After this course</h3>
                         {outcomes ? (
                             <div className="space-y-10">
                                 <div>
@@ -212,8 +212,8 @@ export default async function MajorDetailPage({
                 <div className="lg:col-span-7">
                     <div className="mb-12 flex flex-col sm:flex-row sm:items-end justify-between gap-8">
                         <div>
-                            <h3 className="text-4xl font-funky text-foreground mb-3 tracking-tight italic">Gathering Grounds</h3>
-                            <p className="text-sm font-bold text-earth-sage uppercase tracking-widest italic">Found {totalInstitutions} places of study.</p>
+                            <h3 className="text-4xl font-funky text-foreground mb-3 tracking-tight italic">Institutions</h3>
+                            <p className="text-sm font-bold text-earth-sage uppercase tracking-widest italic">Found {totalInstitutions} institutions.</p>
                         </div>
 
                         <form action="" className="relative w-full max-w-xs">
@@ -314,10 +314,10 @@ export default async function MajorDetailPage({
                         <div className="w-20 h-20 bg-earth-mustard wavy-border mb-10 flex items-center justify-center text-white">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-10 h-10"><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" /><circle cx="12" cy="12" r="4" /></svg>
                         </div>
-                        <h4 className="text-4xl font-funky text-foreground mb-6 italic">Enlighten Others</h4>
-                        <p className="text-xl text-foreground font-medium max-w-2xl mb-12 leading-relaxed opacity-70 italic">Verified student reviews are the heart of this gathering. If you walked the path of {major.title}, your story could be the light for others.</p>
+                        <h4 className="text-4xl font-funky text-foreground mb-6 italic">Share Your Insights</h4>
+                        <p className="text-xl text-foreground font-medium max-w-2xl mb-12 leading-relaxed opacity-70 italic">Verified student reviews are the heart of this platform. If you have taken {major.title}, your story could be the light for others.</p>
                         <a href="/write-review" className="coffee-btn bg-white text-foreground hover:bg-earth-parchment px-12 py-5 text-xl shadow-[6px_6px_0px_#433422]">
-                            Share Your Light
+                            Share Your Insights
                         </a>
                     </div>
                 </div>

@@ -189,7 +189,7 @@ export default async function MajorsPage({
 
                                 {major.outcomes && (
                                     <div className="mt-auto pt-8 border-t border-foreground/5">
-                                        <span className="text-[10px] font-bold text-earth-sage uppercase tracking-widest block mb-4 italic">Common Paths</span>
+                                        <span className="text-[10px] font-bold text-earth-sage uppercase tracking-widest block mb-4 italic">Common Outcomes</span>
                                         <div className="flex flex-wrap gap-2 mb-10">
                                             {major.outcomes.commonJobs.slice(0, 2).map((job: string) => (
                                                 <span key={job} className="text-[10px] font-bold text-foreground bg-earth-parchment border border-foreground/10 px-3 py-1.5 rounded-lg">{job}</span>
@@ -200,8 +200,8 @@ export default async function MajorsPage({
                                         </div>
                                         <div className="flex items-center justify-between">
                                             <div>
-                                                <span className="text-[10px] font-bold text-earth-sage uppercase tracking-widest block mb-1">Wisdom</span>
-                                                <span className="text-sm font-bold text-foreground">{major.reviewCount} Voices</span>
+                                                <span className="text-[10px] font-bold text-earth-sage uppercase tracking-widest block mb-1">Insights</span>
+                                                <span className="text-sm font-bold text-foreground">{major.reviewCount} Reviews</span>
                                             </div>
                                             <div className="text-right">
                                                 <span className="text-[10px] font-bold text-earth-sage uppercase tracking-widest block mb-1">Est. Income</span>
