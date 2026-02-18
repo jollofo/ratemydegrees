@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "prisma generate && next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "typesense:index": "tsx scripts/typesense-index.ts"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^5.21.0",
@@ -23,7 +24,8 @@
     "prisma": "5.21.0",
     "react": "^18",
     "react-dom": "^18",
-    "tailwind-merge": "^2.5.2"
+    "tailwind-merge": "^2.5.2",
+    "typesense": "^3.0.1"
   },
   "devDependencies": {
     "@types/node": "^20",

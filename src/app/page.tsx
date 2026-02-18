@@ -16,10 +16,10 @@ export default async function Home() {
 
                 <div className="relative z-10 mx-auto max-w-4xl text-center">
                     <h1 className="text-6xl font-funky tracking-tight text-foreground sm:text-8xl text-balance leading-[0.85] mb-12">
-                        College Major Reviews: <span className="text-earth-terracotta italic">Find Your Best</span> Academic Path
+                        College Major Reviews: <span className="text-earth-terracotta italic">Find Your Best</span> Academic Program
                     </h1>
                     <p className="mt-8 text-xl leading-relaxed text-foreground/80 font-medium max-w-3xl mx-auto italic">
-                        Honest, verified reviews from students and alumni. Real college major reviews to help you choose the right program and career path across {institutionCount} US institutions.
+                        Honest, verified reviews from students and alumni. Real college major reviews to help you choose the right program and career across {institutionCount} US institutions.
                     </p>
                     <div className="mt-16">
                         <HomeSearch />
@@ -118,7 +118,7 @@ export default async function Home() {
                             </div>
                             <div className="bg-earth-parchment/30 p-4 rounded-2xl border border-dashed border-earth-sage/20">
                                 <p className="text-[11px] font-medium text-foreground/70 italic leading-relaxed">
-                                    &quot;The <span className="font-bold text-earth-terracotta"></span> program has a higher than average faculty accessibility rating (4.8/5) across 12 institutions.&quot;
+                                    &quot;Programs with high faculty accessibility ratings average 4.8/5 across 12 institutions.&quot;
                                 </p>
                             </div>
                         </div>
@@ -141,8 +141,8 @@ export default async function Home() {
                         <p className="text-[10px] font-bold uppercase tracking-widest">+8 reviews written today</p>
                     </div>
 
-                    <h3 className="text-5xl font-funky tracking-tight italic mb-8 max-w-2xl mx-auto leading-tight">Share Your College Major Experience</h3>
-                    <p className="text-xl mb-12 opacity-90 max-w-lg mx-auto font-medium italic">Help future students make informed decisions by sharing your program journey.</p>
+                    <h3 className="text-5xl font-funky tracking-tight italic mb-8 max-w-2xl mx-auto leading-tight">Write a Review. Help the Next Student.</h3>
+                    <p className="text-xl mb-12 opacity-90 max-w-lg mx-auto font-medium italic">Help future students make informed decisions by sharing your experience.</p>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto mb-16">
                         <div className="bg-white/5 p-6 rounded-2xl border border-white/10 backdrop-blur-sm">

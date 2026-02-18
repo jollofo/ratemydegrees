@@ -14,7 +14,7 @@ const mono = Courier_Prime({ weight: "400", subsets: ["latin"], variable: '--fon
 
 export const metadata: Metadata = {
     title: "RateMyDegree | College Major Reviews & Student Insights",
-    description: "Honest college major reviews from students and alumni. Real experiences, career outcomes, and college major reviews to help you choose the right path.",
+    description: "Honest college major reviews from students and alumni. Real experiences, career outcomes, and college major reviews to help you choose the right program.",
 };
 
 export default async function RootLayout({
@@ -53,7 +53,7 @@ export default async function RootLayout({
                             <nav className="hidden md:flex items-center space-x-10">
                                 <a href="/majors" className="text-sm font-bold hover:text-earth-terracotta transition-colors">Programs</a>
                                 <a href="/institutions" className="text-sm font-bold hover:text-earth-terracotta transition-colors">Institutions</a>
-                                <a href="/write-review" className="text-sm font-bold hover:text-earth-terracotta transition-colors">Share Experience</a>
+                                <a href="/write-review" className="text-sm font-bold hover:text-earth-terracotta transition-colors">Write a Review</a>
 
                                 {dbUser && (dbUser.role === 'ADMIN' || dbUser.role === 'MODERATOR') && (
                                     <a href="/admin/moderation" className="px-4 py-1.5 bg-earth-mustard/10 border border-earth-mustard text-[10px] font-bold rounded-full text-earth-mustard">DASHBOARD</a>

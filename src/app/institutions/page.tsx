@@ -1,7 +1,8 @@
-import { Prisma } from '@prisma/client';
 import prisma from '@/lib/prisma';
-import { redirect } from 'next/navigation';
+import { searchInstitutions } from '@/app/actions/search';
 import { ArrowLeft, Search } from 'lucide-react';
+import Pagination from '@/components/Pagination';
+import BackLink from '@/components/BackLink';
 
 const PAGE_SIZE = 12;
 
@@ -14,66 +15,107 @@ export default async function InstitutionsPage({
     const state = searchParams.state || '';
     const page = parseInt(searchParams.page || '1');
 
-    const andConditions: Prisma.InstitutionWhereInput[] = [];
+    let institutions: any[] = [];
+    let totalPages = 1;
+    let totalHits = 0;
 
-    if (query) {
-        andConditions.push({
-            name: {
-                contains: query,
-                mode: 'insensitive',
-            }
+    if (query || state) {
+        const facetFilters = state ? [`state:${state}`] : undefined;
+        const result = await searchInstitutions(query, {
+            page, // Typesense is 1-indexed
+            hitsPerPage: PAGE_SIZE,
+            ...(state ? { filterBy: `state:=${state}` } : {}),
         });
-    }
 
-    if (state) {
-        andConditions.push({ state: state });
-    }
-
-    const whereClause: Prisma.InstitutionWhereInput = {
-        active: true,
-        AND: andConditions.length > 0 ? andConditions : undefined,
-    };
-
-    const [institutions, totalCount] = await Promise.all([
-        prisma.institution.findMany({
-            where: whereClause,
-            include: {
-                _count: {
-                    select: { reviews: { where: { status: 'APPROVED' } } },
+        if (result.totalHits > 0) {
+            institutions = result.hits.map((hit) => ({
+                unitid: hit.unitid,
+                name: hit.name,
+                city: hit.city,
+                state: hit.state,
+                control: hit.control,
+                reviewCount: hit.reviewCount,
+                _highlight: Object.fromEntries((hit.highlights ?? []).map((h: any) => [h.field, { value: h.snippet ?? h.value ?? '' }])),
+            }));
+            totalPages = result.totalPages;
+            totalHits = result.totalHits;
+        } else {
+            // Typesense index not yet populated — fall back to Prisma text search
+            const whereClause: any = {
+                active: true,
+                ...(query ? { name: { contains: query, mode: 'insensitive' } } : {}),
+                ...(state ? { state: { equals: state, mode: 'insensitive' } } : {}),
+            };
+            const [dbInstitutions, count] = await Promise.all([
+                prisma.institution.findMany({
+                    where: whereClause,
+                    include: { _count: { select: { reviews: { where: { status: 'APPROVED' } } } } },
+                    orderBy: { name: 'asc' },
+                    skip: (page - 1) * PAGE_SIZE,
+                    take: PAGE_SIZE,
+                }),
+                prisma.institution.count({ where: whereClause }),
+            ]);
+            totalPages = Math.ceil(count / PAGE_SIZE);
+            totalHits = count;
+            institutions = dbInstitutions.map((i: any) => ({
+                unitid: i.unitid,
+                name: i.name,
+                city: i.city,
+                state: i.state,
+                control: i.control,
+                reviewCount: i._count.reviews,
+            }));
+        }
+    } else {
+        // Browse mode — use Prisma
+        const [dbInstitutions, count] = await Promise.all([
+            prisma.institution.findMany({
+                where: { active: true },
+                include: {
+                    _count: { select: { reviews: { where: { status: 'APPROVED' } } } },
                 },
-            },
-            orderBy: { name: 'asc' },
-            skip: (page - 1) * PAGE_SIZE,
-            take: PAGE_SIZE
-        }),
-        prisma.institution.count({ where: whereClause })
-    ]);
+                orderBy: { name: 'asc' },
+                skip: (page - 1) * PAGE_SIZE,
+                take: PAGE_SIZE,
+            }),
+            prisma.institution.count({ where: { active: true } }),
+        ]);
 
-    const totalPages = Math.ceil(totalCount / PAGE_SIZE);
+        totalPages = Math.ceil(count / PAGE_SIZE);
+        totalHits = count;
 
-    const handleSearch = async (formData: FormData) => {
-        'use server';
-        const q = formData.get('q') as string;
-        redirect(`/institutions?q=${encodeURIComponent(q)}`);
+        institutions = dbInstitutions.map((i: any) => ({
+            unitid: i.unitid,
+            name: i.name,
+            city: i.city,
+            state: i.state,
+            control: i.control,
+            reviewCount: i._count.reviews,
+        }));
+    }
+
+    const buildHref = (p: number) => {
+        const params = new URLSearchParams();
+        if (query) params.set('q', query);
+        if (state) params.set('state', state);
+        params.set('page', String(p));
+        return `/institutions?${params.toString()}`;
     };
 
     return (
         <div className="container mx-auto px-6 py-10 max-w-7xl">
-            <a
-                href="/"
-                className="inline-flex items-center text-sm font-bold text-earth-terracotta hover:underline mb-12"
-            >
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Home
-            </a>
+            <BackLink href="/" label="Back to Home" />
 
             <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 mb-12">
                 <div className="max-w-2xl">
                     <h1 className="text-6xl font-funky text-foreground tracking-tight leading-[0.9] mb-6">
-                        {query ? `Finding: ${query}` : 'Academic Institutions'}
+                        {query ? `Finding: "${query}"` : 'Academic Institutions'}
                     </h1>
                     <p className="text-xl text-foreground font-medium leading-relaxed italic opacity-80">
-                        Explore degree rankings and program quality across national centers of learning.
+                        {(query || state)
+                            ? `${totalHits} institution${totalHits !== 1 ? 's' : ''} found`
+                            : 'Explore degree rankings and program quality across national centers of learning.'}
                     </p>
                 </div>
                 <div className="flex flex-col items-start lg:items-end gap-8 w-full max-w-md">
@@ -82,7 +124,7 @@ export default async function InstitutionsPage({
                         <button className="px-6 py-2.5 bg-foreground text-white rounded-full text-xs font-bold uppercase tracking-widest cursor-default">Institutions</button>
                     </div>
 
-                    <form action={handleSearch} className="relative w-full">
+                    <form method="GET" action="/institutions" className="relative w-full">
                         <input
                             type="text"
                             name="q"
@@ -90,6 +132,7 @@ export default async function InstitutionsPage({
                             placeholder="Search universities..."
                             className="coffee-input pr-16 text-sm font-bold shadow-[4px_4px_0px_#8b9467]"
                         />
+                        {state && <input type="hidden" name="state" value={state} />}
                         <button type="submit" className="absolute right-4 top-1/2 -translate-y-1/2 text-earth-terracotta hover:scale-110 transition-transform">
                             <Search className="h-6 w-6 stroke-[3]" />
                         </button>
@@ -99,7 +142,12 @@ export default async function InstitutionsPage({
 
             {institutions.length === 0 ? (
                 <div className="py-40 text-center coffee-card border-dashed bg-earth-parchment/30">
-                    <h2 className="text-3xl font-funky text-foreground opacity-40 italic">No institutions have been found.</h2>
+                    <h2 className="text-3xl font-funky text-foreground opacity-40 italic">No institutions found.</h2>
+                    {query && (
+                        <a href="/institutions" className="mt-6 inline-block text-sm font-bold text-earth-terracotta hover:underline decoration-2 underline-offset-4">
+                            Clear search
+                        </a>
+                    )}
                 </div>
             ) : (
                 <>
@@ -117,12 +165,17 @@ export default async function InstitutionsPage({
                                         </div>
                                         <span className="text-[10px] font-bold text-earth-sage uppercase tracking-widest italic">{inst.state}</span>
                                     </div>
-                                    <h3 className="font-funky text-2xl text-foreground group-hover:text-earth-terracotta transition-colors leading-tight italic break-words overflow-hidden">{inst.name}</h3>
+                                    <h3
+                                        className="font-funky text-2xl text-foreground group-hover:text-earth-terracotta transition-colors leading-tight italic break-words overflow-hidden"
+                                        dangerouslySetInnerHTML={{
+                                            __html: inst._highlight?.name?.value ?? inst.name
+                                        }}
+                                    />
                                     <p className="text-[10px] text-foreground font-bold uppercase tracking-widest mt-4 opacity-60">{inst.city} &bull; {inst.control}</p>
                                 </div>
                                 <div className="flex items-center justify-between mt-8 pt-8 border-t border-foreground/5">
                                     <span className="text-[10px] font-bold text-foreground bg-earth-mustard px-4 py-1.5 rounded-full border border-foreground/10 uppercase tracking-widest">
-                                        {inst._count.reviews} Reviews
+                                        {inst.reviewCount} Reviews
                                     </span>
                                     <div className="flex items-center gap-2 text-xs font-bold text-foreground group-hover:gap-3 transition-all uppercase tracking-widest">
                                         View Majors
@@ -133,55 +186,9 @@ export default async function InstitutionsPage({
                         ))}
                     </div>
 
-                    {/* Pagination */}
-                    {totalPages > 1 && (
-                        <div className="flex justify-center items-center gap-4 pt-16 border-t border-foreground/10">
-                            {page > 1 && (
-                                <a
-                                    href={`/institutions?page=${page - 1}${query ? `&q=${encodeURIComponent(query)}` : ''}`}
-                                    className="w-14 h-14 bg-white border-2 border-foreground rounded-2xl flex items-center justify-center hover:bg-earth-parchment transition-colors"
-                                >
-                                    <ArrowLeft className="h-5 w-5 stroke-[2.5]" />
-                                </a>
-                            )}
-
-                            <div className="flex items-center gap-3">
-                                {[...Array(Math.min(5, totalPages))].map((_, i) => {
-                                    let pageNum = page;
-                                    if (page <= 3) pageNum = i + 1;
-                                    else if (page >= totalPages - 2) pageNum = totalPages - 4 + i;
-                                    else pageNum = page - 2 + i;
-
-                                    if (pageNum <= 0 || pageNum > totalPages) return null;
-
-                                    return (
-                                        <a
-                                            key={pageNum}
-                                            href={`/institutions?page=${pageNum}${query ? `&q=${encodeURIComponent(query)}` : ''}`}
-                                            className={`w-14 h-14 flex items-center justify-center rounded-2xl border-2 font-bold transition-all ${page === pageNum
-                                                ? 'bg-earth-terracotta border-earth-terracotta text-white shadow-lg scale-110'
-                                                : 'bg-white border-foreground hover:bg-earth-parchment'
-                                                }`}
-                                        >
-                                            {pageNum}
-                                        </a>
-                                    );
-                                })}
-                            </div>
-
-                            {page < totalPages && (
-                                <a
-                                    href={`/institutions?page=${page + 1}${query ? `&q=${encodeURIComponent(query)}` : ''}`}
-                                    className="w-14 h-14 bg-white border-2 border-foreground rounded-2xl flex items-center justify-center hover:bg-earth-parchment transition-colors"
-                                >
-                                    <ArrowLeft className="h-5 w-5 rotate-180 stroke-[2.5]" />
-                                </a>
-                            )}
-                        </div>
-                    )}
+                    <Pagination currentPage={page} totalPages={totalPages} buildHref={buildHref} />
                 </>
             )}
         </div>
     );
 }
-
