@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Typesense from 'typesense';
-import { Search, ArrowRight } from 'lucide-react';
+import { Search, ArrowRight, School, PenTool, Shield, User } from 'lucide-react';
 
 const searchClient = new Typesense.Client({
     nodes: [{
@@ -78,7 +78,7 @@ export default function HomeSearch() {
                 setHits(results);
                 setShowDropdown(results.length > 0);
             } catch (err) {
-                console.error('Typesense search error:', err);
+                console.error('Search error:', err);
             } finally {
                 setLoading(false);
             }
@@ -137,10 +137,6 @@ export default function HomeSearch() {
                 {/* Typesense autocomplete dropdown */}
                 {showDropdown && (
                     <div className="absolute top-full left-0 right-0 mt-3 bg-white rounded-3xl border-2 border-earth-sage/20 shadow-2xl overflow-hidden z-20 animate-in fade-in slide-in-from-top-2 duration-200">
-                        <div className="px-6 pt-4 pb-2 flex items-center justify-between border-b border-foreground/5">
-                            <span className="text-[10px] font-bold text-earth-sage uppercase tracking-[0.2em] italic">Instant Results</span>
-                            <span className="text-[9px] font-bold text-earth-terracotta bg-earth-terracotta/10 px-2 py-0.5 rounded-full uppercase italic">Powered by Typesense</span>
-                        </div>
                         <ul>
                             {hits.map((hit) => (
                                 <li key={hit.objectID}>
@@ -178,7 +174,7 @@ export default function HomeSearch() {
             </form>
 
             {showFilters && (
-                <div className="grid grid-cols-2 md:grid-cols-5 gap-4 p-6 bg-white/80 backdrop-blur-sm rounded-3xl border-2 border-earth-sage/20 shadow-xl animate-in fade-in zoom-in-95 duration-300 mb-8">
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 p-6 bg-white/80 backdrop-blur-sm rounded-3xl border-2 border-earth-sage/20 shadow-xl animate-in fade-in zoom-in-95 duration-300 mb-8">
                     <div className="space-y-2">
                         <label className="text-[10px] font-bold text-earth-sage uppercase tracking-widest block italic">Category</label>
                         <select className="w-full bg-earth-parchment/50 border border-earth-sage/20 rounded-xl px-3 py-2 text-xs font-bold text-foreground outline-none">
@@ -207,34 +203,61 @@ export default function HomeSearch() {
                             <option>West</option>
                         </select>
                     </div>
-                    <div className="space-y-2">
-                        <label className="text-[10px] font-bold text-earth-sage uppercase tracking-widest block italic">Tuition</label>
-                        <select className="w-full bg-earth-parchment/50 border border-earth-sage/20 rounded-xl px-3 py-2 text-xs font-bold text-foreground outline-none">
-                            <option>Any Range</option>
-                            <option>&lt; $10k/yr</option>
-                            <option>$10k-$30k</option>
-                            <option>$30k-$50k</option>
-                            <option>$50k+</option>
-                        </select>
-                    </div>
-                    <div className="space-y-2">
-                        <label className="text-[10px] font-bold text-earth-sage uppercase tracking-widest block italic">Outcome</label>
-                        <select className="w-full bg-earth-parchment/50 border border-earth-sage/20 rounded-xl px-3 py-2 text-xs font-bold text-foreground outline-none">
-                            <option>Any Focus</option>
-                            <option>High Salary</option>
-                            <option>Grad School</option>
-                            <option>Research</option>
-                        </select>
-                    </div>
                 </div>
             )}
 
-            <div className="flex flex-wrap items-center justify-center gap-6 mt-8">
-                <p className="text-[10px] font-bold text-earth-sage uppercase tracking-widest italic opacity-60">Popular Searches:</p>
-                <div className="flex gap-4">
-                    <a href="/majors?q=Computer Science" className="text-xs font-bold text-earth-terracotta hover:underline italic">&quot;Computer Science&quot;</a>
-                    <a href="/majors?q=Nursing" className="text-xs font-bold text-earth-terracotta hover:underline italic">&quot;Nursing&quot;</a>
-                    <a href="/majors?q=Psychology" className="text-xs font-bold text-earth-terracotta hover:underline italic">&quot;Psychology&quot;</a>
+            {/* Onboarding Guide */}
+            <div className="mt-16 bg-white/40 backdrop-blur-sm border-2 border-dashed border-earth-sage/20 rounded-3xl p-8 md:p-10 relative overflow-hidden group/container">
+                <div className="absolute inset-0 bg-earth-parchment/40 opacity-0 group-hover/container:opacity-100 transition-opacity duration-700 pointer-events-none" />
+
+                {/* Steps */}
+                <div className="relative z-10 flex flex-col md:flex-row items-center justify-center gap-8 md:gap-12">
+                    <div className="flex flex-col items-center gap-4 group">
+                        <div className="w-20 h-20 rounded-3xl bg-white border-2 border-earth-sage/20 flex items-center justify-center shadow-[4px_4px_0px_#8b9467] group-hover:scale-110 group-hover:shadow-[8px_8px_0px_#8b9467] group-hover:-translate-y-1 transition-all duration-300">
+                            <Search className="w-8 h-8 text-earth-sage group-hover:text-earth-terracotta transition-colors stroke-[2.5]" />
+                        </div>
+                        <p className="text-xs font-bold uppercase tracking-widest text-earth-sage group-hover:text-earth-terracotta transition-colors">1. Find Major</p>
+                    </div>
+
+                    <ArrowRight className="w-6 h-6 text-earth-sage/30 rotate-90 md:rotate-0" />
+
+                    <div className="flex flex-col items-center gap-4 group">
+                        <div className="w-20 h-20 rounded-3xl bg-white border-2 border-earth-sage/20 flex items-center justify-center shadow-[4px_4px_0px_#8b9467] group-hover:scale-110 group-hover:shadow-[8px_8px_0px_#8b9467] group-hover:-translate-y-1 transition-all duration-300">
+                            <School className="w-8 h-8 text-earth-sage group-hover:text-earth-terracotta transition-colors stroke-[2.5]" />
+                        </div>
+                        <p className="text-xs font-bold uppercase tracking-widest text-earth-sage group-hover:text-earth-terracotta transition-colors">2. Find School</p>
+                    </div>
+
+                    <ArrowRight className="w-6 h-6 text-earth-sage/30 rotate-90 md:rotate-0" />
+
+                    <div className="flex flex-col items-center gap-4 group">
+                        <div className="w-20 h-20 rounded-3xl bg-white border-2 border-earth-sage/20 flex items-center justify-center shadow-[4px_4px_0px_#8b9467] group-hover:scale-110 group-hover:shadow-[8px_8px_0px_#8b9467] group-hover:-translate-y-1 transition-all duration-300">
+                            <PenTool className="w-8 h-8 text-earth-sage group-hover:text-earth-terracotta transition-colors stroke-[2.5]" />
+                        </div>
+                        <p className="text-xs font-bold uppercase tracking-widest text-earth-sage group-hover:text-earth-terracotta transition-colors">3. Write Review</p>
+                    </div>
+                </div>
+
+                {/* Sign In Callout */}
+                <div className="relative z-10 mt-10 pt-8 border-t-2 border-dashed border-earth-sage/10 flex flex-col items-center text-center">
+                    <p className="font-funky text-2xl text-foreground mb-4">
+                        Ready to share your experience?
+                    </p>
+                    <div className="flex flex-wrap justify-center gap-6 text-sm font-medium text-foreground/70 mb-6 italic">
+                        <span className="flex items-center gap-2">
+                            <Shield className="w-4 h-4 text-earth-sage" />
+                            Reviews are always anonymous
+                        </span>
+                        <span className="hidden md:inline text-earth-sage/30">•</span>
+                        <span className="flex items-center gap-2">
+                            <User className="w-4 h-4 text-earth-sage" />
+                            Manage & edit your reviews
+                        </span>
+                    </div>
+                    <a href="/login" className="inline-flex items-center gap-2 bg-earth-terracotta text-white px-8 py-3 rounded-xl font-bold hover:bg-earth-terracotta/90 transition-colors shadow-lg shadow-earth-terracotta/20 active:scale-95 duration-200">
+                        Sign In to Start Reviewing
+                        <ArrowRight className="w-4 h-4" />
+                    </a>
                 </div>
             </div>
         </div>

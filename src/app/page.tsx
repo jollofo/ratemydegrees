@@ -16,7 +16,7 @@ export default async function Home() {
 
                 <div className="relative z-10 mx-auto max-w-4xl text-center">
                     <h1 className="text-6xl font-funky tracking-tight text-foreground sm:text-8xl text-balance leading-[0.85] mb-12">
-                        College Major Reviews: <span className="text-earth-terracotta italic">Find Your Best</span> Academic Program
+                        Rate<span className="text-earth-terracotta italic">Your </span>Academic Program
                     </h1>
                     <p className="mt-8 text-xl leading-relaxed text-foreground/80 font-medium max-w-3xl mx-auto italic">
                         Honest, verified reviews from students and alumni. Real college major reviews to help you choose the right program and career across {institutionCount} US institutions.
@@ -76,8 +76,8 @@ export default async function Home() {
             {/* Value Prop & Verification Section */}
             <div className="py-24 bg-white relative overflow-hidden">
                 <div className="mx-auto max-w-7xl px-6 lg:px-8">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-                        <div className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+                        {/* <div className="space-y-6">
                             <div className="flex items-center gap-4 text-earth-terracotta">
                                 <div className="w-10 h-10 bg-earth-terracotta/10 rounded-xl flex items-center justify-center">
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-6 h-6"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>
@@ -91,7 +91,7 @@ export default async function Home() {
                                 <span className="text-[10px] font-bold uppercase tracking-widest bg-earth-parchment px-3 py-1 rounded-full border border-earth-sage/10 text-earth-sage italic">ID Verification</span>
                                 <span className="text-[10px] font-bold uppercase tracking-widest bg-earth-parchment px-3 py-1 rounded-full border border-earth-sage/10 text-earth-sage italic">Pattern Analysis</span>
                             </div>
-                        </div>
+                        </div> */}
 
                         <div className="space-y-6">
                             <div className="flex items-center gap-4 text-earth-sage">
