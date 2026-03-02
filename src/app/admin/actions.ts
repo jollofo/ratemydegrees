@@ -3,6 +3,7 @@
 import prisma from '@/lib/prisma';
 import { createClient } from '@/utils/supabase/server';
 import { revalidatePath } from 'next/cache';
+import { moderationActionSchema } from '@/lib/validation';
 
 async function checkAdmin() {
     const supabase = createClient();
@@ -21,6 +22,12 @@ async function checkAdmin() {
 }
 
 export async function moderateReview(reviewId: string, action: 'APPROVE' | 'REMOVE' | 'SHADOW_HIDE' | 'REJECT', notes?: string) {
+    // ── Input validation ──────────────────────────────────────────────────────
+    const parsed = moderationActionSchema.safeParse({ reviewId, action, notes });
+    if (!parsed.success) {
+        throw new Error(parsed.error.issues[0]?.message ?? 'Invalid moderation data.');
+    }
+
     const admin = await checkAdmin();
 
     let status = 'APPROVED';

@@ -14,7 +14,7 @@ export default function TermsPage() {
                 <h2 className="text-2xl font-funky text-foreground mt-12 mb-6">1. Acceptance of Terms</h2>
                 <p className="mb-6">By accessing or using RateMyDegrees, you agree to be bound by these Terms of Service and all applicable laws and regulations.</p>
                 <h2 className="text-2xl font-funky text-foreground mt-12 mb-6">2. Use of Service</h2>
-                <p className="mb-6">You agree to use the service only for lawful purposes and in a way that does not infringe the rights of, restrict or inhibit anyone else's use and enjoyment of the service.</p>
+                <p className="mb-6">You agree to use the service only for lawful purposes and in a way that does not infringe the rights of, restrict or inhibit anyone else&apos;s use and enjoyment of the service.</p>
                 <p className="mt-20 text-sm opacity-50 italic">Last updated: February 11, 2026</p>
             </div>
         </div>
