@@ -2,6 +2,15 @@ import { Prisma } from '@prisma/client';
 import prisma from '@/lib/prisma';
 import { redirect } from 'next/navigation';
 import { ArrowLeft, Search, Star } from 'lucide-react';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+    title: 'Academic Programs Catalog | RateMyDegree',
+    description: 'Browse our complete catalog of academic programs, degrees, and student outcomes.',
+    alternates: {
+        canonical: 'https://ratemydegrees.com/majors',
+    },
+};
 
 const PAGE_SIZE = 12;
 

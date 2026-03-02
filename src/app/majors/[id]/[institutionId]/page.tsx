@@ -4,20 +4,23 @@ import { createClient } from '@/utils/supabase/server';
 import ReviewItem from '@/components/ReviewItem';
 import { Metadata } from 'next';
 import { ArrowLeft, Sparkles } from 'lucide-react';
+import Breadcrumbs from '@/components/Breadcrumbs';
 
 export async function generateMetadata({ params }: { params: { id: string, institutionId: string } }): Promise<Metadata> {
-    const [major, institution, institutionMajor] = await Promise.all([
+    const [major, institution] = await Promise.all([
         prisma.major.findUnique({ where: { cip4: params.id } }),
         prisma.institution.findUnique({ where: { unitid: params.institutionId } }),
-        prisma.institutionMajor.findUnique({
-            where: {
-                unitid_cip4: { unitid: params.institutionId, cip4: params.id }
-            }
-        })
     ]);
+    const majorTitle = major?.title || 'Major';
+    const schoolName = institution?.name || 'School';
+    const baseUrl = 'https://ratemydegrees.com';
+
     return {
-        title: `${major?.title} at ${institution?.name} | Program Reviews`,
-        description: `Verified student experiences for ${major?.title} at ${institution?.name}. See rigor, satisfaction, and outcomes for this specific department.`,
+        title: `${majorTitle} at ${schoolName} | Outcomes, Salary, Reviews`,
+        description: `Read verified student reviews for ${majorTitle} at ${schoolName}. Get insights on departmental rigor, satisfaction, and career outcomes.`,
+        alternates: {
+            canonical: `${baseUrl}/majors/${params.id}/${params.institutionId}`,
+        }
     };
 }
 
@@ -98,13 +101,13 @@ export default async function ProgramDetailPage({ params }: { params: { id: stri
 
     return (
         <div className="container mx-auto px-6 py-10 max-w-7xl">
-            <a
-                href={`/majors/${major.cip4}`}
-                className="inline-flex items-center text-sm font-bold text-earth-terracotta hover:underline mb-8"
-            >
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to {major.title}
-            </a>
+            <Breadcrumbs
+                items={[
+                    { label: 'Schools', href: '/institutions' },
+                    { label: institution.name, href: `/institutions/${institution.unitid}` },
+                    { label: major.title, href: `/majors/${major.cip4}/${institution.unitid}` }
+                ]}
+            />
 
             <div className="mb-10 border-b-2 border-earth-sage/20 pb-10 flex flex-col md:flex-row md:items-end justify-between gap-8">
                 <div className="max-w-4xl">

@@ -1,0 +1,19 @@
+# RateMyDegrees
+
+RateMyDegrees is a platform for honest, verified reviews of academic programs and institutions. We help students make informed decisions by sharing real experiences, outcomes, and ROI data.
+
+## Key Sections
+- /majors: Catalog of degree programs and outcomes.
+- /institutions: Database of US higher education institutions.
+- /write-review: Where students share their verified experiences.
+
+## URL Structure
+- Major Pages: /majors/[cip4]
+- Institution Pages: /institutions/[unitid]
+- Program Detail Pages: /majors/[cip4]/[unitid]
+
+## Canonical URLs
+All pages should use the absolute URL at https://ratemydegrees.com as the canonical source.
+
+## Contact
+For inquiries or support, please visit our main site.

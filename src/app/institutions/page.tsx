@@ -2,6 +2,15 @@ import { Prisma } from '@prisma/client';
 import prisma from '@/lib/prisma';
 import { redirect } from 'next/navigation';
 import { ArrowLeft, Search } from 'lucide-react';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+    title: 'University Search & Program Rankings | RateMyDegree',
+    description: 'Find and compare US higher education institutions based on student verified reviews and outcomes.',
+    alternates: {
+        canonical: 'https://ratemydegrees.com/institutions',
+    },
+};
 
 const PAGE_SIZE = 12;
 

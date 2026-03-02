@@ -3,12 +3,19 @@ import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
 import ProgramIndex from '@/components/ProgramIndex';
 import { ArrowLeft } from 'lucide-react';
+import Breadcrumbs from '@/components/Breadcrumbs';
 
 export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
     const institution = await prisma.institution.findUnique({ where: { unitid: params.id } });
+    const name = institution?.name || 'Institution';
+    const baseUrl = 'https://ratemydegrees.com';
+
     return {
-        title: `${institution?.name || 'Institution'} | Academic Programs`,
-        description: `Academic programs and student outcomes context for ${institution?.name}. Focus on department-level quality.`,
+        title: `${name} | Popular Majors, Outcomes, Reviews`,
+        description: `Explore popular majors and student outcomes at ${name}. Read verified reviews on academic quality and ROI for this institution.`,
+        alternates: {
+            canonical: `${baseUrl}/institutions/${params.id}`,
+        },
     };
 }
 
@@ -72,13 +79,12 @@ export default async function InstitutionPage({
 
     return (
         <div className="container mx-auto px-6 py-10 max-w-7xl">
-            <a
-                href="/institutions"
-                className="inline-flex items-center text-sm font-bold text-earth-terracotta hover:underline mb-12"
-            >
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Universities
-            </a>
+            <Breadcrumbs
+                items={[
+                    { label: 'Schools', href: '/institutions' },
+                    { label: institution.name, href: `/institutions/${institution.unitid}` }
+                ]}
+            />
 
             <div className="mb-12 border-b-2 border-earth-sage/20 pb-10">
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-10">
