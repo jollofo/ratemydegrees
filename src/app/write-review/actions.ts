@@ -1,37 +1,20 @@
 'use server';
 
 import prisma from '@/lib/prisma';
-import { createClient } from '@/utils/supabase/server';
+import { getOrCreatePrismaUser } from '@/lib/user';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { checkReviewContent } from '@/lib/moderation';
 import { ReviewFormData, InstitutionSearchResult, MajorSearchResult } from './types';
+import { resolveMajorQuery } from '@/lib/major-resolver';
+import { searchClient, COLLECTION_MAJORS, COLLECTION_INSTITUTIONS } from '@/lib/typesense';
 
 export async function submitReview(formData: ReviewFormData) {
     if (!formData.majorId || !formData.institutionId) {
         throw new Error('Major and Institution are required');
     }
 
-    const supabase = createClient();
-    const { data: { user: authUser } } = await supabase.auth.getUser();
-
-    if (!authUser) {
-        throw new Error('You must be signed in to submit a review');
-    }
-
-    let user = await prisma.user.findUnique({
-        where: { id: authUser.id }
-    });
-
-    if (!user) {
-        user = await prisma.user.create({
-            data: {
-                id: authUser.id,
-                email: authUser.email,
-                role: 'USER'
-            }
-        });
-    }
+    const user = await getOrCreatePrismaUser();
 
     const writtenResponses = {
         fit: formData.fit,
@@ -78,42 +61,44 @@ export async function submitReview(formData: ReviewFormData) {
     redirect(`/majors/${formData.majorId}/${formData.institutionId}?success=true`);
 }
 
-export async function getMajorsForSearch(): Promise<MajorSearchResult[]> {
-    return await prisma.major.findMany({
-        select: { cip4: true, title: true, category: true },
-        orderBy: { title: 'asc' },
-        take: 50 // Just some initial ones
-    });
-}
-
+/** Initial load: top 50 institutions by review count from Typesense */
 export async function getInstitutionsForSearch(): Promise<InstitutionSearchResult[]> {
-    return await prisma.institution.findMany({
-        where: { active: true },
-        select: { unitid: true, name: true, state: true, city: true },
-        orderBy: { name: 'asc' },
-        take: 50 // Just some initial ones
+    const result = await searchClient.collections(COLLECTION_INSTITUTIONS).documents().search({
+        q: '*',
+        query_by: 'name',
+        per_page: 50,
+        sort_by: 'reviewCount:desc',
+        include_fields: 'unitid,name,state,city',
     });
+    return (result.hits ?? []).map((h: any) => ({
+        unitid: h.document.unitid,
+        name: h.document.name,
+        state: h.document.state ?? null,
+        city: h.document.city ?? null,
+    }));
 }
 
-export async function searchInstitutions(query: string): Promise<InstitutionSearchResult[]> {
-    if (!query || query.length < 2) return [];
-
-    return await prisma.institution.findMany({
-        where: {
-            active: true,
-            OR: [
-                { name: { contains: query, mode: 'insensitive' } },
-                { unitid: { contains: query, mode: 'insensitive' } }
-            ]
-        },
-        select: { unitid: true, name: true, state: true, city: true },
-        orderBy: { name: 'asc' },
-        take: 10
+/** Initial load: top 50 majors by review count from Typesense */
+export async function getMajorsForSearch(): Promise<MajorSearchResult[]> {
+    const result = await searchClient.collections(COLLECTION_MAJORS).documents().search({
+        q: '*',
+        query_by: 'title',
+        per_page: 50,
+        sort_by: 'reviewCount:desc',
+        include_fields: 'cip4,title,category',
     });
+    return (result.hits ?? []).map((h: any) => ({
+        cip4: h.document.cip4,
+        title: h.document.title,
+        category: h.document.category ?? null,
+    }));
 }
 
-import { resolveMajorQuery } from '@/lib/major-resolver';
-
+/**
+ * Major search via the resolver (alias + pathway matching).
+ * Used by the MajorResolverModal and as a fallback when Typesense
+ * returns no results for an unusual query.
+ */
 export async function searchMajors(query: string, institutionId?: string): Promise<MajorSearchResult[]> {
     if (!query || query.length < 2) return [];
 
@@ -122,6 +107,8 @@ export async function searchMajors(query: string, institutionId?: string): Promi
     return resolution.matches.map(m => ({
         cip4: m.cip4,
         title: m.title,
-        category: m.category ?? null
+        category: m.category ?? null,
+        matchType: m.matchType,
+        confidence: m.confidence
     }));
 }

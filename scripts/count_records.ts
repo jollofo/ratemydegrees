@@ -23,6 +23,13 @@ async function main() {
         const linkCount = await prisma.institutionMajor.count();
         console.log(`Links: ${linkCount}`);
     } catch (e) { console.error('Error counting Links:', e); }
+
+    try {
+        const roch = await prisma.institution.findFirst({
+            where: { name: { contains: 'University of Rochester', mode: 'insensitive' } }
+        });
+        console.log(`Rochester found: ${roch ? roch.name + ' (' + roch.unitid + ')' : 'NO'}`);
+    } catch (e) { console.error('Error finding Rochester:', e); }
 }
 
 main()

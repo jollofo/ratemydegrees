@@ -40,7 +40,21 @@ async function main() {
     for (const cip4 of missing) {
         const category = cip4.split('.')[0];
         const slug = `major-${cip4.replace('.', '')}`;
-        const title = `CIP ${cip4}`;
+        let title = `CIP ${cip4}`;
+
+        // Try to find a better title from Cip6 table
+        const cip6Entry = await prisma.cip6.findFirst({
+            where: {
+                OR: [
+                    { cip6: cip4 },
+                    { cip4: cip4 }
+                ]
+            }
+        });
+
+        if (cip6Entry) {
+            title = cip6Entry.title;
+        }
 
         try {
             await prisma.major.create({

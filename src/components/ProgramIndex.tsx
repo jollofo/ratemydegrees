@@ -59,10 +59,10 @@ export default function ProgramIndex({
 
     return (
         <div className="mb-8">
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-10">
+            <div className="relative flex flex-col md:flex-row md:items-end justify-between gap-8 mb-10">
                 <div>
                     <h2 className="text-4xl font-funky text-foreground tracking-tight mb-3 italic">Majors Found</h2>
-                    <span className="text-earth-sage text-[10px] font-bold uppercase tracking-widest italic">{majors.length > 0 ? 'Academic Areas Available' : 'Searching for paths...'}</span>
+                    <span className="text-earth-sage text-[10px] font-bold uppercase tracking-widest italic">{majors.length > 0 ? 'Programs Available' : 'No programs yet'}</span>
                 </div>
 
                 <form onSubmit={handleSearch} className="relative w-full md:w-80">
@@ -97,7 +97,7 @@ export default function ProgramIndex({
                             >
                                 <div>
                                     <div className="flex items-center justify-between mb-6">
-                                        <span className="text-[10px] font-bold text-earth-sage uppercase tracking-widest italic">{major.category || 'Gathering Area'}</span>
+                                        <span className="text-[10px] font-bold text-earth-sage uppercase tracking-widest italic">{major.category || 'Uncategorized'}</span>
                                         <span className="text-[9px] font-bold text-foreground/20 uppercase tracking-widest">{major.id}</span>
                                     </div>
                                     <h4 className="text-2xl font-funky text-foreground group-hover:text-earth-terracotta transition-all leading-tight mb-10 italic break-words overflow-hidden">{major.name}</h4>
@@ -170,7 +170,7 @@ export default function ProgramIndex({
                     <div className="w-20 h-20 bg-white wavy-border flex items-center justify-center mx-auto mb-10 text-earth-terracotta">
                         <BookOpen className="h-10 w-10" />
                     </div>
-                    <p className="text-foreground font-bold uppercase tracking-widest mb-4 italic">No matching paths reveal themselves.</p>
+                    <p className="text-foreground font-bold uppercase tracking-widest mb-4 italic">No programs found.</p>
                     <div className="mb-8">
                         <button
                             onClick={() => setIsResolverOpen(true)}
@@ -187,7 +187,7 @@ export default function ProgramIndex({
                             }}
                             className="coffee-btn bg-white text-foreground hover:bg-earth-parchment px-8 py-3 text-xs"
                         >
-                            Reset Seeking
+                            Clear Search
                         </button>
                     )}
                 </div>

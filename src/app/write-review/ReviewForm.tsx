@@ -1,45 +1,60 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { submitReview, searchInstitutions, searchMajors } from './actions';
+import Typesense from 'typesense';
+import { submitReview, searchMajors } from './actions';
 import { ReviewFormData, InstitutionSearchResult, MajorSearchResult } from './types';
+import MajorResolverModal from '@/components/MajorResolverModal';
 
-export default function WriteReviewForm({ majors: initialMajors, institutions: initialInstitutions }: { majors: MajorSearchResult[], institutions: InstitutionSearchResult[] }) {
+// Client-side Typesense instance — uses public search-only key
+const typesense = new Typesense.Client({
+    nodes: [{
+        host: process.env.NEXT_PUBLIC_TYPESENSE_HOST!,
+        port: parseInt(process.env.NEXT_PUBLIC_TYPESENSE_PORT ?? '443'),
+        protocol: (process.env.NEXT_PUBLIC_TYPESENSE_PROTOCOL ?? 'https') as 'https' | 'http',
+    }],
+    apiKey: process.env.NEXT_PUBLIC_TYPESENSE_SEARCH_KEY!,
+    connectionTimeoutSeconds: 5,
+});
+
+export default function WriteReviewForm({
+    majors: initialMajors,
+    institutions: initialInstitutions
+}: {
+    majors: MajorSearchResult[];
+    institutions: InstitutionSearchResult[];
+}) {
     const [step, setStep] = useState(1);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    // Search states
+    // Institution search state
     const [instQuery, setInstQuery] = useState('');
     const [instResults, setInstResults] = useState<InstitutionSearchResult[]>(initialInstitutions);
     const [isSearchingInst, setIsSearchingInst] = useState(false);
     const [showInstResults, setShowInstResults] = useState(false);
 
+    // Major search state
     const [majorQuery, setMajorQuery] = useState('');
     const [majorResults, setMajorResults] = useState<MajorSearchResult[]>(initialMajors);
     const [isSearchingMajor, setIsSearchingMajor] = useState(false);
     const [showMajorResults, setShowMajorResults] = useState(false);
+    const [isResolverOpen, setIsResolverOpen] = useState(false);
 
     const instSearchRef = useRef<HTMLDivElement>(null);
     const majorSearchRef = useRef<HTMLDivElement>(null);
+    const instDebounce = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const majorDebounce = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     const [formData, setFormData] = useState<ReviewFormData>({
         majorId: '',
         institutionId: '',
         status: 'graduated',
         graduationYear: '',
-        ratings: {
-            rigor: 3,
-            career: 3,
-            difficulty: 3,
-            flexibility: 3,
-            satisfaction: 3,
-            value: 3
-        },
+        ratings: { rigor: 3, career: 3, difficulty: 3, flexibility: 3, satisfaction: 3, value: 3 },
         fit: '',
         challenge: '',
         misconception: '',
         differently: '',
-        // Outcome fields
         outcomeStatus: '',
         jobTitle: '',
         industry: '',
@@ -47,58 +62,93 @@ export default function WriteReviewForm({ majors: initialMajors, institutions: i
         timeToOutcome: ''
     });
 
-    // Handle clicks outside search results
+    // Close dropdowns on outside click
     useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
-            if (instSearchRef.current && !instSearchRef.current.contains(event.target as Node)) {
+        const handler = (e: MouseEvent) => {
+            if (instSearchRef.current && !instSearchRef.current.contains(e.target as Node)) {
                 setShowInstResults(false);
             }
-            if (majorSearchRef.current && !majorSearchRef.current.contains(event.target as Node)) {
+            if (majorSearchRef.current && !majorSearchRef.current.contains(e.target as Node)) {
                 setShowMajorResults(false);
             }
         };
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => document.removeEventListener('mousedown', handleClickOutside);
+        document.addEventListener('mousedown', handler);
+        return () => document.removeEventListener('mousedown', handler);
     }, []);
 
-    // Debounced search for institutions
+    // Institution search — Typesense client-side
     useEffect(() => {
+        if (instDebounce.current) clearTimeout(instDebounce.current);
+
         if (!instQuery || instQuery.length < 2) {
             setInstResults(initialInstitutions);
             return;
         }
 
-        const timer = setTimeout(async () => {
+        instDebounce.current = setTimeout(async () => {
             setIsSearchingInst(true);
             try {
-                const results = await searchInstitutions(instQuery);
-                setInstResults(results);
+                const result = await typesense.collections('institutions').documents().search({
+                    q: instQuery,
+                    query_by: 'name,city,state',
+                    per_page: 10,
+                    include_fields: 'unitid,name,city,state',
+                });
+                setInstResults((result.hits ?? []).map((h: any) => ({
+                    unitid: h.document.unitid,
+                    name: h.document.name,
+                    city: h.document.city ?? null,
+                    state: h.document.state ?? null,
+                })));
+            } catch (err) {
+                console.error('Institution search error:', err);
             } finally {
                 setIsSearchingInst(false);
             }
-        }, 300);
+        }, 250);
 
-        return () => clearTimeout(timer);
+        return () => { if (instDebounce.current) clearTimeout(instDebounce.current); };
     }, [instQuery, initialInstitutions]);
 
-    // Debounced search for majors
+    // Major search — Typesense client-side, with resolver fallback
     useEffect(() => {
+        if (majorDebounce.current) clearTimeout(majorDebounce.current);
+
         if (!majorQuery || majorQuery.length < 2) {
             setMajorResults(initialMajors);
             return;
         }
 
-        const timer = setTimeout(async () => {
+        majorDebounce.current = setTimeout(async () => {
             setIsSearchingMajor(true);
             try {
-                const results = await searchMajors(majorQuery, formData.institutionId);
-                setMajorResults(results);
+                const result = await typesense.collections('majors').documents().search({
+                    q: majorQuery,
+                    query_by: 'title,category',
+                    per_page: 10,
+                    include_fields: 'cip4,title,category',
+                });
+
+                if ((result.hits ?? []).length > 0) {
+                    setMajorResults((result.hits ?? []).map((h: any) => ({
+                        cip4: h.document.cip4,
+                        title: h.document.title,
+                        category: h.document.category ?? null,
+                        matchType: 'DIRECT' as const,
+                    })));
+                } else {
+                    // Typesense found nothing — fall back to the resolver (alias/pathway matching)
+                    const resolved = await searchMajors(majorQuery, formData.institutionId || undefined);
+                    setMajorResults(resolved);
+                }
+            } catch (err) {
+                console.error('Major search error:', err);
             } finally {
                 setIsSearchingMajor(false);
             }
-        }, 300);
+        }, 250);
 
-        return () => clearTimeout(timer);
+        return () => { if (majorDebounce.current) clearTimeout(majorDebounce.current); };
     }, [majorQuery, formData.institutionId, initialMajors]);
 
     const nextStep = () => setStep(s => Math.min(s + 1, 3));
@@ -119,7 +169,6 @@ export default function WriteReviewForm({ majors: initialMajors, institutions: i
             setStep(1);
             return;
         }
-
         setIsSubmitting(true);
         try {
             await submitReview(formData);
@@ -132,17 +181,6 @@ export default function WriteReviewForm({ majors: initialMajors, institutions: i
 
     return (
         <div className="relative">
-            {/* Anonymity Notice banner */}
-            <div className="mb-8 coffee-card bg-earth-sage/10 border-earth-sage/30 p-6 flex items-center gap-6">
-                <div className="w-12 h-12 bg-white wavy-border flex items-center justify-center text-earth-sage shrink-0">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /><path d="m9 12 2 2 4-4" /></svg>
-                </div>
-                <div>
-                    <p className="text-lg font-funky text-foreground italic mb-0.5">Verified Anonymity</p>
-                    <p className="text-xs font-medium text-foreground opacity-60 leading-relaxed italic">Your identity is protected. We only use your account to verify review integrity.</p>
-                </div>
-            </div>
-
             {/* Progress Bar */}
             <div className="mb-10 flex items-center justify-center gap-8">
                 {[1, 2, 3].map((i) => (
@@ -169,6 +207,7 @@ export default function WriteReviewForm({ majors: initialMajors, institutions: i
                         </div>
 
                         <div className="space-y-10">
+                            {/* Institution Search */}
                             <div className="relative" ref={instSearchRef}>
                                 <label className="block">
                                     <span className="text-[10px] font-bold text-earth-sage uppercase tracking-widest block mb-2 italic">Institution / University</span>
@@ -178,51 +217,50 @@ export default function WriteReviewForm({ majors: initialMajors, institutions: i
                                             placeholder="Search university..."
                                             className="coffee-input pr-12 !py-4 shadow-[3px_3px_0px_#8b9467] text-base"
                                             value={instQuery}
-                                            onChange={(e) => {
-                                                setInstQuery(e.target.value);
-                                                setShowInstResults(true);
-                                            }}
+                                            onChange={(e) => { setInstQuery(e.target.value); setShowInstResults(true); }}
                                             onFocus={() => setShowInstResults(true)}
+                                            autoComplete="off"
                                         />
                                         <div className="absolute right-5 top-1/2 -translate-y-1/2 text-earth-terracotta opacity-40">
-                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-6 h-6"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                                            {isSearchingInst
+                                                ? <span className="w-5 h-5 border-2 border-earth-terracotta/40 border-t-earth-terracotta rounded-full animate-spin block" />
+                                                : <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-6 h-6"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                                            }
                                         </div>
                                     </div>
                                     {formData.institutionId && (
                                         <div className="mt-6 inline-flex items-center gap-3 px-5 py-2.5 bg-earth-sage/10 border border-earth-sage/30 rounded-full text-xs font-bold text-earth-sage uppercase tracking-widest italic">
                                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="w-4 h-4"><path d="M20 6L9 17l-5-5" /></svg>
-                                            Selected: {instResults.find(i => i.unitid === formData.institutionId)?.name || 'The Academy'}
+                                            Selected: {instResults.find(i => i.unitid === formData.institutionId)?.name || instQuery}
                                         </div>
                                     )}
                                 </label>
 
-                                {showInstResults && (instResults.length > 0 || isSearchingInst) && (
+                                {showInstResults && instResults.length > 0 && (
                                     <div className="absolute z-50 w-full mt-6 bg-[#fffefb] border-2 border-foreground rounded-[2rem] shadow-[12px_12px_0px_rgba(67,52,34,0.1)] overflow-hidden">
-                                        {isSearchingInst ? (
-                                            <div className="p-10 text-center text-xs font-bold uppercase tracking-widest text-earth-sage animate-pulse italic">Searching...</div>
-                                        ) : (
-                                            <div className="max-h-80 overflow-y-auto custom-scrollbar">
-                                                {instResults.map(inst => (
-                                                    <button
-                                                        key={inst.unitid}
-                                                        type="button"
-                                                        className="w-full text-left px-8 py-6 hover:bg-earth-parchment transition-colors border-b border-foreground/5 last:border-0 group"
-                                                        onClick={() => {
-                                                            setFormData({ ...formData, institutionId: inst.unitid });
-                                                            setInstQuery(inst.name);
-                                                            setShowInstResults(false);
-                                                        }}
-                                                    >
-                                                        <div className="font-funky text-2xl text-foreground group-hover:text-earth-terracotta transition-colors italic leading-none">{inst.name}</div>
-                                                        <div className="text-[10px] text-earth-sage font-bold uppercase tracking-widest mt-3 opacity-60">{inst.city}, {inst.state}</div>
-                                                    </button>
-                                                ))}
-                                            </div>
-                                        )}
+                                        <div className="max-h-80 overflow-y-auto custom-scrollbar">
+                                            {instResults.map(inst => (
+                                                <button
+                                                    key={inst.unitid}
+                                                    type="button"
+                                                    className="w-full text-left px-8 py-6 hover:bg-earth-parchment transition-colors border-b border-foreground/5 last:border-0 group"
+                                                    onClick={() => {
+                                                        setFormData({ ...formData, institutionId: inst.unitid, majorId: '' });
+                                                        setMajorQuery('');
+                                                        setInstQuery(inst.name);
+                                                        setShowInstResults(false);
+                                                    }}
+                                                >
+                                                    <div className="font-funky text-2xl text-foreground group-hover:text-earth-terracotta transition-colors italic leading-none">{inst.name}</div>
+                                                    <div className="text-[10px] text-earth-sage font-bold uppercase tracking-widest mt-3 opacity-60">{inst.city}, {inst.state}</div>
+                                                </button>
+                                            ))}
+                                        </div>
                                     </div>
                                 )}
                             </div>
 
+                            {/* Major Search */}
                             <div className="relative" ref={majorSearchRef}>
                                 <label className="block">
                                     <span className="text-[10px] font-bold text-earth-sage uppercase tracking-widest block mb-2 italic">Degree / Major</span>
@@ -232,29 +270,30 @@ export default function WriteReviewForm({ majors: initialMajors, institutions: i
                                             placeholder="Search program..."
                                             className="coffee-input pr-12 !py-4 shadow-[3px_3px_0px_#d4a017] text-base"
                                             value={majorQuery}
-                                            onChange={(e) => {
-                                                setMajorQuery(e.target.value);
-                                                setShowMajorResults(true);
-                                            }}
+                                            onChange={(e) => { setMajorQuery(e.target.value); setShowMajorResults(true); }}
                                             onFocus={() => setShowMajorResults(true)}
+                                            autoComplete="off"
                                         />
                                         <div className="absolute right-5 top-1/2 -translate-y-1/2 text-earth-mustard opacity-40">
-                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-6 h-6"><path d="M4 19.5A2.5 2.5 0 016.5 17H20M4 19.5A2.5 2.5 0 006.5 22H20V2M6.5 2h13.5A2.5 2.5 0 0122.5 4.5v15a2.5 2.5 0 01-2.5 2.5H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z" /></svg>
+                                            {isSearchingMajor
+                                                ? <span className="w-5 h-5 border-2 border-earth-mustard/40 border-t-earth-mustard rounded-full animate-spin block" />
+                                                : <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-6 h-6"><path d="M4 19.5A2.5 2.5 0 016.5 17H20M4 19.5A2.5 2.5 0 006.5 22H20V2M6.5 2h13.5A2.5 2.5 0 0122.5 4.5v15a2.5 2.5 0 01-2.5 2.5H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z" /></svg>
+                                            }
                                         </div>
                                     </div>
                                     {formData.majorId && (
                                         <div className="mt-6 inline-flex items-center gap-3 px-5 py-2.5 bg-earth-mustard/10 border border-earth-mustard/30 rounded-full text-xs font-bold text-earth-mustard uppercase tracking-widest italic">
                                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="w-4 h-4"><path d="M20 6L9 17l-5-5" /></svg>
-                                            Selected: {majorResults.find(m => m.cip4 === formData.majorId)?.title || 'The Discipline'}
+                                            Selected: {majorResults.find(m => m.cip4 === formData.majorId)?.title || majorQuery}
                                         </div>
                                     )}
                                 </label>
 
-                                {showMajorResults && (majorResults.length > 0 || isSearchingMajor) && (
+                                {showMajorResults && (
                                     <div className="absolute z-50 w-full mt-6 bg-[#fffefb] border-2 border-foreground rounded-[2rem] shadow-[12px_12px_0px_rgba(67,52,34,0.1)] overflow-hidden">
                                         {isSearchingMajor ? (
                                             <div className="p-10 text-center text-xs font-bold uppercase tracking-widest text-earth-mustard animate-pulse italic">Searching...</div>
-                                        ) : (
+                                        ) : majorResults.length > 0 ? (
                                             <div className="max-h-80 overflow-y-auto custom-scrollbar">
                                                 {majorResults.map(m => (
                                                     <button
@@ -268,9 +307,28 @@ export default function WriteReviewForm({ majors: initialMajors, institutions: i
                                                         }}
                                                     >
                                                         <div className="font-funky text-2xl text-foreground group-hover:text-earth-terracotta transition-colors italic leading-none">{m.title}</div>
-                                                        <div className="text-[10px] text-earth-sage font-bold uppercase tracking-widest mt-3 opacity-60">{m.category}</div>
+                                                        <div className="flex items-center gap-2 mt-3">
+                                                            {m.matchType && m.matchType !== 'DIRECT' && (
+                                                                <span className={`text-[9px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded ${m.matchType === 'ALIAS' ? 'bg-blue-100 text-blue-700' : 'bg-amber-100 text-amber-700'}`}>
+                                                                    {m.matchType === 'ALIAS' ? 'Alias' : 'Related'}
+                                                                </span>
+                                                            )}
+                                                            <div className="text-[10px] text-earth-sage font-bold uppercase tracking-widest opacity-60">{m.category}</div>
+                                                        </div>
                                                     </button>
                                                 ))}
+                                            </div>
+                                        ) : (
+                                            <div className="p-8 text-center bg-earth-parchment/10">
+                                                <p className="text-sm text-foreground/60 mb-4 italic">No majors found matching that name.</p>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => { setShowMajorResults(false); setIsResolverOpen(true); }}
+                                                    className="inline-flex items-center gap-2 px-5 py-2.5 bg-earth-terracotta text-white rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-earth-terracotta/90 transition-all shadow-sm hover:translate-y-[-1px]"
+                                                >
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /><path d="M11 8v6" /><path d="M8 11h6" /></svg>
+                                                    Try Advanced Resolver
+                                                </button>
                                             </div>
                                         )}
                                     </div>
@@ -309,8 +367,7 @@ export default function WriteReviewForm({ majors: initialMajors, institutions: i
 
                             {formData.status === 'graduated' && (
                                 <div className="space-y-6 pt-6 border-t border-foreground/5 animate-in fade-in slide-in-from-top-4">
-                                    <h3 className="text-xl font-funky text-foreground italic leading-none">Post-Graduation Journey</h3>
-
+                                    <h3 className="text-xl font-funky text-foreground italic leading-none">Post-Graduation Outcomes</h3>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         <label className="block">
                                             <span className="text-[10px] font-bold text-earth-sage uppercase tracking-widest block mb-2 italic">Current Status</span>
@@ -401,7 +458,6 @@ export default function WriteReviewForm({ majors: initialMajors, institutions: i
                             <h2 className="text-3xl font-funky text-foreground tracking-tight italic mb-2">2. Academic Ratings</h2>
                             <p className="text-earth-sage text-[10px] font-bold uppercase tracking-[0.2em] italic">Rate the academic program based on your experience.</p>
                         </div>
-
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-10">
                             {ratingCategories.map((cat) => (
                                 <div key={cat.key} className="space-y-8">
@@ -437,6 +493,27 @@ export default function WriteReviewForm({ majors: initialMajors, institutions: i
                             <p className="text-earth-sage text-[10px] font-bold uppercase tracking-[0.2em] italic">Help other students by providing more context.</p>
                         </div>
 
+                        <div className="bg-earth-parchment/40 rounded-3xl p-6 border border-earth-sage/20 mb-8">
+                            <h3 className="text-lg font-funky text-foreground italic mb-4">Pro Tips for a Great Review</h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <div className="space-y-3">
+                                    <p className="text-xs font-bold text-earth-sage uppercase tracking-widest italic">What to include:</p>
+                                    <ul className="text-sm text-foreground/70 space-y-2 italic list-disc pl-4">
+                                        <li><span className="font-bold text-earth-terracotta">Workload:</span> How many hours/week?</li>
+                                        <li><span className="font-bold text-earth-terracotta">Cost:</span> Was it worth the tuition?</li>
+                                        <li><span className="font-bold text-earth-terracotta">Career:</span> Real-world impact & prep?</li>
+                                        <li><span className="font-bold text-earth-terracotta">Tips:</span> What should new students know?</li>
+                                    </ul>
+                                </div>
+                                <div className="space-y-3">
+                                    <p className="text-xs font-bold text-earth-sage uppercase tracking-widest italic">Sample Review:</p>
+                                    <div className="bg-white/60 p-4 rounded-xl text-xs text-foreground/60 italic leading-relaxed border border-earth-sage/10">
+                                        &quot;The CS program was rigorous but rewarding. Workload was high (20+ hrs/week), but faculty were accessible. Career prep was excellent; I had a full-time offer before graduating. Tip: Start projects early!&quot;
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <div className="space-y-10">
                             <label className="block">
                                 <span className="text-[10px] font-bold text-earth-sage uppercase tracking-widest block mb-4 italic">Who is this program for?</span>
@@ -446,7 +523,7 @@ export default function WriteReviewForm({ majors: initialMajors, institutions: i
                                     placeholder="Students who prefer hands-on learning over theory..."
                                     value={formData.fit}
                                     onChange={(e) => setFormData({ ...formData, fit: e.target.value })}
-                                ></textarea>
+                                />
                             </label>
                             <label className="block">
                                 <span className="text-[10px] font-bold text-earth-sage uppercase tracking-widest block mb-4 italic">Most Significant Challenge</span>
@@ -456,7 +533,7 @@ export default function WriteReviewForm({ majors: initialMajors, institutions: i
                                     placeholder="e.g. Navigating workload during clinicals..."
                                     value={formData.challenge}
                                     onChange={(e) => setFormData({ ...formData, challenge: e.target.value })}
-                                ></textarea>
+                                />
                             </label>
 
                             <div className="p-6 coffee-card border-dashed bg-earth-parchment/30 flex gap-6 items-start mt-10">
@@ -479,19 +556,14 @@ export default function WriteReviewForm({ majors: initialMajors, institutions: i
                         type="button"
                         onClick={prevStep}
                         disabled={step === 1 || isSubmitting}
-                        className={`text-xs font-bold uppercase tracking-[0.2em] italic transition-all ${step === 1 ? 'opacity-0 pointer-events-none' : 'text-earth-sage hover:text-earth-terracotta'
-                            }`}
+                        className={`text-xs font-bold uppercase tracking-[0.2em] italic transition-all ${step === 1 ? 'opacity-0 pointer-events-none' : 'text-earth-sage hover:text-earth-terracotta'}`}
                     >
                         &larr; Previous Step
                     </button>
 
                     <div className="flex gap-6">
                         {step < 3 ? (
-                            <button
-                                type="button"
-                                onClick={nextStep}
-                                className="coffee-btn shadow-[6px_6px_0px_#433422] px-12"
-                            >
+                            <button type="button" onClick={nextStep} className="coffee-btn shadow-[6px_6px_0px_#433422] px-12">
                                 NEXT STEP &rarr;
                             </button>
                         ) : (
@@ -512,6 +584,15 @@ export default function WriteReviewForm({ majors: initialMajors, institutions: i
                     </div>
                 </div>
             </div>
+
+            <MajorResolverModal
+                isOpen={isResolverOpen}
+                onClose={() => setIsResolverOpen(false)}
+                onSelectMajor={(cip4, title) => {
+                    setFormData({ ...formData, majorId: cip4 });
+                    setMajorQuery(title);
+                }}
+            />
         </div>
     );
 }

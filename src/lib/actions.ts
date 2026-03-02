@@ -1,31 +1,11 @@
 'use server'
 
 import prisma from '@/lib/prisma'
-import { createClient } from '@/utils/supabase/server'
+import { getOrCreatePrismaUser } from '@/lib/user'
 import { revalidatePath } from 'next/cache'
 
 export async function reportReview(reviewId: string, reason: string) {
-    const supabase = createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-
-    if (!user) {
-        throw new Error('Must be logged in to report a review')
-    }
-
-    // Find or create user in Prisma to match Supabase user
-    let prismaUser = await prisma.user.findUnique({
-        where: { email: user.email }
-    })
-
-    if (!prismaUser) {
-        prismaUser = await prisma.user.create({
-            data: {
-                id: user.id,
-                email: user.email,
-                role: 'USER'
-            }
-        })
-    }
+    const prismaUser = await getOrCreatePrismaUser()
 
     await prisma.report.create({
         data: {
@@ -35,10 +15,10 @@ export async function reportReview(reviewId: string, reason: string) {
         }
     })
 
-    // We could also flag the review for moderation
+    // Flag the review for re-moderation
     await prisma.review.update({
         where: { id: reviewId },
-        data: { status: 'PENDING' } // Move back to pending for review if reported?
+        data: { status: 'PENDING' }
     })
 
     revalidatePath('/majors')
@@ -46,26 +26,7 @@ export async function reportReview(reviewId: string, reason: string) {
 }
 
 export async function voteReview(reviewId: string, value: number) {
-    const supabase = createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-
-    if (!user) {
-        throw new Error('Must be logged in to vote')
-    }
-
-    let prismaUser = await prisma.user.findUnique({
-        where: { email: user.email }
-    })
-
-    if (!prismaUser) {
-        prismaUser = await prisma.user.create({
-            data: {
-                id: user.id,
-                email: user.email,
-                role: 'USER'
-            }
-        })
-    }
+    const prismaUser = await getOrCreatePrismaUser()
 
     await prisma.vote.upsert({
         where: {
