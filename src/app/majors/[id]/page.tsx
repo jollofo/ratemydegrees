@@ -6,14 +6,28 @@ import Pagination from '@/components/Pagination';
 import BackLink from '@/components/BackLink';
 import { searchInstitutionsForMajor } from '@/app/actions/search';
 import { Metadata } from 'next';
-import { ArrowRight, Search } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Search } from 'lucide-react';
+import Breadcrumbs from '@/components/Breadcrumbs';
+import StructuredMajorContent from '@/components/StructuredMajorContent';
+import { Major } from '@prisma/client';
 
 export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
     const major = await prisma.major.findUnique({ where: { cip4: params.id } });
     const title = major?.title || 'Major';
+<<<<<<< HEAD
     return {
         title: `${title} (CIP ${params.id}) Reviews & Ratings | RateMyDegree`,
         description: `Read verified student and alumni reviews for ${title} (CIP ${params.id}). Get insights on rigor, career prospects, and ROI.`,
+=======
+    const baseUrl = 'https://ratemydegrees.com';
+
+    return {
+        title: `${title} Degree | Outcomes, Salary, ROI`,
+        description: `Get the facts on a ${title} degree: salary expectations, common career paths, and verified student reviews on ROI and rigor.`,
+        alternates: {
+            canonical: `${baseUrl}/majors/${params.id}`,
+        }
+>>>>>>> bdf9160f2a3a02410b9e165b1f51a64170030d2c
     };
 }
 
@@ -47,12 +61,37 @@ export default async function MajorDetailPage({
 
     if (!major) notFound();
 
-    // Use Typesense to search institutions offering this major
-    const { hits: institutions, totalPages, totalHits: totalInstitutions } = await searchInstitutionsForMajor(
-        params.id,
-        query,
-        { page, hitsPerPage: INST_PAGE_SIZE } // Typesense is 1-indexed
-    );
+    const whereClause = {
+        cip4: params.id,
+        institution: {
+            name: {
+                contains: query,
+            }
+        }
+    };
+
+    const [institutions, totalInstitutions, relatedMajors] = await Promise.all([
+        prisma.institutionMajor.findMany({
+            where: whereClause,
+            include: {
+                institution: true
+            },
+            orderBy: { completionsTotal: 'desc' },
+            skip: (page - 1) * INST_PAGE_SIZE,
+            take: INST_PAGE_SIZE
+        }),
+        prisma.institutionMajor.count({ where: whereClause }),
+        prisma.major.findMany({
+            where: {
+                category: major.category,
+                cip4: { not: major.cip4 }
+            },
+            take: 4,
+            select: { cip4: true, title: true }
+        })
+    ]);
+
+    const totalPages = Math.ceil(totalInstitutions / INST_PAGE_SIZE);
 
     const reviewCount = major._count.reviews;
     const hideStats = reviewCount < 5;
@@ -102,7 +141,12 @@ export default async function MajorDetailPage({
 
     return (
         <div className="container mx-auto px-6 py-16 max-w-7xl">
-            <BackLink href="/majors" label="Return to Catalog" />
+            <Breadcrumbs
+                items={[
+                    { label: 'Majors', href: '/majors' },
+                    { label: major.title, href: `/majors/${major.cip4}` }
+                ]}
+            />
 
             <div className="mb-20 border-b-2 border-earth-sage/20 pb-16 flex flex-col md:flex-row md:items-end justify-between gap-12">
                 <div className="max-w-4xl">
@@ -187,6 +231,25 @@ export default async function MajorDetailPage({
                             <p className="text-xs font-medium leading-relaxed text-earth-parchment/60 italic">No outcome data available yet for this program (CIP {major.cip4}).</p>
                         )}
                     </div>
+
+                    {/* Related Majors */}
+                    {relatedMajors.length > 0 && (
+                        <div className="coffee-card bg-earth-sage/5 border-earth-sage/10">
+                            <h3 className="text-xl font-funky text-foreground mb-6 italic border-b border-foreground/5 pb-4">Related Fields</h3>
+                            <div className="flex flex-col gap-3">
+                                {relatedMajors.map((rm) => (
+                                    <a
+                                        key={rm.cip4}
+                                        href={`/majors/${rm.cip4}`}
+                                        className="text-sm font-bold text-earth-sage hover:text-earth-terracotta flex items-center justify-between group transition-colors"
+                                    >
+                                        <span className="truncate">{rm.title}</span>
+                                        <ArrowLeft className="h-3 w-3 rotate-180 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                    </a>
+                                ))}
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 <div className="lg:col-span-7">
@@ -268,6 +331,8 @@ export default async function MajorDetailPage({
                     </div>
                 </div>
             </div>
+
+            <StructuredMajorContent major={major as any} />
         </div>
     );
 }

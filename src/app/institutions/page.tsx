@@ -3,6 +3,15 @@ import { searchInstitutions } from '@/app/actions/search';
 import { ArrowLeft, Search } from 'lucide-react';
 import Pagination from '@/components/Pagination';
 import BackLink from '@/components/BackLink';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+    title: 'University Search & Program Rankings | RateMyDegree',
+    description: 'Find and compare US higher education institutions based on student verified reviews and outcomes.',
+    alternates: {
+        canonical: 'https://ratemydegrees.com/institutions',
+    },
+};
 
 const PAGE_SIZE = 12;
 

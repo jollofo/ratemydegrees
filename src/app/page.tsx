@@ -1,5 +1,14 @@
 import HomeSearch from '@/components/HomeSearch';
 import { getHomepageStats } from '@/lib/stats';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+    title: "RateMyDegree | Student-Powered Degree Insights",
+    description: "Honest college major reviews from students and alumni. Real experiences, real insights.",
+    alternates: {
+        canonical: 'https://ratemydegrees.com',
+    },
+};
 
 export default async function Home() {
     const { majorCount, institutionCount } = await getHomepageStats();
