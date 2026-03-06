@@ -14,20 +14,14 @@ import { Major } from '@prisma/client';
 export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
     const major = await prisma.major.findUnique({ where: { cip4: params.id } });
     const title = major?.title || 'Major';
-<<<<<<< HEAD
-    return {
-        title: `${title} (CIP ${params.id}) Reviews & Ratings | RateMyDegree`,
-        description: `Read verified student and alumni reviews for ${title} (CIP ${params.id}). Get insights on rigor, career prospects, and ROI.`,
-=======
     const baseUrl = 'https://ratemydegrees.com';
 
     return {
-        title: `${title} Degree | Outcomes, Salary, ROI`,
-        description: `Get the facts on a ${title} degree: salary expectations, common career paths, and verified student reviews on ROI and rigor.`,
+        title: `${title} (CIP ${params.id}) Degree | Outcomes, Salary, ROI`,
+        description: `Get the facts on a ${title} (CIP ${params.id}) degree: salary expectations, common career paths, and verified student reviews on ROI and rigor.`,
         alternates: {
             canonical: `${baseUrl}/majors/${params.id}`,
         }
->>>>>>> bdf9160f2a3a02410b9e165b1f51a64170030d2c
     };
 }
 
