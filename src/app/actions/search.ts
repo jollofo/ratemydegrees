@@ -135,6 +135,39 @@ export async function searchInstitutionsForMajor(
     const completionsMap = new Map(offerings.map((o: { unitid: string; completionsTotal: number }) => [o.unitid, o.completionsTotal]));
     const unitids = offerings.map((o: { unitid: string }) => o.unitid);
 
+    // Bypass Typesense completely if there is no query
+    if (!query) {
+        const pageUnitIds = unitids.slice((page - 1) * hitsPerPage, page * hitsPerPage);
+
+        const prismaInstitutions = await prisma.institution.findMany({
+            where: { unitid: { in: pageUnitIds } },
+        });
+
+        // Reorder back to the sorted order (handled by offerings)
+        const sortedInstitutions = [];
+        for (const id of pageUnitIds) {
+            const inst = prismaInstitutions.find(i => i.unitid === id);
+            if (inst) sortedInstitutions.push(inst);
+        }
+
+        const hits = sortedInstitutions.map((inst: any) => ({
+            id: inst.unitid,
+            unitid: inst.unitid,
+            name: inst.name,
+            city: inst.city ?? '',
+            state: inst.state ?? '',
+            control: inst.control ?? '',
+            reviewCount: 0,
+            completionsTotal: completionsMap.get(inst.unitid) ?? 0,
+        }));
+
+        return {
+            hits,
+            totalPages: Math.ceil(unitids.length / hitsPerPage),
+            totalHits: unitids.length,
+        };
+    }
+
     // Try Typesense first
     try {
         const filterBy = `unitid:=[${unitids.join(',')}]`;

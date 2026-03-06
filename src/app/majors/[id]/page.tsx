@@ -10,9 +10,10 @@ import { ArrowRight, Search } from 'lucide-react';
 
 export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
     const major = await prisma.major.findUnique({ where: { cip4: params.id } });
+    const title = major?.title || 'Major';
     return {
-        title: `${major?.title || 'Major'} Reviews & Ratings | RateMyDegree`,
-        description: `Read verified student and alumni reviews for ${major?.title}. Get insights on rigor, career prospects, and ROI.`,
+        title: `${title} (CIP ${params.id}) Reviews & Ratings | RateMyDegree`,
+        description: `Read verified student and alumni reviews for ${title} (CIP ${params.id}). Get insights on rigor, career prospects, and ROI.`,
     };
 }
 

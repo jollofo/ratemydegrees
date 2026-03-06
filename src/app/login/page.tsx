@@ -2,6 +2,14 @@ import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 import { headers } from 'next/headers'
 import { Shield, UserCheck, Lock } from 'lucide-react'
+import { Metadata } from 'next'
+
+export const metadata: Metadata = {
+    title: 'Sign In | RateMyDegree',
+    alternates: {
+        canonical: 'https://ratemydegrees.com/login',
+    },
+}
 
 export default function LoginPage({
     searchParams,
