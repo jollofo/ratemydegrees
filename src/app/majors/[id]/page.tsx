@@ -282,11 +282,11 @@ export default async function MajorDetailPage({
                                             <span className="bg-earth-mustard/20 text-foreground px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded-full border border-earth-mustard/30">
                                                 {inst.completionsTotal} / YR
                                             </span>
-                                            <span className="text-[10px] font-bold text-earth-sage uppercase tracking-widest truncate max-w-[100px] italic">{inst.city}, {inst.state}</span>
+                                            <span className="text-[10px] font-bold text-earth-sage uppercase tracking-widest truncate max-w-[100px] italic">{inst.institution.city}, {inst.institution.state}</span>
                                         </div>
                                         <h4
                                             className="text-2xl font-funky text-foreground group-hover:text-earth-terracotta transition-colors leading-tight italic"
-                                            dangerouslySetInnerHTML={{ __html: (inst as any)._highlightResult?.name?.value ?? inst.name }}
+                                            dangerouslySetInnerHTML={{ __html: (inst as any)._highlightResult?.name?.value ?? inst.institution.name }}
                                         />
                                     </div>
                                     <div className="flex items-center justify-between pt-8 border-t border-foreground/5 transition-colors group-hover:border-earth-terracotta">
