@@ -2,13 +2,13 @@
 
 import prisma from '@/lib/prisma';
 import { createClient } from '@/utils/supabase/server';
-import { redirect } from 'next/navigation';
+import { redirectToLogin } from '@/lib/auth-redirect';
 
 export default async function ReportsPage() {
     const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
-    if (!user) redirect('/login');
+    if (!user) redirectToLogin('/admin/reports');
 
     const reports = await prisma.report.findMany({
         where: { status: 'OPEN' },

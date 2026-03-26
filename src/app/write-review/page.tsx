@@ -1,20 +1,32 @@
 import { createClient } from '@/utils/supabase/server';
-import { redirect } from 'next/navigation';
+import { redirectToLogin } from '@/lib/auth-redirect';
 import { getMajorsForSearch, getInstitutionsForSearch } from './actions';
 import WriteReviewForm from './ReviewForm';
 
-export default async function WriteReviewPage() {
+export default async function WriteReviewPage({
+    searchParams
+}: {
+    searchParams: { majorId?: string; institutionId?: string }
+}) {
     const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {
-        redirect('/login?next=/write-review');
+        redirectToLogin('/write-review');
     }
 
     const [majors, institutions] = await Promise.all([
         getMajorsForSearch(),
         getInstitutionsForSearch()
     ]);
+
+    // Find pre-selected items if IDs are provided
+    const preSelectedMajor = searchParams.majorId
+        ? majors.find(m => m.cip4 === searchParams.majorId)
+        : undefined;
+    const preSelectedInstitution = searchParams.institutionId
+        ? institutions.find(i => i.unitid === searchParams.institutionId)
+        : undefined;
 
     return (
         <div className="container mx-auto px-6 py-8 max-w-3xl">
@@ -25,7 +37,12 @@ export default async function WriteReviewPage() {
                 </p>
             </div>
 
-            <WriteReviewForm majors={majors} institutions={institutions} />
+            <WriteReviewForm
+                majors={majors}
+                institutions={institutions}
+                preSelectedMajor={preSelectedMajor}
+                preSelectedInstitution={preSelectedInstitution}
+            />
         </div>
     );
 }

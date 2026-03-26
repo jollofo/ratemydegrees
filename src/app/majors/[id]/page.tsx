@@ -153,13 +153,13 @@ export default async function MajorDetailPage({
                         {major.description || "Explore verified student reviews for this program. Find out about workload, career outcomes, and what students really think."}
                     </p>
                 </div>
-                <a href="/write-review" className="coffee-btn px-10 py-5 text-xl w-full md:w-auto text-center">
+                <a href={`/write-review?majorId=${major.cip4}`} className="coffee-btn px-10 py-5 text-xl w-full md:w-auto text-center">
                     Write a Review
                 </a>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 mb-24">
-                <div className="lg:col-span-5 space-y-12">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 mb-24">
+                <div className="lg:col-span-4 space-y-12">
                     {/* Scorecard */}
                     <div className="coffee-card bg-earth-parchment/30">
                         <h3 className="text-2xl font-funky text-foreground mb-10 italic border-b border-foreground/5 pb-6">Community Sentiment</h3>
@@ -246,7 +246,7 @@ export default async function MajorDetailPage({
                     )}
                 </div>
 
-                <div className="lg:col-span-7">
+                <div className="lg:col-span-8">
                     <div className="mb-12 flex flex-col sm:flex-row sm:items-end justify-between gap-8">
                         <div>
                             <h3 className="text-4xl font-funky text-foreground mb-3 tracking-tight italic">Institutions</h3>
@@ -319,7 +319,7 @@ export default async function MajorDetailPage({
                         </div>
                         <h4 className="text-4xl font-funky text-foreground mb-6 italic">Write a Review</h4>
                         <p className="text-xl text-foreground font-medium max-w-2xl mb-12 leading-relaxed opacity-70 italic">Verified student reviews are the heart of this platform. If you have studied {major.title}, your experience could help the next student choose wisely.</p>
-                        <a href="/write-review" className="coffee-btn bg-white text-foreground hover:bg-earth-parchment px-12 py-5 text-xl shadow-[6px_6px_0px_#433422]">
+                        <a href={`/write-review?majorId=${major.cip4}`} className="coffee-btn bg-white text-foreground hover:bg-earth-parchment px-12 py-5 text-xl shadow-[6px_6px_0px_#433422]">
                             Write a Review
                         </a>
                     </div>

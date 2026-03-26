@@ -6,7 +6,7 @@ import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 import Image from "next/image";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
-import { signOut } from "@/app/actions/auth";
+import UserDropdown from "@/components/UserDropdown";
 
 const inter = Inter({ subsets: ["latin"], variable: '--font-inter' });
 const funky = Bricolage_Grotesque({ subsets: ["latin"], variable: '--font-funky' });
@@ -60,29 +60,7 @@ export default async function RootLayout({
                                 )}
 
                                 {user ? (
-                                    <div className="flex items-center gap-8">
-                                        <div className="flex items-center justify-center bg-[#fffefb] border-2 border-foreground rounded-full w-12 h-12 shadow-sm">
-                                            {user.user_metadata?.avatar_url ? (
-                                                <Image
-                                                    src={user.user_metadata.avatar_url}
-                                                    alt="Profile"
-                                                    width={40}
-                                                    height={40}
-                                                    className="rounded-full border border-foreground"
-                                                    unoptimized
-                                                />
-                                            ) : (
-                                                <div className="w-10 h-10 bg-earth-sage rounded-full border border-foreground flex items-center justify-center text-white font-funky text-lg">
-                                                    {user.email?.[0].toUpperCase()}
-                                                </div>
-                                            )}
-                                        </div>
-                                        <form action={signOut}>
-                                            <button className="text-[10px] font-bold uppercase tracking-widest opacity-50 hover:opacity-100 transition-opacity">
-                                                Log Out
-                                            </button>
-                                        </form>
-                                    </div>
+                                    <UserDropdown user={user} />
                                 ) : (
                                     <a href="/login" className="coffee-btn py-2.5 text-sm">
                                         Sign In

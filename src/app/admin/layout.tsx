@@ -1,5 +1,6 @@
 import { createClient } from '@/utils/supabase/server';
 import { getDbUser } from '@/lib/user';
+import { redirectToLogin } from '@/lib/auth-redirect';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 
@@ -12,7 +13,7 @@ export default async function AdminLayout({
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {
-        redirect('/login?returnTo=/admin');
+        redirectToLogin('/admin');
     }
 
     const dbUser = await getDbUser(user.id) as any;

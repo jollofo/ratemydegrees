@@ -34,6 +34,10 @@ export const reviewRatingsSchema = z.object({
     flexibility: ratingValue,
     satisfaction: ratingValue,
     value: ratingValue,
+    // New categories — optional so existing reviews aren't rejected
+    networking: ratingValue.optional(),
+    research: ratingValue.optional(),
+    internships: ratingValue.optional(),
 });
 
 const writtenField = z

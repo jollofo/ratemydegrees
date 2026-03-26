@@ -7,7 +7,6 @@ export async function GET(request: Request) {
     // https://supabase.com/docs/guides/auth/server-side/nextjs
     const requestUrl = new URL(request.url)
     const code = requestUrl.searchParams.get('code')
-    const origin = requestUrl.origin
     const next = requestUrl.searchParams.get('next') || '/'
 
     if (code) {
@@ -18,7 +17,9 @@ export async function GET(request: Request) {
             const host = request.headers.get('x-forwarded-host') || request.headers.get('host')
             const origin = `${protocol}://${host}`
 
-            return NextResponse.redirect(`${origin}${next}`)
+            // Redirect to the redirect handler page which will check sessionStorage
+            // and perform the final navigation
+            return NextResponse.redirect(`${origin}/auth/redirect?next=${encodeURIComponent(next)}`)
         } else {
             console.error('Auth Logic Error:', error);
         }

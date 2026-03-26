@@ -2,13 +2,13 @@
 
 import prisma from '@/lib/prisma';
 import { createClient } from '@/utils/supabase/server';
-import { redirect } from 'next/navigation';
+import { redirectToLogin } from '@/lib/auth-redirect';
 
 export default async function UsersPage() {
     const supabase = createClient();
     const { data: { user: authUser } } = await supabase.auth.getUser();
 
-    if (!authUser) redirect('/login');
+    if (!authUser) redirectToLogin('/admin/users');
 
     const users = await prisma.user.findMany({
         orderBy: { createdAt: 'desc' },

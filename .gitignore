@@ -8,3 +8,4 @@ node_modules
 README_DEPLOY.md
 # Sentry Config File
 .env.sentry-build-plugin
+*.md

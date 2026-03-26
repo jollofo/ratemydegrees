@@ -131,7 +131,7 @@ export default async function ProgramDetailPage({ params }: { params: { id: stri
                     <h1 className="text-5xl md:text-6xl font-funky text-foreground tracking-tight leading-[0.85] mb-4">{institution.name}</h1>
                     <p className="text-xl font-funky text-earth-terracotta italic tracking-tight">Academic Department Insights</p>
                 </div>
-                <a href="/write-review" className="coffee-btn px-8 py-4 text-lg w-full md:w-auto text-center shadow-[6px_6px_0px_#433422]">
+                <a href={`/write-review?majorId=${major.cip4}&institutionId=${institution.unitid}`} className="coffee-btn px-8 py-4 text-lg w-full md:w-auto text-center shadow-[6px_6px_0px_#433422]">
                     Share Your Experience
                 </a>
             </div>
@@ -215,7 +215,7 @@ export default async function ProgramDetailPage({ params }: { params: { id: stri
                             <p className="text-foreground font-medium mb-12 max-w-sm mx-auto leading-relaxed italic opacity-70 text-lg">
                                 Be the first to share your experience about the {major.title} program at {institution.name}.
                             </p>
-                            <a href="/write-review" className="coffee-btn bg-white text-foreground hover:bg-earth-parchment px-12 py-5 text-xl">
+                            <a href={`/write-review?majorId=${major.cip4}&institutionId=${institution.unitid}`} className="coffee-btn bg-white text-foreground hover:bg-earth-parchment px-12 py-5 text-xl">
                                 Write a Review
                             </a>
                         </div>

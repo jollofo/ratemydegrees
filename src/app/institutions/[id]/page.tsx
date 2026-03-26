@@ -95,6 +95,9 @@ export default async function InstitutionPage({
                         </div>
                         <h1 className="text-7xl font-funky text-foreground tracking-tight leading-[0.85]">{institution.name}</h1>
                     </div>
+                    <a href={`/write-review?institutionId=${institution.unitid}`} className="coffee-btn px-10 py-5 text-xl w-full md:w-auto text-center">
+                        Write a Review
+                    </a>
                 </div>
 
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-6">

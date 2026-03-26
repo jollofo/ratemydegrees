@@ -5,6 +5,10 @@ export interface ReviewRatings {
     flexibility: number;
     satisfaction: number;
     value: number;
+    // New categories (optional for backward compat with old reviews)
+    networking?: number;
+    research?: number;
+    internships?: number;
 }
 
 export interface ReviewFormData {
