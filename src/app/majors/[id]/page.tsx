@@ -159,7 +159,7 @@ export default async function MajorDetailPage({
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 mb-24">
-                <div className="lg:col-span-4 space-y-12">
+                <div className="lg:col-span-3 space-y-12 self-start sticky top-8">
                     {/* Scorecard */}
                     <div className="coffee-card bg-earth-parchment/30">
                         <h3 className="text-2xl font-funky text-foreground mb-10 italic border-b border-foreground/5 pb-6">Community Sentiment</h3>
@@ -246,7 +246,7 @@ export default async function MajorDetailPage({
                     )}
                 </div>
 
-                <div className="lg:col-span-8">
+                <div className="lg:col-span-9">
                     <div className="mb-12 flex flex-col sm:flex-row sm:items-end justify-between gap-8">
                         <div>
                             <h3 className="text-4xl font-funky text-foreground mb-3 tracking-tight italic">Institutions</h3>
