@@ -1,6 +1,7 @@
 'use server';
 
 import { searchClient, COLLECTION_MAJORS, COLLECTION_INSTITUTIONS } from '@/lib/typesense';
+import { getEmbedding } from '@/lib/embeddings';
 
 export interface MajorHit {
     id: string;
@@ -11,6 +12,7 @@ export interface MajorHit {
     reviewCount: number;
     salaryRange: string;
     commonJobs: string[];
+    aliases?: string[];
     highlights?: { field: string; snippet?: string; value?: string }[];
 }
 
@@ -39,16 +41,34 @@ export async function searchMajors(
 ) {
     const { page = 1, hitsPerPage = 12, filterBy } = options ?? {};
 
+    let vectorQueryString: string | undefined = undefined;
+    if (query && query !== '*') {
+        try {
+            const vector = await getEmbedding(query);
+            vectorQueryString = `vec:([${vector.join(',')}], k:10, alpha:0.75)`;
+        } catch (err) {
+            console.error('Error generating query embedding:', err);
+        }
+    }
+
     try {
-        const result = await searchClient.collections(COLLECTION_MAJORS).documents().search({
-            q: query || '*',
-            query_by: 'title,category,description,commonJobs',
-            page,
-            per_page: hitsPerPage,
-            ...(filterBy ? { filter_by: filterBy } : {}),
-            highlight_full_fields: 'title,category',
-            snippet_threshold: 20,
+        const response = await searchClient.multiSearch.perform({
+            searches: [
+                {
+                    collection: COLLECTION_MAJORS,
+                    q: query || '*',
+                    query_by: 'title,category,description,commonJobs,aliases',
+                    ...(vectorQueryString ? { vector_query: vectorQueryString } : {}),
+                    page,
+                    per_page: hitsPerPage,
+                    ...(filterBy ? { filter_by: filterBy } : {}),
+                    highlight_full_fields: 'title,category',
+                    snippet_threshold: 20,
+                }
+            ]
         });
+
+        const result = response.results[0];
 
         const hits: MajorHit[] = (result.hits ?? []).map((h: any) => ({
             id: h.document.id,
@@ -59,6 +79,7 @@ export async function searchMajors(
             reviewCount: h.document.reviewCount ?? 0,
             salaryRange: h.document.salaryRange ?? '',
             commonJobs: h.document.commonJobs ?? [],
+            aliases: h.document.aliases ?? [],
             highlights: h.highlights,
             _highlightResult: buildHighlightResult(h.highlights),
         }));
@@ -66,8 +87,28 @@ export async function searchMajors(
         const totalHits = result.found ?? 0;
         const totalPages = Math.ceil(totalHits / hitsPerPage);
 
+        if (totalHits === 0 && query && query !== '*') {
+            try {
+                const { resolveMajorQuery } = await import('@/lib/major-resolver');
+                const resolved = await resolveMajorQuery(query).catch(() => ({ matches: [] }));
+                const topMatch = resolved.matches[0];
+                const { logSearchGap } = await import('@/lib/search-logger');
+                
+                logSearchGap({
+                    query,
+                    type: 'major',
+                    cip4: topMatch?.cip4,
+                    resolvedMajorTitle: topMatch?.title,
+                    details: topMatch ? `Resolved DB-side but 0 hits in Typesense` : 'No DB resolution found'
+                });
+            } catch (err) {
+                console.error('Failed to log search gap:', err);
+            }
+        }
+
         return { hits, totalPages, totalHits };
-    } catch {
+    } catch (err) {
+        console.error('Typesense major search failed:', err);
         return { hits: [], totalPages: 0, totalHits: 0 };
     }
 }
@@ -78,15 +119,33 @@ export async function searchInstitutions(
 ) {
     const { page = 1, hitsPerPage = 12, filterBy } = options ?? {};
 
+    let vectorQueryString: string | undefined = undefined;
+    if (query && query !== '*') {
+        try {
+            const vector = await getEmbedding(query);
+            vectorQueryString = `vec:([${vector.join(',')}], k:10, alpha:0.75)`;
+        } catch (err) {
+            console.error('Error generating query embedding:', err);
+        }
+    }
+
     try {
-        const result = await searchClient.collections(COLLECTION_INSTITUTIONS).documents().search({
-            q: query || '*',
-            query_by: 'name,city,state',
-            page,
-            per_page: hitsPerPage,
-            ...(filterBy ? { filter_by: filterBy } : {}),
-            highlight_full_fields: 'name,city,state',
+        const response = await searchClient.multiSearch.perform({
+            searches: [
+                {
+                    collection: COLLECTION_INSTITUTIONS,
+                    q: query || '*',
+                    query_by: 'name,city,state,aliases',
+                    ...(vectorQueryString ? { vector_query: vectorQueryString } : {}),
+                    page,
+                    per_page: hitsPerPage,
+                    ...(filterBy ? { filter_by: filterBy } : {}),
+                    highlight_full_fields: 'name,city,state',
+                }
+            ]
         });
+
+        const result = response.results[0];
 
         const hits: InstitutionHit[] = (result.hits ?? []).map((h: any) => ({
             id: h.document.id,
@@ -104,7 +163,8 @@ export async function searchInstitutions(
         const totalPages = Math.ceil(totalHits / hitsPerPage);
 
         return { hits, totalPages, totalHits };
-    } catch {
+    } catch (err) {
+        console.error('Typesense institution search failed:', err);
         return { hits: [], totalPages: 0, totalHits: 0 };
     }
 }
@@ -129,6 +189,19 @@ export async function searchInstitutionsForMajor(
     });
 
     if (offerings.length === 0) {
+        try {
+            const { logSearchGap } = await import('@/lib/search-logger');
+            const major = await prisma.major.findUnique({ where: { cip4 }, select: { title: true } });
+            logSearchGap({
+                query,
+                type: 'institution_for_major',
+                cip4,
+                resolvedMajorTitle: major?.title ?? 'Unknown Major',
+                details: 'Major exists in DB but no institutions offer it (0 completions)'
+            });
+        } catch (err) {
+            console.error('Failed to log search gap:', err);
+        }
         return { hits: [], totalPages: 0, totalHits: 0 };
     }
 
@@ -172,15 +245,32 @@ export async function searchInstitutionsForMajor(
     try {
         const filterBy = `unitid:=[${unitids.join(',')}]`;
 
-        const result = await searchClient.collections(COLLECTION_INSTITUTIONS).documents().search({
-            q: query || '*',
-            query_by: 'name,city,state',
-            filter_by: filterBy,
-            page,
-            per_page: hitsPerPage,
-            highlight_full_fields: 'name,city,state',
+        let vectorQueryString: string | undefined = undefined;
+        if (query && query !== '*') {
+            try {
+                const vector = await getEmbedding(query);
+                vectorQueryString = `vec:([${vector.join(',')}], k:10, alpha:0.75)`;
+            } catch (err) {
+                console.error('Error generating query embedding:', err);
+            }
+        }
+
+        const response = await searchClient.multiSearch.perform({
+            searches: [
+                {
+                    collection: COLLECTION_INSTITUTIONS,
+                    q: query || '*',
+                    query_by: 'name,city,state,aliases',
+                    ...(vectorQueryString ? { vector_query: vectorQueryString } : {}),
+                    filter_by: filterBy,
+                    page,
+                    per_page: hitsPerPage,
+                    highlight_full_fields: 'name,city,state',
+                }
+            ]
         });
 
+        const result = response.results[0];
         const totalHits = result.found ?? 0;
 
         if (totalHits > 0 || (result.hits ?? []).length > 0) {
@@ -198,7 +288,8 @@ export async function searchInstitutionsForMajor(
             }));
             return { hits, totalPages: Math.ceil(totalHits / hitsPerPage), totalHits };
         }
-    } catch {
+    } catch (err) {
+        console.error('Typesense search for major institutions failed:', err);
         // Typesense unavailable or collection not populated — fall through to Prisma
     }
 
@@ -219,6 +310,20 @@ export async function searchInstitutionsForMajor(
             ...(query ? { name: { contains: query, mode: 'insensitive' } } : {}),
         },
     });
+
+    if (totalCount === 0 && query) {
+        try {
+            const { logSearchGap } = await import('@/lib/search-logger');
+            logSearchGap({
+                query,
+                type: 'institution_for_major',
+                cip4,
+                details: `No institutions matching "${query}" offer major ${cip4}`
+            });
+        } catch (err) {
+            console.error('Failed to log search gap:', err);
+        }
+    }
 
     const fallbackHits = prismaInstitutions.map((inst: any) => ({
         id: inst.unitid,

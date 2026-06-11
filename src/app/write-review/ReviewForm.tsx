@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import Typesense from 'typesense';
 import { submitReview, searchMajors } from './actions';
+import { searchMajors as searchMajorsTypesense, searchInstitutions as searchInstitutionsTypesense } from '@/app/actions/search';
 import { ReviewFormData, InstitutionSearchResult, MajorSearchResult } from './types';
 import MajorResolverModal from '@/components/MajorResolverModal';
 
@@ -206,16 +206,7 @@ function validateForm(data: ReviewFormData, step: number): { errors: ValidationE
     return { errors, isValid };
 }
 
-// Client-side Typesense instance — uses public search-only key
-const typesense = new Typesense.Client({
-    nodes: [{
-        host: process.env.NEXT_PUBLIC_TYPESENSE_HOST!,
-        port: parseInt(process.env.NEXT_PUBLIC_TYPESENSE_PORT ?? '443'),
-        protocol: (process.env.NEXT_PUBLIC_TYPESENSE_PROTOCOL ?? 'https') as 'https' | 'http',
-    }],
-    apiKey: process.env.NEXT_PUBLIC_TYPESENSE_SEARCH_KEY!,
-    connectionTimeoutSeconds: 5,
-});
+
 
 export default function WriteReviewForm({
     majors: initialMajors,
@@ -353,17 +344,12 @@ export default function WriteReviewForm({
         instDebounce.current = setTimeout(async () => {
             setIsSearchingInst(true);
             try {
-                const result = await typesense.collections('institutions').documents().search({
-                    q: instQuery,
-                    query_by: 'name,city,state',
-                    per_page: 10,
-                    include_fields: 'unitid,name,city,state',
-                });
+                const result = await searchInstitutionsTypesense(instQuery, { hitsPerPage: 10 });
                 setInstResults((result.hits ?? []).map((h: any) => ({
-                    unitid: h.document.unitid,
-                    name: h.document.name,
-                    city: h.document.city ?? null,
-                    state: h.document.state ?? null,
+                    unitid: h.unitid,
+                    name: h.name,
+                    city: h.city ?? null,
+                    state: h.state ?? null,
                 })));
             } catch (err) {
                 console.error('Institution search error:', err);
@@ -387,18 +373,13 @@ export default function WriteReviewForm({
         majorDebounce.current = setTimeout(async () => {
             setIsSearchingMajor(true);
             try {
-                const result = await typesense.collections('majors').documents().search({
-                    q: majorQuery,
-                    query_by: 'title,category',
-                    per_page: 10,
-                    include_fields: 'cip4,title,category',
-                });
+                const result = await searchMajorsTypesense(majorQuery, { hitsPerPage: 10 });
 
-                if ((result.hits ?? []).length > 0) {
-                    setMajorResults((result.hits ?? []).map((h: any) => ({
-                        cip4: h.document.cip4,
-                        title: h.document.title,
-                        category: h.document.category ?? null,
+                if (result.hits && result.hits.length > 0) {
+                    setMajorResults(result.hits.map((h: any) => ({
+                        cip4: h.cip4,
+                        title: h.title,
+                        category: h.category ?? null,
                         matchType: 'DIRECT' as const,
                     })));
                 } else {

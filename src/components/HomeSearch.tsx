@@ -2,18 +2,8 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import Typesense from 'typesense';
 import { Search, ArrowRight, School, PenTool, Shield, User } from 'lucide-react';
-
-const searchClient = new Typesense.Client({
-    nodes: [{
-        host: process.env.NEXT_PUBLIC_TYPESENSE_HOST!,
-        port: parseInt(process.env.NEXT_PUBLIC_TYPESENSE_PORT ?? '443'),
-        protocol: (process.env.NEXT_PUBLIC_TYPESENSE_PROTOCOL ?? 'https') as 'https' | 'http',
-    }],
-    apiKey: process.env.NEXT_PUBLIC_TYPESENSE_SEARCH_KEY!,
-    connectionTimeoutSeconds: 5,
-});
+import { searchMajors } from '@/app/actions/search';
 
 interface MajorHit {
     objectID: string;
@@ -58,21 +48,15 @@ export default function HomeSearch() {
         debounceRef.current = setTimeout(async () => {
             setLoading(true);
             try {
-                const result = await searchClient.collections('majors').documents().search({
-                    q: query,
-                    query_by: 'title,category',
-                    per_page: 6,
-                    highlight_full_fields: 'title',
-                    include_fields: 'cip4,title,category,reviewCount',
-                });
+                const result = await searchMajors(query, { hitsPerPage: 6 });
                 const results: MajorHit[] = (result.hits ?? []).map((h: any) => ({
-                    objectID: h.document.cip4,
-                    cip4: h.document.cip4,
-                    title: h.document.title,
-                    category: h.document.category ?? '',
-                    reviewCount: h.document.reviewCount ?? 0,
+                    objectID: h.cip4,
+                    cip4: h.cip4,
+                    title: h.title,
+                    category: h.category ?? '',
+                    reviewCount: h.reviewCount ?? 0,
                     _highlightResult: {
-                        title: { value: h.highlights?.find((hl: any) => hl.field === 'title')?.snippet ?? h.document.title }
+                        title: { value: h._highlightResult?.title?.value ?? h.title }
                     },
                 }));
                 setHits(results);

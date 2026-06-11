@@ -4,14 +4,21 @@
  *
  * Creates/updates the majors and institutions collections in Typesense
  * and pushes all records from the database.
- * Safe to re-run — uses upsert mode.
+ * Safe to re-run — recreates collections to apply schema modifications.
+ *
+ * IMPORTANT: This script MUST be run to synchronize Typesense whenever:
+ * 1. Database major descriptions/definitions are updated (e.g. from IPEDS).
+ * 2. New MajorAlias records are loaded or edited.
  */
 
 import dotenv from 'dotenv';
 dotenv.config({ path: '.env' });
 
 import Typesense from 'typesense';
+import path from 'path';
+import { parseCsv } from './etl/utils/parseCsv';
 import prisma from '../src/lib/prisma';
+import { getEmbedding } from '../src/lib/embeddings';
 
 const host = process.env.NEXT_PUBLIC_TYPESENSE_HOST!;
 const port = parseInt(process.env.NEXT_PUBLIC_TYPESENSE_PORT ?? '443');
@@ -39,9 +46,11 @@ const majorsSchema = {
         { name: 'title', type: 'string' as const },
         { name: 'category', type: 'string' as const, optional: true },
         { name: 'description', type: 'string' as const, optional: true },
+        { name: 'aliases', type: 'string[]' as const, optional: true },
         { name: 'reviewCount', type: 'int32' as const },
         { name: 'salaryRange', type: 'string' as const, optional: true },
         { name: 'commonJobs', type: 'string[]' as const, optional: true },
+        { name: 'vec', type: 'float[]' as const, num_dim: 384 },
     ],
     default_sorting_field: 'reviewCount',
 };
@@ -56,6 +65,8 @@ const institutionsSchema = {
         { name: 'state', type: 'string' as const, optional: true, facet: true },
         { name: 'control', type: 'string' as const, optional: true, facet: true },
         { name: 'reviewCount', type: 'int32' as const },
+        { name: 'aliases', type: 'string[]' as const, optional: true },
+        { name: 'vec', type: 'float[]' as const, num_dim: 384 },
     ],
     default_sorting_field: 'reviewCount',
 };
@@ -65,12 +76,15 @@ const institutionsSchema = {
 async function ensureCollection(schema: typeof majorsSchema | typeof institutionsSchema) {
     try {
         await client.collections(schema.name).retrieve();
-        console.log(`  ℹ️  Collection "${schema.name}" already exists — will upsert records.`);
+        console.log(`  ℹ️  Collection "${schema.name}" already exists — deleting to apply new schema...`);
+        await client.collections(schema.name).delete();
     } catch {
-        console.log(`  ➕  Creating collection "${schema.name}"...`);
-        await client.collections().create(schema as any);
-        console.log(`  ✅  Collection "${schema.name}" created.`);
+        // Collection doesn't exist, which is fine
     }
+    
+    console.log(`  ➕  Creating collection "${schema.name}"...`);
+    await client.collections().create(schema as any);
+    console.log(`  ✅  Collection "${schema.name}" created.`);
 }
 
 // ─── Indexing Functions ───────────────────────────────────────────────────────
@@ -86,25 +100,45 @@ async function indexMajors() {
             category: true,
             description: true,
             outcomes: true,
+            aliases: {
+                select: {
+                    alias: true
+                }
+            },
             _count: {
                 select: { reviews: { where: { status: 'APPROVED' } } }
             }
         }
     });
 
-    const records = majors.map((m) => {
+    console.log(`  Generating vector embeddings for ${majors.length} majors...`);
+    const records = [];
+    for (let i = 0; i < majors.length; i++) {
+        const m = majors[i];
         const outcomes = m.outcomes ? JSON.parse(m.outcomes) : null;
-        return {
+        const aliasesList = m.aliases.map((a) => a.alias);
+
+        // Combine title + description + aliases for vector search corpus
+        const searchCorpus = `${m.title} ${m.description ?? ''} ${aliasesList.join(' ')}`.trim();
+        const vec = await getEmbedding(searchCorpus);
+
+        records.push({
             id: m.cip4,
             cip4: m.cip4,
             title: m.title,
             category: m.category ?? '',
             description: m.description ?? '',
+            aliases: aliasesList,
             reviewCount: m._count.reviews,
             salaryRange: outcomes?.salaryRange ?? '',
             commonJobs: outcomes?.commonJobs ?? [],
-        };
-    });
+            vec,
+        });
+
+        if ((i + 1) % 100 === 0) {
+            console.log(`  ✓  Embedded ${i + 1}/${majors.length} majors...`);
+        }
+    }
 
     console.log(`  → Upserting ${records.length} majors...`);
 
@@ -117,6 +151,17 @@ async function indexMajors() {
     }
 
     console.log('  ✅  Majors indexed.');
+}
+
+function parseAliases(aliasStr: string): string[] {
+    if (!aliasStr || !aliasStr.trim()) return [];
+    
+    // Split by ||, |, comma, or double-or-more spaces
+    const parts = aliasStr.split(/[|,\n\r\t]+|\s{2,}/);
+    
+    return parts
+        .map(p => p.trim())
+        .filter(p => p.length > 0 && p.toLowerCase() !== 'null' && p.toLowerCase() !== '-2');
 }
 
 async function indexInstitutions() {
@@ -137,15 +182,45 @@ async function indexInstitutions() {
         }
     });
 
-    const records = institutions.map((i) => ({
-        id: i.unitid,
-        unitid: i.unitid,
-        name: i.name,
-        city: i.city ?? '',
-        state: i.state ?? '',
-        control: i.control ?? '',
-        reviewCount: i._count.reviews,
-    }));
+    const filePath = path.join(process.cwd(), 'data', 'hd2024.csv');
+    console.log(`  Reading aliases from IPEDS dataset: ${filePath}...`);
+    const csvRecords = await parseCsv<any>(filePath);
+    const aliasMap = new Map<string, string[]>();
+    for (const record of csvRecords) {
+        const unitid = String(record['UNITID']);
+        const aliasStr = record['IALIAS'] || '';
+        const aliases = parseAliases(aliasStr);
+        if (aliases.length > 0) {
+            aliasMap.set(unitid, aliases);
+        }
+    }
+
+    console.log(`  Generating vector embeddings for ${institutions.length} institutions...`);
+    const records = [];
+    for (let i = 0; i < institutions.length; i++) {
+        const inst = institutions[i];
+        const aliasesList = aliasMap.get(inst.unitid) ?? [];
+        
+        // Combine name + city + state + aliases for vector search corpus
+        const searchCorpus = `${inst.name} ${inst.city ?? ''} ${inst.state ?? ''} ${aliasesList.join(' ')}`.trim();
+        const vec = await getEmbedding(searchCorpus);
+
+        records.push({
+            id: inst.unitid,
+            unitid: inst.unitid,
+            name: inst.name,
+            city: inst.city ?? '',
+            state: inst.state ?? '',
+            control: inst.control ?? '',
+            reviewCount: inst._count.reviews,
+            aliases: aliasesList,
+            vec,
+        });
+
+        if ((i + 1) % 1000 === 0) {
+            console.log(`  ✓  Embedded ${i + 1}/${institutions.length} institutions...`);
+        }
+    }
 
     console.log(`  → Upserting ${records.length} institutions...`);
 

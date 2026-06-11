@@ -27,6 +27,10 @@ function getSearchClient(): Client {
 /** Search-only client — safe to use in browser and server components */
 export const searchClient = {
     collections: (name: string) => getSearchClient().collections(name),
+    multiSearch: {
+        perform: (searchRequests: any, commonSearchParams?: any): Promise<any> =>
+            getSearchClient().multiSearch.perform(searchRequests, commonSearchParams),
+    }
 };
 
 /**

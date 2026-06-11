@@ -119,12 +119,13 @@ async function main() {
         try {
             await prisma.major.upsert({
                 where: { cip4 },
-                update: { title, slug },
+                update: { title, slug, description: entry?.definition || '' },
                 create: {
                     cip4,
                     title,
                     slug,
-                    category: cip4.split('.')[0]
+                    category: cip4.split('.')[0],
+                    description: entry?.definition || ''
                 }
             });
             count++;
