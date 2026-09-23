@@ -5,7 +5,7 @@ export type MajorResolutionMatch = {
     cip4: string;
     title: string;
     confidence: 'HIGH' | 'MEDIUM' | 'LOW';
-    matchType: 'DIRECT' | 'ALIAS' | 'PATHWAY' | 'RELATED';
+    matchType: 'DIRECT' | 'ALIAS';
     source: string;
     category?: string | null;
 };
@@ -98,33 +98,6 @@ export async function resolveMajorQuery(
         }
     }
 
-    // 3. Pathway Matches
-    if (matches.length < 5) {
-        const pathwayMatches = await prisma.majorPathway.findMany({
-            where: {
-                pathway: { contains: normalizedQuery, mode: 'insensitive' }
-            },
-            include: { major: true },
-            orderBy: { weight: 'desc' },
-            take: 5
-        });
-
-        for (const p of pathwayMatches) {
-            if (seenCip4.has(p.cip4)) continue;
-
-            matches.push({
-                cip4: p.cip4,
-                title: p.major.title,
-                confidence: 'MEDIUM', // Pathways are inherently less certain
-                matchType: 'PATHWAY',
-                source: p.pathway,
-                category: p.major.category
-            });
-            seenCip4.add(p.cip4);
-        }
-    }
-
-
     // 4. Verification Step (Filter by Institution)
     let verifiedMatches = matches;
     if (institutionId) {
@@ -141,59 +114,6 @@ export async function resolveMajorQuery(
 
             if (isOffered) {
                 verifiedMatches.push(m);
-            }
-        }
-    }
-
-    // 5. Related Majors Expansion (only if we have high-confidence matches)
-    // If we have strong matches, check if they have related majors that are also applicable
-    const highConfidenceMatches = verifiedMatches.filter(m => m.confidence === 'HIGH');
-    if (highConfidenceMatches.length > 0 && verifiedMatches.length < 5) {
-        // Collect all related cip4s
-        const relatedCip4s = new Set<string>();
-
-        for (const m of highConfidenceMatches) {
-            const meta = await prisma.majorMeta.findUnique({
-                where: { cip4: m.cip4 },
-                select: { commonRelatedCip4: true }
-            });
-
-            if (meta && meta.commonRelatedCip4) {
-                meta.commonRelatedCip4.forEach(c => relatedCip4s.add(c));
-            }
-        }
-
-        // Remove ones we already have
-        verifiedMatches.forEach(m => relatedCip4s.delete(m.cip4));
-
-        if (relatedCip4s.size > 0) {
-            const relatedMajors = await prisma.major.findMany({
-                where: { cip4: { in: Array.from(relatedCip4s) } },
-                take: 5
-            });
-
-            for (const related of relatedMajors) {
-                // If institution context is active, verify this related major too
-                if (institutionId) {
-                    const isOffered = await prisma.institutionMajor.findUnique({
-                        where: {
-                            unitid_cip4: {
-                                unitid: institutionId,
-                                cip4: related.cip4
-                            }
-                        }
-                    });
-                    if (!isOffered) continue;
-                }
-
-                verifiedMatches.push({
-                    cip4: related.cip4,
-                    title: related.title,
-                    confidence: 'LOW',
-                    matchType: 'RELATED',
-                    source: 'Related Major Expansion',
-                    category: related.category
-                });
             }
         }
     }

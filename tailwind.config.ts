@@ -34,9 +34,9 @@ const config: Config = {
                 },
             },
             fontFamily: {
-                sans: ["Inter", "sans-serif"],
-                funky: ["Bricolage Grotesque", "serif"],
-                mono: ["Courier Prime", "monospace"],
+                sans: ["var(--font-inter)", "sans-serif"],
+                funky: ["var(--font-inter)", "sans-serif"],
+                mono: ["ui-monospace", "monospace"],
             },
         },
     },

@@ -4,10 +4,10 @@ import ModerationTable from './ModerationTable';
 export default async function ModerationPage({
     searchParams
 }: {
-    searchParams: { status?: string }
+    searchParams: { status?: string; reviewId?: string }
 }) {
     const status = searchParams.status || 'PENDING';
-    const queue = await getModerationQueue(status);
+    const queue = await getModerationQueue(status, searchParams.reviewId);
     const stats = await getAdminStats();
 
     return (
@@ -16,7 +16,7 @@ export default async function ModerationPage({
                 <div>
                     <h2 className="text-6xl font-funky text-foreground tracking-tight italic">Moderation Dashboard</h2>
                     <p className="text-earth-sage font-bold text-xs uppercase tracking-[0.2em] mt-4 italic">
-                        {queue.length} reviews pending moderation
+                        {queue.length} reviews shown
                     </p>
                 </div>
             </div>

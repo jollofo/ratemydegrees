@@ -1,3 +1,4 @@
+import { checkAdmin } from './actions';
 import { createClient } from '@/utils/supabase/server';
 import { getDbUser } from '@/lib/user';
 import { redirectToLogin } from '@/lib/auth-redirect';
@@ -16,7 +17,8 @@ export default async function AdminLayout({
         redirectToLogin('/admin');
     }
 
-    const dbUser = await getDbUser(user.id) as any;
+    const dbUser = await getDbUser(user.id);
+    await checkAdmin();
 
     if (!dbUser || (dbUser.role !== 'ADMIN' && dbUser.role !== 'MODERATOR')) {
         redirect('/');

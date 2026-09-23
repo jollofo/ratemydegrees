@@ -17,23 +17,23 @@ export default function Pagination({ currentPage, totalPages, buildHref }: Pagin
     }).filter((n) => n > 0 && n <= totalPages);
 
     return (
-        <div className="flex justify-center items-center gap-4 pt-16 border-t border-foreground/10">
+        <div className="flex justify-center items-center gap-1 sm:gap-4 pt-8 mt-8 flex-wrap border-t border-foreground/10">
             {currentPage > 1 && (
                 <a
                     href={buildHref(currentPage - 1)}
-                    className="w-14 h-14 bg-white border-2 border-foreground rounded-2xl flex items-center justify-center hover:bg-earth-parchment transition-colors"
+                    className="w-10 h-11 sm:w-14 sm:h-14 bg-white border-2 border-foreground rounded-2xl flex items-center justify-center hover:bg-earth-parchment transition-colors"
                     aria-label="Previous page"
                 >
                     <ArrowLeft className="h-5 w-5 stroke-[2.5]" />
                 </a>
             )}
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1 sm:gap-3">
                 {pageNumbers.map((pageNum) => (
                     <a
                         key={pageNum}
                         href={buildHref(pageNum)}
-                        className={`w-14 h-14 flex items-center justify-center rounded-2xl border-2 font-bold transition-all ${currentPage === pageNum
+                        className={`w-10 h-11 sm:w-14 sm:h-14 flex items-center justify-center rounded-2xl border-2 font-bold transition-all ${currentPage === pageNum
                                 ? 'bg-earth-terracotta border-earth-terracotta text-white shadow-lg scale-110'
                                 : 'bg-white border-foreground hover:bg-earth-parchment'
                             }`}
@@ -47,7 +47,7 @@ export default function Pagination({ currentPage, totalPages, buildHref }: Pagin
             {currentPage < totalPages && (
                 <a
                     href={buildHref(currentPage + 1)}
-                    className="w-14 h-14 bg-white border-2 border-foreground rounded-2xl flex items-center justify-center hover:bg-earth-parchment transition-colors"
+                    className="w-10 h-11 sm:w-14 sm:h-14 bg-white border-2 border-foreground rounded-2xl flex items-center justify-center hover:bg-earth-parchment transition-colors"
                     aria-label="Next page"
                 >
                     <ArrowRight className="h-5 w-5 stroke-[2.5]" />

@@ -51,10 +51,10 @@ export async function POST(request: Request) {
         // ── Institution hint parsing ("Major at University") ──────────────────
         let queryForResolution = rawQuery.toLowerCase().trim();
         let institutionHint: string | null = null;
-        let resolvedInstitutionId: string | undefined;
+        let resolvedInstitutionId: string | undefined = parsed.data.institutionId;
         let resolvedInstitution: { id: string; name: string } | null = null;
 
-        if (queryForResolution.includes(' at ')) {
+        if (!resolvedInstitutionId && queryForResolution.includes(' at ')) {
             const parts = queryForResolution.split(' at ');
             if (parts.length > 1) {
                 institutionHint = parts[parts.length - 1].trim();
@@ -84,13 +84,7 @@ export async function POST(request: Request) {
             cip4: m.cip4,
             title: m.title,
             label:
-                m.matchType === 'DIRECT'
-                    ? 'Exact match'
-                    : m.matchType === 'ALIAS'
-                        ? 'Alias match'
-                        : m.matchType === 'PATHWAY'
-                            ? 'Career pathway'
-                            : 'Related field',
+                m.matchType === 'DIRECT' ? 'Name match' : 'Alias match',
             confidence: m.confidence.charAt(0) + m.confidence.slice(1).toLowerCase(),
             source: m.source,
         }));

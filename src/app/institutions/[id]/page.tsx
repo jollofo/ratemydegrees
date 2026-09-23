@@ -1,8 +1,9 @@
+import { parsePage, searchText } from '@/lib/navigation';
 import prisma from '@/lib/prisma';
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
 import ProgramIndex from '@/components/ProgramIndex';
-import { ArrowLeft } from 'lucide-react';
+
 import Breadcrumbs from '@/components/Breadcrumbs';
 
 export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
@@ -11,8 +12,8 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
     const baseUrl = 'https://ratemydegrees.com';
 
     return {
-        title: `${name} | Popular Majors, Outcomes, Reviews`,
-        description: `Explore popular majors and student outcomes at ${name}. Read verified reviews on academic quality and ROI for this institution.`,
+        title: `${name} | Student degree reviews`,
+        description: `Read student degree experiences at ${name}. Read firsthand student reviews of degrees at this school.`,
         alternates: {
             canonical: `${baseUrl}/institutions/${params.id}`,
         },
@@ -26,8 +27,8 @@ export default async function InstitutionPage({
     params: { id: string },
     searchParams: { page?: string; q?: string }
 }) {
-    const page = parseInt(searchParams.page || '1');
-    const query = searchParams.q || '';
+    const page = parsePage(searchParams.page);
+    const query = searchText(searchParams.q);
     const PAGE_SIZE = 12;
 
     const institution = await prisma.institution.findUnique({
@@ -39,43 +40,22 @@ export default async function InstitutionPage({
         }
     });
 
-    if (!institution) {
+    if (!institution || !institution.active) {
         notFound();
     }
 
-    // Filter conditions for offered majors
     const whereClause = {
-        unitid: params.id,
-        major: {
-            OR: [
-                { title: { contains: query } },
-                { cip4: { contains: query } },
-                { category: { contains: query } }
-            ]
-        }
+        AND: [
+            { OR: [{ institutions: { some: { unitid: params.id } } }, { reviews: { some: { unitid: params.id, status: 'APPROVED' } } }] },
+            { OR: [{ title: { contains: query, mode: 'insensitive' as const } }, { aliases: { some: { alias: { contains: query, mode: 'insensitive' as const } } } }, { cip4: { contains: query } }] },
+        ],
     };
-
-    // Parallel fetch for count and current page
-    const [totalCount, offeredMajorsPage] = await Promise.all([
-        prisma.institutionMajor.count({ where: whereClause }),
-        prisma.institutionMajor.findMany({
-            where: whereClause,
-            include: { major: true },
-            orderBy: { completionsTotal: 'desc' },
-            skip: (page - 1) * PAGE_SIZE,
-            take: PAGE_SIZE
-        })
+    const [totalCount, majors] = await Promise.all([
+        prisma.major.count({ where: whereClause }),
+        prisma.major.findMany({ where: whereClause, select: { cip4: true, title: true, category: true, _count: { select: { reviews: { where: { unitid: params.id, status: 'APPROVED' } } } } }, orderBy: [{ title: 'asc' }, { cip4: 'asc' }], take: PAGE_SIZE, skip: (page - 1) * PAGE_SIZE }),
     ]);
-
     const totalPages = Math.ceil(totalCount / PAGE_SIZE);
-
-    const uniqueMajors = offeredMajorsPage.map(om => ({
-        id: om.major.cip4,
-        name: om.major.title,
-        category: om.major.category,
-        reviewCount: 0,
-        completions: om.completionsTotal
-    }));
+    const uniqueMajors = majors.map(major => ({ id: major.cip4, name: major.title, category: major.category, reviewCount: major._count.reviews }));
 
     return (
         <div className="container mx-auto px-6 py-10 max-w-7xl">
@@ -91,9 +71,9 @@ export default async function InstitutionPage({
                     <div className="max-w-4xl">
                         <div className="flex items-center gap-4 mb-4">
                             <span className="bg-earth-sage/10 border border-earth-sage px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest text-earth-sage rounded-full">{institution.control}</span>
-                            <span className="text-earth-terracotta font-bold uppercase tracking-widest text-[10px]">{page > 1 ? `Page ${page}` : 'Catalog Root'}</span>
+                            <span className="text-earth-terracotta font-bold uppercase tracking-widest text-[10px]">{page > 1 ? `Page ${page}` : 'Degree reviews'}</span>
                         </div>
-                        <h1 className="text-7xl font-funky text-foreground tracking-tight leading-[0.85]">{institution.name}</h1>
+                        <h1 className="text-4xl md:text-6xl break-words font-funky text-foreground tracking-tight leading-[0.85]">{institution.name}</h1>
                     </div>
                     <a href={`/write-review?institutionId=${institution.unitid}`} className="coffee-btn px-10 py-5 text-xl w-full md:w-auto text-center">
                         Write a Review
@@ -102,13 +82,13 @@ export default async function InstitutionPage({
 
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                     <div className="border-r border-earth-sage/20 pr-6">
-                        <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-earth-sage block mb-1 opacity-60">Insights Shared</span>
+                        <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-earth-sage block mb-1 opacity-60">Student reviews</span>
                         <div className="text-2xl font-funky text-foreground italic flex items-baseline gap-2">
-                            {institution._count.reviews} <span className="text-[10px] font-bold uppercase tracking-widest opacity-40 italic">Reviews</span>
+                            {institution._count.reviews} <span className="text-[10px] font-bold uppercase tracking-widest opacity-40 italic">{institution._count.reviews === 1 ? 'review' : 'reviews'}</span>
                         </div>
                     </div>
                     <div className="border-r border-earth-sage/20 pr-6">
-                        <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-earth-sage block mb-1 opacity-60">Control</span>
+                        <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-earth-sage block mb-1 opacity-60">School type</span>
                         <div className="text-2xl font-funky text-foreground italic uppercase">{institution.control?.split('_')[0]}</div>
                     </div>
                     <div className="border-r border-earth-sage/20 pr-6">
@@ -116,8 +96,8 @@ export default async function InstitutionPage({
                         <div className="text-2xl font-funky text-foreground italic">{institution.state}</div>
                     </div>
                     <div>
-                        <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-earth-sage block mb-1 opacity-60">UNITID</span>
-                        <div className="text-2xl font-funky text-foreground italic">{institution.unitid}</div>
+                        <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-earth-sage block mb-1 opacity-60">City</span>
+                        <div className="text-2xl font-funky text-foreground italic">{institution.city}</div>
                     </div>
                 </div>
             </div>

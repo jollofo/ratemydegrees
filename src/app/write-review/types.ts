@@ -1,33 +1,8 @@
-export interface ReviewRatings {
-    rigor: number;
-    career: number;
-    difficulty: number;
-    flexibility: number;
-    satisfaction: number;
-    value: number;
-    // New categories (optional for backward compat with old reviews)
-    networking?: number;
-    research?: number;
-    internships?: number;
-}
+import type { z } from 'zod';
+import type { reviewFormSchema } from '@/lib/validation';
 
-export interface ReviewFormData {
-    majorId: string;
-    institutionId: string;
-    status: string;
-    graduationYear: string;
-    ratings: ReviewRatings;
-    fit: string;
-    challenge: string;
-    misconception: string;
-    differently: string;
-    // Outcome fields
-    outcomeStatus: string;
-    jobTitle: string;
-    industry: string;
-    gradSchool: string;
-    timeToOutcome: string;
-}
+export type ReviewFormData = z.input<typeof reviewFormSchema>;
+export type ReviewRatings = ReviewFormData['ratings'];
 
 export interface InstitutionSearchResult {
     unitid: string;

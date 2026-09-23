@@ -1,20 +1,18 @@
 import type { Metadata } from "next";
-import { Inter, Bricolage_Grotesque, Courier_Prime } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import { getDbUser } from "@/lib/user";
 import { createClient } from "@/utils/supabase/server";
-import { redirect } from "next/navigation";
+
 import Image from "next/image";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
-import UserDropdown from "@/components/UserDropdown";
+import SiteNavigation from "@/components/SiteNavigation";
 
 const inter = Inter({ subsets: ["latin"], variable: '--font-inter' });
-const funky = Bricolage_Grotesque({ subsets: ["latin"], variable: '--font-funky' });
-const mono = Courier_Prime({ weight: "400", subsets: ["latin"], variable: '--font-mono' });
 
 export const metadata: Metadata = {
-    title: "RateMyDegree | College Major Reviews & Student Insights",
-    description: "Honest college major reviews from students and alumni. Real experiences, career outcomes, and college major reviews to help you choose the right program.",
+    title: "RateMyDegrees | Student degree reviews",
+    description: "Honest college major reviews from students and alumni. Firsthand experiences of studying a degree.",
 };
 
 export default async function RootLayout({
@@ -31,12 +29,13 @@ export default async function RootLayout({
     }
 
     return (
-        <html lang="en" className={`${inter.variable} ${funky.variable} ${mono.variable}`}>
+        <html lang="en" className={inter.variable}>
             <body className="font-sans selection:bg-earth-sage/30">
-                <GoogleAnalytics GA_MEASUREMENT_ID="G-N6LJN2TRCF" />
+                {process.env.RMD_LOCAL_CHECK !== '1' && <GoogleAnalytics GA_MEASUREMENT_ID="G-N6LJN2TRCF" />}
+                <a href="#main-content" className="sr-only focus:not-sr-only focus:p-4">Skip to content</a>
                 <div className="min-h-screen flex flex-col">
                     <header className="border-b-2 border-earth-sage bg-[#fffefb] sticky top-0 z-50">
-                        <div className="container mx-auto px-6 h-20 flex items-center justify-between">
+                        <div className="container mx-auto px-6 h-20 relative flex items-center justify-between">
                             <a href="/" className="flex items-center gap-3 group">
                                 <div className="w-12 h-12 relative transition-transform group-hover:scale-105">
                                     <Image
@@ -46,30 +45,14 @@ export default async function RootLayout({
                                         className="object-contain"
                                     />
                                 </div>
-                                <span className="text-2xl font-sans tracking-tight text-foreground group-hover:text-earth-terracotta transition-colors">
+                                <span className="text-xl sm:text-2xl font-sans tracking-tight text-foreground group-hover:text-earth-terracotta transition-colors">
                                     <span className="font-bold">Rate</span>mydegrees<span className="text-[#ff4f4f]">.</span>
                                 </span>
                             </a>
-                            <nav className="hidden md:flex items-center space-x-10">
-                                <a href="/majors" className="text-sm font-bold hover:text-earth-terracotta transition-colors">Programs</a>
-                                <a href="/institutions" className="text-sm font-bold hover:text-earth-terracotta transition-colors">Institutions</a>
-                                <a href="/write-review" className="text-sm font-bold hover:text-earth-terracotta transition-colors">Write a Review</a>
-
-                                {dbUser && (dbUser.role === 'ADMIN' || dbUser.role === 'MODERATOR') && (
-                                    <a href="/admin/moderation" className="px-4 py-1.5 bg-earth-mustard/10 border border-earth-mustard text-[10px] font-bold rounded-full text-earth-mustard">DASHBOARD</a>
-                                )}
-
-                                {user ? (
-                                    <UserDropdown user={user} />
-                                ) : (
-                                    <a href="/login" className="coffee-btn py-2.5 text-sm">
-                                        Sign In
-                                    </a>
-                                )}
-                            </nav>
+                            <SiteNavigation signedIn={Boolean(user)} admin={Boolean(dbUser && ["ADMIN", "MODERATOR"].includes(dbUser.role))} />
                         </div>
                     </header>
-                    <main className="flex-grow">
+                    <main id="main-content" className="flex-grow">
                         {children}
                     </main>
                     <footer className="bg-[#433422] text-earth-parchment py-16 mt-12">
@@ -79,10 +62,11 @@ export default async function RootLayout({
                             </div>
                             <p className="font-funky text-4xl mb-6 italic tracking-tight text-white">Real Student Voices. Real Insights.</p>
                             <div className="h-px bg-earth-parchment/10 max-w-xs mx-auto mb-10" />
-                            <p className="text-xs font-bold uppercase tracking-[0.2em] opacity-40">&copy; {new Date().getFullYear()} RateMyDegree. All rights reserved.</p>
-                            <div className="mt-12 flex justify-center gap-12">
-                                <a href="/terms" className="text-[10px] opacity-40 hover:opacity-100 transition-opacity uppercase tracking-widest font-bold">Terms of Service</a>
-                                <a href="/privacy" className="text-[10px] opacity-40 hover:opacity-100 transition-opacity uppercase tracking-widest font-bold">Privacy Policy</a>
+                            <p className="text-xs font-bold uppercase tracking-[0.2em] opacity-40">&copy; {new Date().getFullYear()} RateMyDegrees. All rights reserved.</p>
+                            <div className="mt-12 flex flex-wrap justify-center gap-8">
+                                <a href="/guidelines" className="text-sm underline">How reviews work</a>
+                                <a href="/terms" className="text-sm opacity-80 hover:opacity-100 transition-opacity uppercase tracking-widest font-bold">Terms of Service</a>
+                                <a href="/privacy" className="text-sm opacity-80 hover:opacity-100 transition-opacity uppercase tracking-widest font-bold">Privacy Policy</a>
                             </div>
                         </div>
                     </footer>

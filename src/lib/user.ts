@@ -36,19 +36,16 @@ export async function getOrCreatePrismaUser() {
         throw new Error('Must be signed in');
     }
 
-    let prismaUser = await prisma.user.findUnique({
-        where: { id: user.id }
-    });
-
-    if (!prismaUser) {
-        prismaUser = await prisma.user.create({
-            data: {
+    const prismaUser = await prisma.user.upsert({
+        where: { id: user.id },
+        update: {},
+        create: {
                 id: user.id,
                 email: user.email,
                 role: 'USER'
-            }
-        });
-    }
+        }
+    });
+    if (prismaUser.banned) throw new Error('Your account cannot contribute at this time.');
 
     return prismaUser;
 }

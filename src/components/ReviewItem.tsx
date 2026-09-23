@@ -1,111 +1,70 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import { voteReview, reportReview } from '@/lib/actions'
+import { useEffect, useState } from 'react';
+import { usePathname, useSearchParams } from 'next/navigation';
+import { voteReview, reportReview } from '@/lib/actions';
+import type { PublicReview } from '@/lib/reviews';
 
-export default function ReviewItem({ review, userId }: { review: any, userId?: string }) {
-    const [votes, setVotes] = useState(review._count.votes)
-    const [hasVoted, setHasVoted] = useState(false)
-    const [isReporting, setIsReporting] = useState(false)
+export default function ReviewItem({ review, signedIn }: { review: PublicReview; signedIn: boolean }) {
+    const [votes, setVotes] = useState(review.votes);
+    const [hasVoted, setHasVoted] = useState(review.hasVoted);
+    const [busy, setBusy] = useState(false);
+    const [reporting, setReporting] = useState(false);
+    const [reason, setReason] = useState('');
+    const [message, setMessage] = useState('');
+    const pathname = usePathname();
+    const params = useSearchParams();
+    const login = '/login?next=' + encodeURIComponent(pathname + (params.size ? '?' + params.toString() : ''));
+    useEffect(() => { setVotes(review.votes); setHasVoted(review.hasVoted); }, [review.votes, review.hasVoted]);
 
-    const r = JSON.parse(review.ratings)
-    const responses = JSON.parse(review.writtenResponses)
-
-    const handleVote = async () => {
-        if (!userId) {
-            alert('You must be signed in to vote.')
-            return
-        }
+    async function handleVote() {
+        setBusy(true); setMessage('');
         try {
-            await voteReview(review.id, 1)
-            setVotes((v: number) => v + 1)
-            setHasVoted(true)
-        } catch (e) {
-            console.error(e)
-        }
+            const result = await voteReview(review.id, 1);
+            setVotes(result.votes); setHasVoted(true);
+        } catch (error) { setMessage(error instanceof Error ? error.message : 'Unable to save your vote. Please try again.'); }
+        finally { setBusy(false); }
     }
-
-    const handleReport = async () => {
-        if (!userId) {
-            alert('You must be signed in to report.')
-            return
-        }
-        const reason = prompt('Reason for reporting:')
-        if (!reason) return
-
-        setIsReporting(true)
+    async function handleReport(event: React.FormEvent) {
+        event.preventDefault(); setBusy(true); setMessage('');
         try {
-            await reportReview(review.id, reason)
-            alert('Thank you. This review has been sent to our moderators.')
-        } catch (e) {
-            console.error(e)
-        } finally {
-            setIsReporting(false)
-        }
+            await reportReview(review.id, reason);
+            setReporting(false); setReason('');
+            setMessage('Report received. A moderator will review it using the same rules for all schools.');
+        } catch (error) { setMessage(error instanceof Error ? error.message : 'Unable to send report. Please try again.'); }
+        finally { setBusy(false); }
     }
 
     return (
-        <div className="coffee-card bg-white/40 mb-6 border-foreground/10 !p-6">
-            <div className="flex justify-between items-start mb-6">
+        <article className="coffee-card bg-white mb-6 !p-6">
+            <header className="flex flex-wrap justify-between gap-3 mb-5">
                 <div>
-                    <div className="flex items-center gap-4 mb-2">
-                        <span className="font-funky text-foreground text-xl italic">Anonymous Student</span>
-                        {review.graduationStatus && (
-                            <span className="px-3 py-1 bg-earth-mustard text-foreground text-[10px] font-bold uppercase tracking-widest rounded-full border border-foreground/10">
-                                {review.graduationStatus}
-                            </span>
-                        )}
-                    </div>
-                    {review.major && review.institution && (
-                        <div className="text-[10px] font-bold text-earth-sage uppercase tracking-widest mb-4 italic">
-                            {review.major.title} at {review.institution.name}
-                        </div>
-                    )}
-                    <div className="flex gap-1.5">
-                        {[1, 2, 3, 4, 5].map((star) => (
-                            <svg key={star} xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill={star <= (r.satisfaction || 0) ? "var(--earth-mustard)" : "none"} stroke="var(--earth-mustard)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></svg>
-                        ))}
-                    </div>
+                    <p className="font-bold text-lg">Anonymous student</p>
+                    <p className="text-sm text-foreground/80">{review.graduationStatus === 'graduated' ? 'Graduate' : review.graduationStatus === 'current' ? 'Current student' : 'Changed programs'}</p>
                 </div>
-                <div className="text-[10px] text-earth-sage font-bold uppercase tracking-widest bg-earth-parchment border border-foreground/5 px-4 py-2 rounded-full italic">
-                    {new Date(review.createdAt).toLocaleDateString(undefined, { month: 'short', year: 'numeric' })}
-                </div>
+                <time dateTime={review.createdAt} className="text-sm text-foreground/70">{new Date(review.createdAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric', timeZone: 'UTC' })}</time>
+            </header>
+            <p className="text-sm mb-3">{review.major} at {review.institution}</p>
+            {review.rating !== null && <p className="font-bold mb-5">Overall satisfaction: {review.rating} / 5</p>}
+            <div className="space-y-5">
+                {review.responses.map(response => <section key={response.label}>
+                    <h3 className="font-bold text-sm mb-2">{response.label}</h3>
+                    <p className="leading-relaxed whitespace-pre-wrap break-words">{response.text}</p>
+                </section>)}
             </div>
-
-            <div className="space-y-6">
-                {responses.fit && (
-                    <div className="border-l-4 border-earth-sage pl-6">
-                        <h4 className="text-[10px] font-bold text-earth-sage uppercase tracking-widest mb-2 italic">Program Fit</h4>
-                        <p className="text-foreground font-medium leading-[1.6] italic text-base">{responses.fit}</p>
-                    </div>
-                )}
-                {responses.challenge && (
-                    <div className="border-l-4 border-earth-terracotta pl-6">
-                        <h4 className="text-[10px] font-bold text-earth-terracotta uppercase tracking-widest mb-2 italic">Biggest Challenge</h4>
-                        <p className="text-foreground font-medium leading-[1.6] italic text-base">{responses.challenge}</p>
-                    </div>
-                )}
+            <div className="mt-6 pt-4 border-t border-foreground/15 flex flex-wrap items-center gap-4">
+                {signedIn ? <>
+                    <button onClick={handleVote} disabled={busy || hasVoted} className="rounded-xl border border-foreground/30 px-4 py-3 disabled:opacity-60" aria-pressed={hasVoted}>Helpful ({votes})</button>
+                    <button onClick={() => setReporting(value => !value)} disabled={busy} className="underline px-2 py-3" aria-expanded={reporting}>Report review</button>
+                </> : <a href={login} className="underline py-2">Sign in to mark helpful ({votes}) or report</a>}
             </div>
-
-            <div className="mt-8 pt-5 border-t border-foreground/5 flex items-center justify-between">
-                <button
-                    onClick={handleVote}
-                    disabled={hasVoted}
-                    className={`inline-flex items-center gap-4 px-6 py-3 rounded-2xl border-2 transition-all font-bold text-xs uppercase tracking-widest ${hasVoted
-                        ? 'bg-earth-sage border-earth-sage text-white shadow-lg translate-y-[-2px]'
-                        : 'bg-white border-foreground/10 text-foreground hover:bg-earth-parchment active:bg-earth-sage/10'}`}
-                >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill={hasVoted ? "currentColor" : "none"} stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M7 10v12" /><path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2h0a3.13 3.13 0 0 1 3 3.88Z" /></svg>
-                    Helpful ({votes})
-                </button>
-                <button
-                    onClick={handleReport}
-                    disabled={isReporting}
-                    className="text-[10px] font-bold uppercase tracking-widest text-foreground/30 hover:text-earth-terracotta transition-colors disabled:opacity-50 italic"
-                >
-                    {isReporting ? 'Reporting...' : 'Report Review'}
-                </button>
-            </div>
-        </div>
+            {reporting && <form onSubmit={handleReport} className="mt-4 space-y-3">
+                <label htmlFor={'report-' + review.id} className="block font-bold">Why are you reporting this review?</label>
+                <p className="text-sm">Report privacy concerns, abuse, spam, or content unrelated to the degree. Disagreement alone is not a reason for removal.</p>
+                <textarea id={'report-' + review.id} value={reason} onChange={event => setReason(event.target.value)} minLength={5} maxLength={500} required className="coffee-input" />
+                <button disabled={busy} className="coffee-btn">Send report</button>
+            </form>}
+            <p role="status" className="mt-3 text-sm">{message}</p>
+        </article>
     );
 }

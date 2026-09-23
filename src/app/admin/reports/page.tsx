@@ -1,10 +1,12 @@
 'use server';
 
+import { checkAdmin } from '../actions';
 import prisma from '@/lib/prisma';
 import { createClient } from '@/utils/supabase/server';
 import { redirectToLogin } from '@/lib/auth-redirect';
 
 export default async function ReportsPage() {
+    await checkAdmin();
     const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
 

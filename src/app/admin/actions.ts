@@ -3,9 +3,9 @@
 import prisma from '@/lib/prisma';
 import { createClient } from '@/utils/supabase/server';
 import { revalidatePath } from 'next/cache';
-import { moderationActionSchema } from '@/lib/validation';
+import { moderationActionSchema, reviewIdSchema } from '@/lib/validation';
 
-async function checkAdmin() {
+export async function checkAdmin() {
     const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
@@ -15,7 +15,7 @@ async function checkAdmin() {
         where: { id: user.id }
     });
 
-    if (!dbUser || (dbUser.role !== 'ADMIN' && dbUser.role !== 'MODERATOR')) {
+    if (!dbUser || dbUser.banned || (dbUser.role !== 'ADMIN' && dbUser.role !== 'MODERATOR')) {
         throw new Error('Unauthorized');
     }
     return dbUser;
@@ -37,7 +37,7 @@ export async function moderateReview(reviewId: string, action: 'APPROVE' | 'REMO
 
     return await prisma.$transaction(async (tx) => {
         const review = await tx.review.update({
-            where: { id: reviewId },
+            where: { id: reviewId, status: { not: 'DELETED' } },
             data: {
                 status,
                 lastModeratedAt: new Date()
@@ -61,6 +61,10 @@ export async function moderateReview(reviewId: string, action: 'APPROVE' | 'REMO
         }
 
         revalidatePath('/admin/moderation');
+        revalidatePath('/admin/reports');
+        revalidatePath('/my-reviews');
+        revalidatePath('/majors');
+        revalidatePath('/institutions');
         revalidatePath(`/majors/${review.cip4}`);
         revalidatePath(`/majors/${review.cip4}/${review.unitid}`);
 
@@ -80,11 +84,11 @@ export async function getAdminStats() {
     return { pending, flagged, reports };
 }
 
-export async function getModerationQueue(status: string = 'PENDING') {
+export async function getModerationQueue(status: string = 'PENDING', reviewId?: string) {
     await checkAdmin();
 
     return await prisma.review.findMany({
-        where: { status },
+        where: reviewId ? { id: reviewIdSchema.parse(reviewId), status: { not: 'DELETED' } } : { status: ['PENDING', 'APPROVED', 'REMOVED', 'SHADOW_HIDDEN', 'REJECTED'].includes(status) ? status : 'PENDING' },
         include: {
             major: true,
             institution: true,

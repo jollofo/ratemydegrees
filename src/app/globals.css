@@ -20,6 +20,26 @@ body {
 }
 
 @layer components {
+  .warm-nav-link {
+    @apply inline-flex items-center gap-2 rounded-full px-3 py-3 font-semibold text-sm transition-colors hover:bg-earth-sage/15;
+  }
+  .warm-nav-link[aria-current="page"] {
+    @apply bg-earth-sage/20 text-foreground;
+  }
+  .catalog-tab {
+    @apply inline-flex items-center gap-2 rounded-full border border-foreground/25 px-5 py-3 text-sm font-semibold hover:bg-earth-sage/15 transition-colors;
+  }
+  .catalog-tab[aria-current="page"] {
+    @apply bg-foreground text-earth-parchment border-foreground shadow-[2px_3px_0px_#8b9467];
+  }
+  .warm-display {
+    font-family: Georgia, 'Times New Roman', serif;
+    letter-spacing: -0.045em;
+    line-height: 1.12;
+  }
+  .review-catalog-card {
+    @apply hover:-translate-y-1 hover:shadow-[5px_7px_0px_#8b9467];
+  }
   .coffee-card {
     @apply bg-[#fffefb] border-2 border-[#433422] rounded-[1.5rem] p-6 shadow-[4px_4px_0px_#8b9467] transition-all;
   }
@@ -49,4 +69,8 @@ body {
   .font-funky {
     font-family: var(--font-inter), sans-serif;
   }
+}
+:focus-visible { outline: 3px solid #800020; outline-offset: 3px; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
 }

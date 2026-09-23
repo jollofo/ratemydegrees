@@ -81,7 +81,7 @@ export default function ModerationTable({ initialQueue }: { initialQueue: any[] 
                                     </div>
                                 </td>
                                 <td className="px-8 py-8 text-right">
-                                    <div className="flex justify-end gap-3 opacity-0 group-hover:opacity-100 transition-all translate-x-4 group-hover:translate-x-0">
+                                    <div className="flex justify-end gap-3 transition-all flex-wrap">
                                         <button
                                             onClick={() => handleAction(review.id, 'APPROVE')}
                                             disabled={actioningId === review.id}

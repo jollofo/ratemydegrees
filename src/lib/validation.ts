@@ -26,18 +26,20 @@ export const searchQuerySchema = z
 // ─── Review Form ───────────────────────────────────────────────────────────────
 
 const ratingValue = z.number().int().min(1).max(5);
+const optionalRating = z.union([ratingValue, z.literal(0).transform(() => undefined)]).optional();
+export const reviewIdSchema = z.string().cuid('Invalid review ID');
 
 export const reviewRatingsSchema = z.object({
-    rigor: ratingValue,
-    career: ratingValue,
-    difficulty: ratingValue,
-    flexibility: ratingValue,
+    rigor: optionalRating,
+    career: optionalRating,
+    difficulty: optionalRating,
+    flexibility: optionalRating,
     satisfaction: ratingValue,
-    value: ratingValue,
+    value: optionalRating,
     // New categories — optional so existing reviews aren't rejected
-    networking: ratingValue.optional(),
-    research: ratingValue.optional(),
-    internships: ratingValue.optional(),
+    networking: optionalRating,
+    research: optionalRating,
+    internships: optionalRating,
 });
 
 const writtenField = z
@@ -57,14 +59,21 @@ export const reviewFormSchema = z.object({
         .string()
         .trim()
         .max(20)
-        .regex(/^[\d\s\-–—]+$/, 'Invalid graduation year format')
+        .refine(value => {
+            if (!value) return true;
+            const match = /^(\d{4})(?:\s*[-–—]\s*(\d{4}))?$/.exec(value);
+            if (!match) return false;
+            const start = Number(match[1]);
+            const end = Number(match[2] || match[1]);
+            return start >= 1900 && end >= start && end <= new Date().getFullYear() + 10;
+        }, 'Use a year or range, such as 2020 or 2016–2024')
         .optional()
         .or(z.literal('')),
 
     ratings: reviewRatingsSchema,
 
-    fit: writtenField,
-    challenge: writtenField,
+    fit: writtenField.min(10, 'Describe your experience in at least 10 characters'),
+    challenge: writtenField.min(10, 'Describe a challenge in at least 10 characters'),
     misconception: writtenField,
     differently: writtenField,
 
@@ -87,7 +96,7 @@ export type ValidatedReviewForm = z.infer<typeof reviewFormSchema>;
 // ─── Report ─────────────────────────────────────────────────────────────────
 
 export const reportSchema = z.object({
-    reviewId: z.string().uuid('Invalid review ID'),
+    reviewId: reviewIdSchema,
     reason: z
         .string()
         .trim()
@@ -98,7 +107,7 @@ export const reportSchema = z.object({
 // ─── Vote ────────────────────────────────────────────────────────────────────
 
 export const voteSchema = z.object({
-    reviewId: z.string().uuid('Invalid review ID'),
+    reviewId: reviewIdSchema,
     value: z
         .number()
         .int()
@@ -108,6 +117,7 @@ export const voteSchema = z.object({
 // ─── Major Resolve ───────────────────────────────────────────────────────────
 
 export const resolveQuerySchema = z.object({
+    institutionId: unitidSchema.optional(),
     query: z
         .string()
         .trim()
@@ -118,7 +128,7 @@ export const resolveQuerySchema = z.object({
 // ─── Moderation Action ────────────────────────────────────────────────────────
 
 export const moderationActionSchema = z.object({
-    reviewId: z.string().uuid('Invalid review ID'),
+    reviewId: reviewIdSchema,
     action: z.enum(['APPROVE', 'REMOVE', 'SHADOW_HIDE', 'REJECT']),
     notes: z.string().trim().max(1000).optional(),
 });

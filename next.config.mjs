@@ -1,12 +1,14 @@
 import { withSentryConfig } from '@sentry/nextjs';
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  distDir: process.env.RMD_BUILD_DIR || '.next',
   experimental: {
     serverComponentsExternalPackages: ['@xenova/transformers', 'onnxruntime-node'],
   },
 };
 
-export default withSentryConfig(nextConfig, {
+// Local checks can disable upload/instrumentation without changing deployed behavior.
+export default process.env.RMD_LOCAL_CHECK === '1' ? nextConfig : withSentryConfig(nextConfig, {
   // For all available options, see:
   // https://www.npmjs.com/package/@sentry/webpack-plugin#options
 

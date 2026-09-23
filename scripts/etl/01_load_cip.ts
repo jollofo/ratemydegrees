@@ -6,7 +6,6 @@ import path from 'path';
 import { parseCsv } from './utils/parseCsv';
 
 async function main() {
-    process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'; // Fix for SSL self-signed issues if any
 
     const filePath = path.join(process.cwd(), 'data', 'IPEDS.csv');
     if (!fs.existsSync(filePath)) {
@@ -23,7 +22,7 @@ async function main() {
 
     // Mapping based on the column research:
     // Column 2 (Title), Column 3 (Definition), Column 5 (CIP Code)
-    // Note: Column names might vary if the CSV has quotes/encoding issues, 
+    // Note: Column names might vary if the CSV has quotes/encoding issues,
     // so we'll look for the fields dynamically or use order.
 
     for (const record of records) {

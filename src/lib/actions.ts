@@ -27,7 +27,7 @@ export async function reportReview(reviewId: string, reason: string) {
         where: { id: parsed.data.reviewId },
         select: { status: true }
     })
-    if (!review || review.status === 'REMOVED' || review.status === 'REJECTED') {
+    if (!review || review.status !== 'APPROVED') {
         throw new Error('Review not found.')
     }
 
@@ -51,13 +51,8 @@ export async function reportReview(reviewId: string, reason: string) {
         }
     })
 
-    // Flag the review for re-moderation
-    await prisma.review.update({
-        where: { id: parsed.data.reviewId },
-        data: { status: 'PENDING' }
-    })
-
-    revalidatePath('/majors')
+    // A report queues a concern without automatically hiding a student's experience.
+    revalidatePath('/admin/reports')
     return { success: true }
 }
 
@@ -82,7 +77,7 @@ export async function voteReview(reviewId: string, value: number) {
         where: { id: parsed.data.reviewId },
         select: { status: true }
     })
-    if (!review || review.status === 'REMOVED' || review.status === 'REJECTED') {
+    if (!review || review.status !== 'APPROVED') {
         throw new Error('Review not found.')
     }
 
@@ -101,6 +96,7 @@ export async function voteReview(reviewId: string, value: number) {
         }
     })
 
-    revalidatePath('/majors')
-    return { success: true }
+    const votes = await prisma.vote.count({ where: { reviewId: parsed.data.reviewId, value: 1 } })
+    revalidatePath('/majors', 'layout')
+    return { success: true, votes }
 }

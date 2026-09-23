@@ -1,22 +1,11 @@
 'use client';
 
-import { useEffect } from 'react';
-import { saveRedirectUrl } from '@/lib/redirect';
 
 interface LoginFormProps {
-    nextUrl?: string;
     signInAction: () => void;
 }
 
-export default function LoginForm({ nextUrl, signInAction }: LoginFormProps) {
-    // Store the redirect URL in sessionStorage when the page loads
-    useEffect(() => {
-        if (nextUrl) {
-            // Construct the full URL from the path
-            const fullUrl = window.location.origin + nextUrl;
-            saveRedirectUrl(fullUrl);
-        }
-    }, [nextUrl]);
+export default function LoginForm({ signInAction }: LoginFormProps) {
 
     return (
         <form action={signInAction}>

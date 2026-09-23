@@ -18,6 +18,8 @@ export default function LoginPage({
 }: {
     searchParams: { message?: string; next?: string; returnTo?: string }
 }) {
+    const nextUrl = getLoginRedirectUrl(searchParams)
+
     const signInWithGoogle = async () => {
         'use server'
         const supabase = createClient()
@@ -32,7 +34,7 @@ export default function LoginPage({
         const { data, error } = await supabase.auth.signInWithOAuth({
             provider: 'google',
             options: {
-                redirectTo: `${origin}/auth/callback`,
+                redirectTo: `${origin}/auth/callback?next=${encodeURIComponent(nextUrl)}`,
             },
         })
 
@@ -44,10 +46,9 @@ export default function LoginPage({
         return redirect(data.url)
     }
 
-    const nextUrl = getLoginRedirectUrl(searchParams)
-
     return (
         <div className="flex-1 flex flex-col w-full px-6 sm:max-w-5xl justify-center gap-2 mx-auto py-20">
+            {searchParams.message && <p role="alert" className="p-4 border rounded-xl">Sign-in could not be completed. Please try again.</p>}
             <div className="neo-box p-8 md:p-12 bg-white grid md:grid-cols-2 gap-12 items-center">
                 {/* Left Side: Context */}
                 <div className="space-y-8">
@@ -66,9 +67,9 @@ export default function LoginPage({
                                 <Shield className="w-6 h-6" />
                             </div>
                             <div>
-                                <h3 className="font-bold text-lg">100% Anonymous Reviews</h3>
+                                <h3 className="font-bold text-lg">Anonymous public reviews</h3>
                                 <p className="text-sm font-medium text-black/60 leading-relaxed">
-                                    Your identity is never shown publicly. We protect your privacy while ensuring authentic feedback.
+                                    Your account details are not displayed with your review. Avoid including identifying details in your own writing.
                                 </p>
                             </div>
                         </div>
@@ -92,7 +93,7 @@ export default function LoginPage({
                             <div>
                                 <h3 className="font-bold text-lg">Spam Prevention</h3>
                                 <p className="text-sm font-medium text-black/60 leading-relaxed">
-                                    Account verification helps us keep the platform free of bots and fake reviews.
+                                    Sign-in helps limit spam. It does not verify attendance or the accuracy of a review.
                                 </p>
                             </div>
                         </div>
@@ -101,7 +102,7 @@ export default function LoginPage({
 
                 {/* Right Side: Form */}
                 <div className="w-full max-w-sm mx-auto bg-earth-parchment/30 p-8 rounded-3xl border-2 border-dashed border-black/10">
-                    <LoginForm nextUrl={nextUrl} signInAction={signInWithGoogle} />
+                    <LoginForm  signInAction={signInWithGoogle} />
 
                     {searchParams?.message && (
                         <div className="mt-8 p-4 bg-red-100 border-2 border-black text-black text-center text-[10px] font-black uppercase tracking-widest shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
