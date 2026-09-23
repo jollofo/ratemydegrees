@@ -12,6 +12,7 @@
  */
 
 import dotenv from 'dotenv';
+dotenv.config({ path: '.env.local' });
 dotenv.config({ path: '.env' });
 
 import Typesense from 'typesense';
@@ -146,7 +147,9 @@ async function indexMajors() {
     const batchSize = 500;
     for (let i = 0; i < records.length; i += batchSize) {
         const batch = records.slice(i, i + batchSize);
-        await client.collections('majors').documents().import(batch, { action: 'upsert' });
+        const result = await client.collections('majors').documents().import(batch, { action: 'upsert' });
+        const failures = result.filter((record: any) => !record.success);
+        if (failures.length) throw new Error(`Major import failed for ${failures.length} records: ${JSON.stringify(failures.slice(0, 3))}`);
         console.log(`  ✓  Batch ${Math.floor(i / batchSize) + 1} done (${Math.min(i + batchSize, records.length)}/${records.length})`);
     }
 
@@ -227,7 +230,9 @@ async function indexInstitutions() {
     const batchSize = 500;
     for (let i = 0; i < records.length; i += batchSize) {
         const batch = records.slice(i, i + batchSize);
-        await client.collections('institutions').documents().import(batch, { action: 'upsert' });
+        const result = await client.collections('institutions').documents().import(batch, { action: 'upsert' });
+        const failures = result.filter((record: any) => !record.success);
+        if (failures.length) throw new Error(`Institution import failed for ${failures.length} records: ${JSON.stringify(failures.slice(0, 3))}`);
         console.log(`  ✓  Batch ${Math.floor(i / batchSize) + 1} done (${Math.min(i + batchSize, records.length)}/${records.length})`);
     }
 
