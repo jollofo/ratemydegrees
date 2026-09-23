@@ -145,7 +145,7 @@ export default function HomeSearch() {
                                                 }}
                                             />
                                             <p className="text-[10px] font-bold text-earth-sage uppercase tracking-widest mt-0.5 italic">
-                                                {hit.category} &bull; {hit.reviewCount} review{hit.reviewCount !== 1 ? 's' : ''}
+                                                {hit.reviewCount} review{hit.reviewCount !== 1 ? 's' : ''}
                                             </p>
                                         </div>
                                         <ArrowRight className="h-4 w-4 text-foreground/20 group-hover:text-earth-terracotta transition-colors shrink-0" />

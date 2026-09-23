@@ -58,7 +58,7 @@ export default function ReviewItem({ review, userId }: { review: any, userId?: s
                     </div>
                     {review.major && review.institution && (
                         <div className="text-[10px] font-bold text-earth-sage uppercase tracking-widest mb-4 italic">
-                            {review.major.name} @ {review.institution.name}
+                            {review.major.title} at {review.institution.name}
                         </div>
                     )}
                     <div className="flex gap-1.5">

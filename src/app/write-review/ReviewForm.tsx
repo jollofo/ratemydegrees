@@ -697,7 +697,6 @@ export default function WriteReviewForm({
                                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-5 h-5 text-earth-mustard"><path d="M4 19.5A2.5 2.5 0 016.5 17H20M4 19.5A2.5 2.5 0 006.5 22H20V2M6.5 2h13.5A2.5 2.5 0 0122.5 4.5v15a2.5 2.5 0 01-2.5 2.5H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z" /></svg>
                                             <div>
                                                 <div className="font-funky text-xl italic">{preSelectedMajor?.title}</div>
-                                                <div className="text-[10px] text-earth-sage font-bold uppercase tracking-widest opacity-60">{preSelectedMajor?.category}</div>
                                             </div>
                                         </div>
                                         <span className="text-[10px] font-bold text-earth-mustard uppercase tracking-widest opacity-50 italic">Pre-filled</span>
@@ -756,7 +755,6 @@ export default function WriteReviewForm({
                                                                         {m.matchType === 'ALIAS' ? 'Alias' : 'Related'}
                                                                     </span>
                                                                 )}
-                                                                <div className="text-[10px] text-earth-sage font-bold uppercase tracking-widest opacity-60">{m.category}</div>
                                                             </div>
                                                         </button>
                                                     ))}

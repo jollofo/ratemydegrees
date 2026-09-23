@@ -96,10 +96,6 @@ export default function ProgramIndex({
                                 className="coffee-card group !p-6 hover:shadow-[10px_10px_0px_#8b9467] flex flex-col justify-between h-full bg-[#fffefb]/50 transition-all border-earth-sage/20"
                             >
                                 <div>
-                                    <div className="flex items-center justify-between mb-6">
-                                        <span className="text-[10px] font-bold text-earth-sage uppercase tracking-widest italic">{major.category || 'Uncategorized'}</span>
-                                        <span className="text-[9px] font-bold text-foreground/20 uppercase tracking-widest">{major.id}</span>
-                                    </div>
                                     <h4 className="text-2xl font-funky text-foreground group-hover:text-earth-terracotta transition-all leading-tight mb-10 italic break-words overflow-hidden">{major.name}</h4>
                                 </div>
                                 <div className="flex items-center justify-between pt-8 border-t border-foreground/5 mt-auto">

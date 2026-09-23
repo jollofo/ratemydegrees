@@ -117,7 +117,6 @@ export default function MajorResolverModal({ isOpen, onClose, onSelectMajor }: M
                                             }`}>
                                             {result.label}
                                         </span>
-                                        <span className="text-[10px] text-foreground/30 font-mono">{result.cip4}</span>
                                     </div>
                                     <h4 className="text-lg font-funky text-foreground group-hover:text-earth-terracotta transition-colors italic">{result.title}</h4>
                                 </div>

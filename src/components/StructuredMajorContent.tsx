@@ -40,7 +40,7 @@ export default function StructuredMajorContent({ major, occupations }: Structure
                         {occupations.length === 0 && <li className="text-foreground/60 italic">No official occupation matches are listed for this field.</li>}
                     </ul>
                     <p className="mt-6 text-xs text-foreground/60">Curriculum-to-occupation matches, not graduate placements. Some roles require further education or experience.</p>
-                    <a className="inline-block mt-3 text-xs underline text-earth-sage" href="https://nces.ed.gov/ipeds/cipcode/Files/CIP2020_SOC2018_Crosswalk.xlsx" target="_blank" rel="noopener noreferrer">Source: NCES/BLS CIP–SOC crosswalk</a>
+                    <a className="inline-block mt-3 text-xs underline text-earth-sage" href="https://nces.ed.gov/ipeds/cipcode/Files/CIP2020_SOC2018_Crosswalk.xlsx" target="_blank" rel="noopener noreferrer">Source: NCES and BLS</a>
                 </section>
             </div>
 

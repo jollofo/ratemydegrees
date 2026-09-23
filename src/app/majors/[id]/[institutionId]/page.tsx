@@ -120,7 +120,6 @@ export default async function ProgramDetailPage({ params }: { params: { id: stri
                 <div className="max-w-4xl">
                     <div className="flex items-center gap-4 mb-4">
                         <span className="bg-earth-mustard/20 border border-earth-mustard/30 px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest text-foreground rounded-full italic">{major.title}</span>
-                        <span className="text-foreground font-bold uppercase tracking-widest text-[10px] opacity-60">Taxonomy: {major.cip4}</span>
                     </div>
                     {!institutionMajor && (
                         <div className="mb-6 bg-earth-terracotta/10 border border-earth-terracotta/20 rounded-xl p-4 flex items-start gap-4">
@@ -144,6 +143,36 @@ export default async function ProgramDetailPage({ params }: { params: { id: stri
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 mb-16">
+                {/* Reviews Column */}
+                <div className="lg:col-span-7 space-y-6">
+                    <div className="flex items-center justify-between border-b border-foreground/10 pb-5 mb-8">
+                        <div>
+                            <h3 className="text-3xl font-funky text-foreground tracking-tight italic">Recent Reviews</h3>
+                            <p className="text-[10px] font-bold text-earth-sage uppercase tracking-widest mt-1 italic">Student experiences</p>
+                        </div>
+                        <div className="flex gap-2">
+                            <span className="bg-earth-mustard text-foreground px-5 py-2 text-[10px] font-bold uppercase tracking-widest rounded-full border border-foreground/10 shadow-sm italic">Latest</span>
+                        </div>
+                    </div>
+
+                    {reviews.length === 0 ? (
+                        <div className="coffee-card bg-earth-parchment/30 border-dashed py-32 text-center">
+                            <h4 className="text-3xl font-funky text-foreground mb-6 italic opacity-40">No reviews yet</h4>
+                            <p className="text-foreground font-medium mb-12 max-w-sm mx-auto leading-relaxed italic opacity-70 text-lg">
+                                Be the first to share your experience about the {major.title} program at {institution.name}.
+                            </p>
+                            <a href={`/write-review?majorId=${major.cip4}&institutionId=${institution.unitid}`} className="coffee-btn bg-white text-foreground hover:bg-earth-parchment px-12 py-5 text-xl">
+                                Write a Review
+                            </a>
+                        </div>
+                    ) : (
+                        <div className="space-y-4">
+                            {reviews.map((review: any) => (
+                                <ReviewItem key={review.id} review={review} userId={user?.id} />
+                            ))}
+                        </div>
+                    )}
+                </div>
                 {/* Statistics Column */}
                 <div className="lg:col-span-5 space-y-12">
                     {graduatePrograms.length > 0 && (
@@ -243,36 +272,6 @@ export default async function ProgramDetailPage({ params }: { params: { id: stri
                     </div>
                 </div>
 
-                {/* Reviews Column */}
-                <div className="lg:col-span-7 space-y-6">
-                    <div className="flex items-center justify-between border-b border-foreground/10 pb-5 mb-8">
-                        <div>
-                            <h3 className="text-3xl font-funky text-foreground tracking-tight italic">Recent Reviews</h3>
-                            <p className="text-[10px] font-bold text-earth-sage uppercase tracking-widest mt-1 italic">Student experiences</p>
-                        </div>
-                        <div className="flex gap-2">
-                            <span className="bg-earth-mustard text-foreground px-5 py-2 text-[10px] font-bold uppercase tracking-widest rounded-full border border-foreground/10 shadow-sm italic">Latest</span>
-                        </div>
-                    </div>
-
-                    {reviews.length === 0 ? (
-                        <div className="coffee-card bg-earth-parchment/30 border-dashed py-32 text-center">
-                            <h4 className="text-3xl font-funky text-foreground mb-6 italic opacity-40">No reviews yet</h4>
-                            <p className="text-foreground font-medium mb-12 max-w-sm mx-auto leading-relaxed italic opacity-70 text-lg">
-                                Be the first to share your experience about the {major.title} program at {institution.name}.
-                            </p>
-                            <a href={`/write-review?majorId=${major.cip4}&institutionId=${institution.unitid}`} className="coffee-btn bg-white text-foreground hover:bg-earth-parchment px-12 py-5 text-xl">
-                                Write a Review
-                            </a>
-                        </div>
-                    ) : (
-                        <div className="space-y-4">
-                            {reviews.map((review: any) => (
-                                <ReviewItem key={review.id} review={review} userId={user?.id} />
-                            ))}
-                        </div>
-                    )}
-                </div>
             </div>
         </div>
     );

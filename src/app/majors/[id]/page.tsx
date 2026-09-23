@@ -3,13 +3,10 @@ import { notFound } from 'next/navigation';
 import { createClient } from '@/utils/supabase/server';
 import ReviewItem from '@/components/ReviewItem';
 import Pagination from '@/components/Pagination';
-import BackLink from '@/components/BackLink';
-import { searchInstitutionsForMajor } from '@/app/actions/search';
 import { Metadata } from 'next';
 import { ArrowLeft, ArrowRight, Search } from 'lucide-react';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import MajorPostDegreeOverview from '@/components/MajorPostDegreeOverview';
-import { Major } from '@prisma/client';
 
 export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
     const major = await prisma.major.findUnique({ where: { cip4: params.id } });
@@ -17,8 +14,8 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
     const baseUrl = 'https://ratemydegrees.com';
 
     return {
-        title: `${title} (CIP ${params.id}) Degree | Outcomes, Salary, ROI`,
-        description: `Get the facts on a ${title} (CIP ${params.id}) degree: salary expectations, common career paths, and verified student reviews on ROI and rigor.`,
+        title: `${title} Degree | Student Reviews and Outcomes`,
+        description: `Read student reviews of ${title} and explore salary, related careers, graduate study, and schools offering the major.`,
         alternates: {
             canonical: `${baseUrl}/majors/${params.id}`,
         }
@@ -45,7 +42,8 @@ export default async function MajorDetailPage({
         include: {
             reviews: {
                 where: { status: 'APPROVED' },
-                include: { institution: true }
+                orderBy: { createdAt: 'desc' },
+                include: { institution: true, major: true, _count: { select: { votes: true } } }
             },
             _count: {
                 select: { reviews: { where: { status: 'APPROVED' } } }
@@ -103,42 +101,12 @@ export default async function MajorDetailPage({
     const totalPages = Math.ceil(totalInstitutions / INST_PAGE_SIZE);
 
     const reviewCount = major._count.reviews;
-    const hideStats = reviewCount < 5;
-
-    let aggregatedRatings = [
-        { label: 'Academic Rigor', score: 0 },
-        { label: 'Career Preparedness', score: 0 },
-        { label: 'Difficulty vs Payoff', score: 0 },
-        { label: 'Flexibility', score: 0 },
-        { label: 'Overall Satisfaction', score: 0 },
-        { label: 'Value for Time', score: 0 },
-    ];
-
-    if (!hideStats) {
-        const sums = { rigor: 0, career: 0, difficulty: 0, flexibility: 0, satisfaction: 0, value: 0 };
-        major.reviews.forEach((review: any) => {
-            const r = JSON.parse(review.ratings);
-            sums.rigor += r.rigor || 0;
-            sums.career += r.career || 0;
-            sums.difficulty += r.difficulty || 0;
-            sums.flexibility += r.flexibility || 0;
-            sums.satisfaction += r.satisfaction || 0;
-            sums.value += r.value || 0;
-        });
-
-        aggregatedRatings = [
-            { label: 'Academic Rigor', score: Number((sums.rigor / reviewCount).toFixed(1)) },
-            { label: 'Career Preparedness', score: Number((sums.career / reviewCount).toFixed(1)) },
-            { label: 'Difficulty vs Payoff', score: Number((sums.difficulty / reviewCount).toFixed(1)) },
-            { label: 'Flexibility', score: Number((sums.flexibility / reviewCount).toFixed(1)) },
-            { label: 'Overall Satisfaction', score: Number((sums.satisfaction / reviewCount).toFixed(1)) },
-            { label: 'Value for Time', score: Number((sums.value / reviewCount).toFixed(1)) },
-        ];
-    }
-
-    const overallRating = !hideStats
-        ? aggregatedRatings.find(r => r.label === 'Overall Satisfaction')?.score || 0
-        : 0;
+    const overallRating = reviewCount >= 5
+        ? (major.reviews.reduce((sum, review) => sum + (JSON.parse(review.ratings).satisfaction || 0), 0) / reviewCount).toFixed(1)
+        : null;
+    const description = major.description && !/(instructional content|taxonomy|\bCIP\b|\bcodes?\s*\d)/i.test(major.description)
+        ? major.description
+        : `Explore student experiences and what you can do with a degree in ${major.title.replace(/[.\s]+$/, '')}.`;
 
     const buildHref = (p: number) => {
         const params = new URLSearchParams();
@@ -158,76 +126,58 @@ export default async function MajorDetailPage({
 
             <div className="mb-6 border-b-2 border-earth-sage/20 pb-6 flex flex-col md:flex-row md:items-end justify-between gap-6">
                 <div className="max-w-4xl">
-                    <div className="flex items-center gap-4 mb-4">
-                        <span className="bg-earth-sage/10 border border-earth-sage px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest text-earth-sage rounded-full">{major.category}</span>
-                        <span className="text-foreground/40 font-bold uppercase tracking-widest text-[10px]">Taxonomy: {major.cip4}</span>
-                    </div>
                     <h1 className="text-5xl md:text-6xl font-funky text-foreground tracking-tight leading-[0.95] mb-4">{major.title}</h1>
                     <p className="text-xl text-foreground/70 font-medium leading-relaxed italic max-w-2xl">
-                        {major.description || "Explore verified student reviews for this program. Find out about workload, career outcomes, and what students really think."}
+                        {description}
                     </p>
-                    <a href="#after-degree" className="inline-flex items-center gap-2 mt-4 text-sm font-bold text-earth-terracotta hover:text-earth-sage underline underline-offset-4">Explore earnings, careers &amp; graduate study <ArrowRight className="h-4 w-4" /></a>
+                    <a href="#student-reviews" className="inline-flex items-center gap-2 mt-4 text-sm font-bold text-earth-terracotta hover:text-earth-sage underline underline-offset-4">Read student reviews <ArrowRight className="h-4 w-4" /></a>
                 </div>
                 <a href={`/write-review?majorId=${major.cip4}`} className="coffee-btn px-10 py-5 text-xl w-full md:w-auto text-center">
                     Write a Review
                 </a>
             </div>
 
+            <section id="student-reviews" className="mb-16 scroll-mt-8" aria-labelledby="student-reviews-heading">
+                <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-6">
+                    <div>
+                        <p className="text-xs font-bold uppercase tracking-widest text-earth-terracotta mb-2">Real student experiences</p>
+                        <h2 id="student-reviews-heading" className="text-3xl md:text-4xl font-funky text-foreground italic">Student reviews</h2>
+                        <p className="text-sm text-foreground/70 mt-2">{reviewCount} {reviewCount === 1 ? 'review' : 'reviews'}{overallRating && ` · ${overallRating} / 5 average satisfaction`}</p>
+                    </div>
+                    <a href={`/write-review?majorId=${major.cip4}`} className="text-sm font-bold text-earth-sage hover:text-earth-terracotta">Share your experience →</a>
+                </div>
+                {reviewCount === 0 ? (
+                    <div className="coffee-card bg-earth-parchment/30 !p-8">
+                        <p className="text-lg font-funky italic text-foreground">No reviews yet</p>
+                        <p className="text-sm text-foreground/70 mt-2">Studied this major? Help future students by sharing what it was like.</p>
+                    </div>
+                ) : (
+                    <>
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 items-start">
+                            {major.reviews.slice(0, 2).map(review => <ReviewItem key={review.id} review={review} userId={user?.id} />)}
+                        </div>
+                        {reviewCount > 2 && (
+                            <details className="mt-3 group">
+                                <summary className="cursor-pointer text-sm font-bold text-earth-sage hover:text-earth-terracotta">Read all {reviewCount} reviews</summary>
+                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 items-start mt-6">
+                                    {major.reviews.slice(2).map(review => <ReviewItem key={review.id} review={review} userId={user?.id} />)}
+                                </div>
+                            </details>
+                        )}
+                    </>
+                )}
+            </section>
+
             <MajorPostDegreeOverview
                 cip4={major.cip4}
-                majorTitle={major.title}
                 nationalEarnings={nationalEarnings}
                 occupations={relatedOccupations}
                 graduatePrograms={graduatePrograms}
             />
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 mb-24">
-                <div className="lg:col-span-3 space-y-12 self-start sticky top-8">
-                    {/* Scorecard */}
-                    <div id="community-ratings" className="coffee-card bg-earth-parchment/30 scroll-mt-8">
-                        <h3 className="text-2xl font-funky text-foreground mb-10 italic border-b border-foreground/5 pb-6">Community Sentiment</h3>
-
-                        {hideStats ? (
-                            <div className="text-center py-10 bg-white/50 border-2 border-dashed border-earth-sage/30 rounded-3xl">
-                                <p className="text-[10px] font-bold uppercase tracking-widest text-earth-sage/60 mb-6 italic">
-                                    Need 5+ Reviews to Show Ratings
-                                </p>
-                                <div className="h-4 w-full bg-white border border-foreground/10 rounded-full overflow-hidden mx-auto max-w-[240px]">
-                                    <div className="h-full bg-earth-terracotta" style={{ width: `${(reviewCount / 5) * 100}%` }}></div>
-                                </div>
-                            </div>
-                        ) : (
-                            <>
-                                <div className="flex items-center gap-8 mb-12">
-                                    <div className="text-8xl font-funky italic tracking-tighter leading-none text-earth-terracotta">{overallRating}</div>
-                                    <div className="flex flex-col">
-                                        <div className="flex gap-1">
-                                            {[1, 2, 3, 4, 5].map((star) => (
-                                                <svg key={star} xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill={star <= Math.round(overallRating) ? "var(--earth-mustard)" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-earth-mustard"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></svg>
-                                            ))}
-                                        </div>
-                                        <span className="text-[10px] font-bold text-earth-sage mt-3 uppercase tracking-widest italic">{reviewCount} Verified Contributions</span>
-                                    </div>
-                                </div>
-                                <div className="space-y-8">
-                                    {aggregatedRatings.map((r) => (
-                                        <div key={r.label}>
-                                            <div className="flex justify-between text-[10px] mb-3">
-                                                <span className="font-bold text-earth-sage uppercase tracking-widest italic">{r.label}</span>
-                                                <span className="font-bold text-foreground">{r.score}</span>
-                                            </div>
-                                            <div className="h-3 bg-white rounded-full border border-foreground/5 overflow-hidden">
-                                                <div className="h-full bg-earth-sage" style={{ width: `${(r.score / 5) * 100}%` }} />
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </>
-                        )}
-                    </div>
-
+                {relatedMajors.length > 0 && <div className="lg:col-span-3 space-y-12 self-start sticky top-8">
                     {/* Related Majors */}
-                    {relatedMajors.length > 0 && (
                         <div className="coffee-card bg-earth-sage/5 border-earth-sage/10">
                             <h3 className="text-xl font-funky text-foreground mb-6 italic border-b border-foreground/5 pb-4">Related Fields</h3>
                             <div className="flex flex-col gap-3">
@@ -243,10 +193,9 @@ export default async function MajorDetailPage({
                                 ))}
                             </div>
                         </div>
-                    )}
-                </div>
+                </div>}
 
-                <div id="schools" className="lg:col-span-9 scroll-mt-8">
+                <div id="schools" className={`${relatedMajors.length > 0 ? 'lg:col-span-9' : 'lg:col-span-12'} scroll-mt-8`}>
                     <div className="mb-12 flex flex-col sm:flex-row sm:items-end justify-between gap-8">
                         <div>
                             <h3 className="text-4xl font-funky text-foreground mb-3 tracking-tight italic">Institutions</h3>

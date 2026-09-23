@@ -191,10 +191,7 @@ export default async function MajorsPage({
                                 href={`/majors/${major.id}`}
                                 className="coffee-card group hover:shadow-[8px_8px_0px_#8b9467] flex flex-col"
                             >
-                                <div className="flex justify-between items-start mb-8">
-                                    <span className="text-[10px] font-bold uppercase tracking-widest text-earth-sage bg-earth-sage/10 border border-earth-sage px-3 py-1 rounded-full">
-                                        {major.category}
-                                    </span>
+                                <div className="flex justify-end items-start mb-8">
                                     {major.rating !== 'N/A' && (
                                         <div className="flex items-center gap-1.5 bg-earth-mustard text-foreground px-3 py-1 text-xs font-bold rounded-full border border-foreground/10">
                                             <Star className="h-4 w-4 fill-foreground" />
