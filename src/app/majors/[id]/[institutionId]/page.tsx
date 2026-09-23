@@ -36,11 +36,18 @@ export default async function ProgramDetailPage({ params }: { params: { id: stri
         where: { unitid: params.institutionId },
     });
 
-    const institutionMajor = await prisma.institutionMajor.findUnique({
-        where: {
-            unitid_cip4: { unitid: params.institutionId, cip4: params.id }
-        }
-    });
+    const [institutionMajor, programEarnings, graduatePrograms] = await Promise.all([
+        prisma.institutionMajor.findUnique({
+            where: { unitid_cip4: { unitid: params.institutionId, cip4: params.id } }
+        }),
+        prisma.scorecardProgramEarnings.findUnique({
+            where: { unitid_cip4_credentialLevel: { unitid: params.institutionId, cip4: params.id, credentialLevel: 3 } }
+        }),
+        prisma.graduateProgram.findMany({
+            where: { unitid: params.institutionId, cip4: params.id },
+            orderBy: { awardLevel: 'asc' }
+        })
+    ]);
 
     if (!major || !institution) {
         notFound();
@@ -139,6 +146,45 @@ export default async function ProgramDetailPage({ params }: { params: { id: stri
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 mb-16">
                 {/* Statistics Column */}
                 <div className="lg:col-span-5 space-y-12">
+                    {graduatePrograms.length > 0 && (
+                        <div className="coffee-card bg-earth-parchment/30 !p-6">
+                            <h3 className="text-2xl font-funky text-foreground italic mb-4">Graduate Degrees in This Field</h3>
+                            <p className="text-sm text-foreground/70 mb-4">{institution.name} awarded these degrees in {graduatePrograms[0].sourceYear}:</p>
+                            <ul className="space-y-3">
+                                {graduatePrograms.map(program => (
+                                    <li key={program.awardLevel} className="text-sm text-foreground/80">
+                                        {program.awardLevel === 7 ? 'Master’s degree' : program.awardLevel === 17 ? 'Research doctorate' : program.awardLevel === 18 ? 'Professional doctorate' : 'Other doctorate'} · {program.completionsTotal.toLocaleString('en-US')} awarded
+                                    </li>
+                                ))}
+                            </ul>
+                            <p className="text-xs text-foreground/60 mt-4">Past awards indicate program activity; they do not establish current admissions availability.</p>
+                            <a className="inline-block mt-3 text-xs underline text-earth-sage" href="https://nces.ed.gov/ipeds/datacenter/DataFiles.aspx?rtid=1" target="_blank" rel="noopener noreferrer">Source: IPEDS 2024 Completions</a>
+                        </div>
+                    )}
+                    {programEarnings && (
+                        <div className="coffee-card bg-earth-burgundy text-earth-parchment !p-6">
+                            <h3 className="text-2xl font-funky italic mb-5">Published Graduate Earnings</h3>
+                            <p className="text-xs uppercase tracking-widest text-earth-parchment/70 mb-4">Bachelor&apos;s graduates at {institution.name}</p>
+                            {programEarnings.medianEarnings4Yr !== null ? (
+                                <div className="mb-4">
+                                    <p className="text-4xl font-funky text-earth-mustard">${programEarnings.medianEarnings4Yr.toLocaleString('en-US')}</p>
+                                    <p className="text-sm text-earth-parchment/80">Median annual earnings 4 years after completion</p>
+                                </div>
+                            ) : programEarnings.medianEarnings5Yr !== null ? (
+                                <div className="mb-4">
+                                    <p className="text-4xl font-funky text-earth-mustard">${programEarnings.medianEarnings5Yr.toLocaleString('en-US')}</p>
+                                    <p className="text-sm text-earth-parchment/80">Median annual earnings 5 years after completion</p>
+                            </div>
+                            ) : (
+                                <div className="mb-4">
+                                    <p className="text-4xl font-funky text-earth-mustard">${programEarnings.medianEarnings1Yr!.toLocaleString('en-US')}</p>
+                                    <p className="text-sm text-earth-parchment/80">Median annual earnings 1 year after completion</p>
+                                </div>
+                            )}
+                            <p className="text-xs text-earth-parchment/70 mb-4">Based on federally aided graduates who worked and were not enrolled in school.</p>
+                            <a className="text-xs underline text-earth-parchment/80 hover:text-white" href="https://collegescorecard.ed.gov/data/" target="_blank" rel="noopener noreferrer">College Scorecard · release {programEarnings.sourceRelease}</a>
+                        </div>
+                    )}
                     <div className="coffee-card bg-earth-parchment/30 !p-6">
                         <h3 className="text-2xl font-funky text-foreground mb-6 italic border-b border-foreground/5 pb-4">Departmental Scorecard</h3>
 

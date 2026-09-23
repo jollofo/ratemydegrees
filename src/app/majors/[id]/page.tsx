@@ -8,7 +8,7 @@ import { searchInstitutionsForMajor } from '@/app/actions/search';
 import { Metadata } from 'next';
 import { ArrowLeft, ArrowRight, Search } from 'lucide-react';
 import Breadcrumbs from '@/components/Breadcrumbs';
-import StructuredMajorContent from '@/components/StructuredMajorContent';
+import MajorPostDegreeOverview from '@/components/MajorPostDegreeOverview';
 import { Major } from '@prisma/client';
 
 export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
@@ -64,7 +64,7 @@ export default async function MajorDetailPage({
         }
     };
 
-    const [institutions, totalInstitutions, relatedMajors] = await Promise.all([
+    const [institutions, totalInstitutions, relatedMajors, nationalEarnings, relatedOccupations, graduatePrograms] = await Promise.all([
         prisma.institutionMajor.findMany({
             where: whereClause,
             include: {
@@ -82,6 +82,21 @@ export default async function MajorDetailPage({
             },
             take: 4,
             select: { cip4: true, title: true }
+        }),
+        prisma.scorecardNationalEarnings.findUnique({
+            where: { cip4_credentialLevel: { cip4: major.cip4, credentialLevel: 3 } }
+        }),
+        prisma.majorOccupation.findMany({
+            where: { cip4: major.cip4 },
+            orderBy: [{ matchedCip6Count: 'desc' }, { title: 'asc' }],
+            take: 8,
+            select: { socCode: true, title: true }
+        }),
+        prisma.graduateProgram.findMany({
+            where: { cip4: major.cip4, institution: { active: true } },
+            include: { institution: { select: { name: true } } },
+            orderBy: { completionsTotal: 'desc' },
+            take: 8
         })
     ]);
 
@@ -89,7 +104,6 @@ export default async function MajorDetailPage({
 
     const reviewCount = major._count.reviews;
     const hideStats = reviewCount < 5;
-    const outcomes = major.outcomes ? JSON.parse(major.outcomes) : null;
 
     let aggregatedRatings = [
         { label: 'Academic Rigor', score: 0 },
@@ -134,7 +148,7 @@ export default async function MajorDetailPage({
     };
 
     return (
-        <div className="container mx-auto px-6 py-16 max-w-7xl">
+        <div className="container mx-auto px-6 py-8 md:py-10 max-w-7xl">
             <Breadcrumbs
                 items={[
                     { label: 'Majors', href: '/majors' },
@@ -142,26 +156,35 @@ export default async function MajorDetailPage({
                 ]}
             />
 
-            <div className="mb-20 border-b-2 border-earth-sage/20 pb-16 flex flex-col md:flex-row md:items-end justify-between gap-12">
+            <div className="mb-6 border-b-2 border-earth-sage/20 pb-6 flex flex-col md:flex-row md:items-end justify-between gap-6">
                 <div className="max-w-4xl">
-                    <div className="flex items-center gap-4 mb-6">
+                    <div className="flex items-center gap-4 mb-4">
                         <span className="bg-earth-sage/10 border border-earth-sage px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest text-earth-sage rounded-full">{major.category}</span>
                         <span className="text-foreground/40 font-bold uppercase tracking-widest text-[10px]">Taxonomy: {major.cip4}</span>
                     </div>
-                    <h1 className="text-7xl font-funky text-foreground tracking-tight leading-[0.85] mb-8">{major.title}</h1>
+                    <h1 className="text-5xl md:text-6xl font-funky text-foreground tracking-tight leading-[0.95] mb-4">{major.title}</h1>
                     <p className="text-xl text-foreground/70 font-medium leading-relaxed italic max-w-2xl">
                         {major.description || "Explore verified student reviews for this program. Find out about workload, career outcomes, and what students really think."}
                     </p>
+                    <a href="#after-degree" className="inline-flex items-center gap-2 mt-4 text-sm font-bold text-earth-terracotta hover:text-earth-sage underline underline-offset-4">Explore earnings, careers &amp; graduate study <ArrowRight className="h-4 w-4" /></a>
                 </div>
                 <a href={`/write-review?majorId=${major.cip4}`} className="coffee-btn px-10 py-5 text-xl w-full md:w-auto text-center">
                     Write a Review
                 </a>
             </div>
 
+            <MajorPostDegreeOverview
+                cip4={major.cip4}
+                majorTitle={major.title}
+                nationalEarnings={nationalEarnings}
+                occupations={relatedOccupations}
+                graduatePrograms={graduatePrograms}
+            />
+
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 mb-24">
                 <div className="lg:col-span-3 space-y-12 self-start sticky top-8">
                     {/* Scorecard */}
-                    <div className="coffee-card bg-earth-parchment/30">
+                    <div id="community-ratings" className="coffee-card bg-earth-parchment/30 scroll-mt-8">
                         <h3 className="text-2xl font-funky text-foreground mb-10 italic border-b border-foreground/5 pb-6">Community Sentiment</h3>
 
                         {hideStats ? (
@@ -203,29 +226,6 @@ export default async function MajorDetailPage({
                         )}
                     </div>
 
-                    {/* Outcomes */}
-                    <div className="coffee-card bg-earth-burgundy text-earth-parchment shadow-[6px_6px_0px_#433422]">
-                        <h3 className="text-2xl font-funky mb-10 italic border-b border-white/5 pb-6">Life After this course</h3>
-                        {outcomes ? (
-                            <div className="space-y-10">
-                                <div>
-                                    <span className="text-[10px] font-bold text-earth-parchment/60 uppercase tracking-widest block mb-6 italic">Common Roles</span>
-                                    <div className="flex flex-wrap gap-2">
-                                        {outcomes.commonJobs.map((job: string) => (
-                                            <span key={job} className="bg-white/10 border border-white/10 px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-widest">{job}</span>
-                                        ))}
-                                    </div>
-                                </div>
-                                <div className="py-8 bg-white/5 rounded-3xl text-center border border-white/5">
-                                    <span className="text-[10px] font-bold text-earth-parchment/60 uppercase tracking-widest block mb-3 italic">Est. Mid-Career Income</span>
-                                    <p className="text-5xl font-funky text-earth-mustard italic tracking-tight">{outcomes.salaryRange}</p>
-                                </div>
-                            </div>
-                        ) : (
-                            <p className="text-xs font-medium leading-relaxed text-earth-parchment/60 italic">No outcome data available yet for this program (CIP {major.cip4}).</p>
-                        )}
-                    </div>
-
                     {/* Related Majors */}
                     {relatedMajors.length > 0 && (
                         <div className="coffee-card bg-earth-sage/5 border-earth-sage/10">
@@ -246,7 +246,7 @@ export default async function MajorDetailPage({
                     )}
                 </div>
 
-                <div className="lg:col-span-9">
+                <div id="schools" className="lg:col-span-9 scroll-mt-8">
                     <div className="mb-12 flex flex-col sm:flex-row sm:items-end justify-between gap-8">
                         <div>
                             <h3 className="text-4xl font-funky text-foreground mb-3 tracking-tight italic">Institutions</h3>
@@ -326,7 +326,6 @@ export default async function MajorDetailPage({
                 </div>
             </div>
 
-            <StructuredMajorContent major={major as any} />
         </div>
     );
 }

@@ -9,3 +9,9 @@ README_DEPLOY.md
 # Sentry Config File
 .env.sentry-build-plugin
 *.md
+data/scorecard-field-of-study-*.zip
+data/Most-Recent-Cohorts-Field-of-Study.csv
+data/CollegeScorecardDataDictionary.xlsx
+data/CIP2020_SOC2018_Crosswalk.xlsx
+data/BLS_occupational_projections_*.xlsx
+data/cip_soc_crosswalk.csv

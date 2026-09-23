@@ -40,6 +40,7 @@ model Institution {
   updatedAt     DateTime           @updatedAt
   reviews       Review[]
   offeredMajors InstitutionMajor[]
+  graduatePrograms GraduateProgram[]
 }
 
 model Cip6 {
@@ -65,6 +66,65 @@ model Major {
   aliases        MajorAlias[]
   pathways       MajorPathway[]
   meta           MajorMeta?
+  scorecardNationalEarnings ScorecardNationalEarnings[]
+  relatedOccupations MajorOccupation[]
+  graduatePrograms GraduateProgram[]
+}
+
+// Occupations linked to the major's six-digit CIP programs by the 2020 CIP–2018 SOC crosswalk.
+model MajorOccupation {
+  cip4                String
+  socCode             String
+  title               String
+  matchedCip6Count    Int
+  source              String
+  major               Major @relation(fields: [cip4], references: [cip4])
+
+  @@id([cip4, socCode])
+  @@index([cip4, matchedCip6Count])
+}
+
+// Schools that awarded a graduate degree in this CIP4 field in the source year.
+model GraduateProgram {
+  unitid             String
+  cip4               String
+  awardLevel         Int
+  completionsTotal   Int
+  sourceYear         Int
+  institution        Institution @relation(fields: [unitid], references: [unitid])
+  major              Major @relation(fields: [cip4], references: [cip4])
+
+  @@id([unitid, cip4, awardLevel])
+  @@index([cip4, completionsTotal])
+}
+
+// Published College Scorecard field-of-study earnings. Missing/suppressed cells stay null.
+model ScorecardProgramEarnings {
+  unitid              String
+  cip4                String
+  credentialLevel     Int
+  medianEarnings1Yr   Int?
+  medianEarnings4Yr   Int?
+  medianEarnings5Yr   Int?
+  earningsCount1Yr    Int?
+  earningsCount4Yr    Int?
+  earningsCount5Yr    Int?
+  sourceRelease       String
+
+  @@id([unitid, cip4, credentialLevel])
+  @@index([cip4, credentialLevel])
+}
+
+model ScorecardNationalEarnings {
+  cip4                String
+  credentialLevel     Int
+  medianEarnings4Yr   Int
+  p25Earnings4Yr      Int?
+  p75Earnings4Yr      Int?
+  sourceRelease       String
+  major               Major @relation(fields: [cip4], references: [cip4])
+
+  @@id([cip4, credentialLevel])
 }
 
 enum AliasType {

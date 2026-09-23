@@ -7,7 +7,13 @@
     "build": "prisma generate && next build",
     "start": "next start",
     "lint": "next lint",
-    "typesense:index": "tsx scripts/typesense-index.ts"
+    "typesense:index": "tsx scripts/typesense-index.ts",
+    "scorecard:setup": "tsx scripts/etl/06_create_scorecard_tables.ts",
+    "scorecard:import": "tsx scripts/etl/06_import_scorecard_earnings.ts",
+    "scorecard:verify": "tsx scripts/verify_scorecard.ts",
+    "opportunities:prepare": "python scripts/etl/07_prepare_cip_soc.py",
+    "opportunities:setup": "tsx scripts/etl/07_create_opportunity_tables.ts",
+    "opportunities:import": "tsx scripts/etl/07_import_opportunities.ts"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^5.21.0",

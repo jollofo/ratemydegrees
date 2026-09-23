@@ -1,12 +1,11 @@
 import { Major } from '@prisma/client';
 
 interface StructuredMajorContentProps {
-    major: Major & { outcomes?: any };
+    major: Major;
+    occupations: { socCode: string; title: string }[];
 }
 
-export default function StructuredMajorContent({ major }: StructuredMajorContentProps) {
-    const outcomes = major.outcomes ? (typeof major.outcomes === 'string' ? JSON.parse(major.outcomes) : major.outcomes) : null;
-
+export default function StructuredMajorContent({ major, occupations }: StructuredMajorContentProps) {
     return (
         <div className="mt-20 space-y-16 border-t border-earth-sage/10 pt-16">
             <section>
@@ -30,17 +29,18 @@ export default function StructuredMajorContent({ major }: StructuredMajorContent
                 </section>
 
                 <section className="coffee-card bg-earth-parchment/50">
-                    <h4 className="text-xl font-bold uppercase tracking-widest text-earth-sage mb-6">Common Career Paths</h4>
+                    <h4 className="text-xl font-bold uppercase tracking-widest text-earth-sage mb-6">Related Occupations</h4>
                     <ul className="space-y-4">
-                        {outcomes?.commonJobs?.map((job: string) => (
-                            <li key={job} className="flex items-center gap-3 text-foreground/80 font-medium">
+                        {occupations.map((occupation) => (
+                            <li key={occupation.socCode} className="flex items-center gap-3 text-foreground/80 font-medium">
                                 <div className="w-1.5 h-1.5 rounded-full bg-earth-mustard" />
-                                {job}
+                                {occupation.title}
                             </li>
-                        )) || (
-                                <li className="text-foreground/60 italic">Gathering career outcome data...</li>
-                            )}
+                        ))}
+                        {occupations.length === 0 && <li className="text-foreground/60 italic">No official occupation matches are listed for this field.</li>}
                     </ul>
+                    <p className="mt-6 text-xs text-foreground/60">Curriculum-to-occupation matches, not graduate placements. Some roles require further education or experience.</p>
+                    <a className="inline-block mt-3 text-xs underline text-earth-sage" href="https://nces.ed.gov/ipeds/cipcode/Files/CIP2020_SOC2018_Crosswalk.xlsx" target="_blank" rel="noopener noreferrer">Source: NCES/BLS CIP–SOC crosswalk</a>
                 </section>
             </div>
 
@@ -51,12 +51,6 @@ export default function StructuredMajorContent({ major }: StructuredMajorContent
                 </p>
             </section>
 
-            <section>
-                <h4 className="text-2xl font-funky text-foreground mb-6 italic">ROI & Outcomes Summary</h4>
-                <p className="text-lg text-foreground/70 leading-relaxed">
-                    Graduates from {major.title} programs typically see a {outcomes?.salaryRange ? `competitive salary range starting from ${outcomes.salaryRange}` : 'solid return on investment'}, with strong placement rates in both traditional and emerging sectors. The versatility of the degree allows for significant career mobility and long-term earnings potential.
-                </p>
-            </section>
         </div>
     );
 }
