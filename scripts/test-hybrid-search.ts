@@ -4,6 +4,16 @@ dotenv.config({ path: '.env.local' });
 
 const testCases = [
     {
+        query: 'biomedical engineering',
+        expectedCip: '14.05',
+        expectedTitle: 'Biomedical/Medical Engineering.'
+    },
+    {
+        query: 'biomed eng',
+        expectedCip: '14.05',
+        expectedTitle: 'Biomedical/Medical Engineering.'
+    },
+    {
         query: 'BME',
         expectedCip: '14.05',
         expectedTitle: 'Biomedical/Medical Engineering.'

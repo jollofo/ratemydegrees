@@ -22,6 +22,7 @@ export default function HomeSearch() {
     const [showFilters, setShowFilters] = useState(false);
     const router = useRouter();
     const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const requestIdRef = useRef(0);
     const containerRef = useRef<HTMLDivElement>(null);
 
     // Close dropdown on outside click
@@ -38,10 +39,12 @@ export default function HomeSearch() {
     // Debounced Typesense search
     useEffect(() => {
         if (debounceRef.current) clearTimeout(debounceRef.current);
+        const requestId = ++requestIdRef.current;
 
-        if (query.length < 2) {
+        if (query.trim().length < 2) {
             setHits([]);
             setShowDropdown(false);
+            setLoading(false);
             return;
         }
 
@@ -59,12 +62,17 @@ export default function HomeSearch() {
                         title: { value: h._highlightResult?.title?.value ?? h.title }
                     },
                 }));
+                if (requestId !== requestIdRef.current) return;
                 setHits(results);
                 setShowDropdown(results.length > 0);
             } catch (err) {
                 console.error('Search error:', err);
+                if (requestId === requestIdRef.current) {
+                    setHits([]);
+                    setShowDropdown(false);
+                }
             } finally {
-                setLoading(false);
+                if (requestId === requestIdRef.current) setLoading(false);
             }
         }, 200);
 

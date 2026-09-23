@@ -35,21 +35,82 @@ function buildHighlightResult(highlights: { field: string; snippet?: string; val
     return map;
 }
 
+async function searchMajorsInDatabase(query: string, page: number, hitsPerPage: number, filterBy?: string) {
+    const terms = query.trim().split(/\s+/).filter(Boolean);
+    if (terms.length === 0 || query === '*') {
+        return { hits: [] as MajorHit[], totalPages: 0, totalHits: 0 };
+    }
+    const category = filterBy?.match(/^category:=(.+)$/)?.[1];
+    if (filterBy && !category) {
+        return { hits: [] as MajorHit[], totalPages: 0, totalHits: 0 };
+    }
+
+    const { default: prisma } = await import('@/lib/prisma');
+    const titleOrAlias = (term: string) => ({
+        OR: [
+            { title: { contains: term, mode: 'insensitive' as const } },
+            { aliases: { some: { alias: { contains: term, mode: 'insensitive' as const } } } },
+        ],
+    });
+    const where = {
+        AND: [
+            {
+                OR: [
+                    titleOrAlias(query.trim()),
+                    { AND: terms.map(titleOrAlias) },
+                ],
+            },
+            ...(category ? [{ category: { contains: category, mode: 'insensitive' as const } }] : []),
+        ],
+    };
+
+    const [majors, totalHits] = await Promise.all([
+        prisma.major.findMany({
+            where,
+            select: {
+                cip4: true,
+                title: true,
+                category: true,
+                description: true,
+                outcomes: true,
+                aliases: { select: { alias: true } },
+                _count: { select: { reviews: { where: { status: 'APPROVED' } } } },
+            },
+            orderBy: { title: 'asc' },
+            skip: (page - 1) * hitsPerPage,
+            take: hitsPerPage,
+        }),
+        prisma.major.count({ where }),
+    ]);
+
+    const hits: MajorHit[] = majors.map((major) => {
+        let outcomes: { salaryRange?: string; commonJobs?: string[] } = {};
+        try {
+            outcomes = major.outcomes ? JSON.parse(major.outcomes) : {};
+        } catch {
+            // Search should still work if an outcomes record is malformed.
+        }
+        return {
+            id: major.cip4,
+            cip4: major.cip4,
+            title: major.title,
+            category: major.category ?? '',
+            description: major.description ?? '',
+            reviewCount: major._count.reviews,
+            salaryRange: outcomes.salaryRange ?? '',
+            commonJobs: outcomes.commonJobs ?? [],
+            aliases: major.aliases.map((alias) => alias.alias),
+        };
+    });
+
+    return { hits, totalPages: Math.ceil(totalHits / hitsPerPage), totalHits };
+}
+
 export async function searchMajors(
     query: string,
     options?: { page?: number; hitsPerPage?: number; filterBy?: string }
 ) {
     const { page = 1, hitsPerPage = 12, filterBy } = options ?? {};
-
-    let vectorQueryString: string | undefined = undefined;
-    if (query && query !== '*') {
-        try {
-            const vector = await getEmbedding(query);
-            vectorQueryString = `vec:([${vector.join(',')}], k:10, alpha:0.75)`;
-        } catch (err) {
-            console.error('Error generating query embedding:', err);
-        }
-    }
 
     try {
         const response = await searchClient.multiSearch.perform({
@@ -57,8 +118,8 @@ export async function searchMajors(
                 {
                     collection: COLLECTION_MAJORS,
                     q: query || '*',
-                    query_by: 'title,category,description,commonJobs,aliases',
-                    ...(vectorQueryString ? { vector_query: vectorQueryString } : {}),
+                    query_by: 'title,aliases,category,description,commonJobs',
+                    drop_tokens_threshold: 0,
                     page,
                     per_page: hitsPerPage,
                     ...(filterBy ? { filter_by: filterBy } : {}),
@@ -69,6 +130,7 @@ export async function searchMajors(
         });
 
         const result = response.results[0];
+        if (result.error) throw new Error(result.error);
 
         const hits: MajorHit[] = (result.hits ?? []).map((h: any) => ({
             id: h.document.id,
@@ -88,6 +150,8 @@ export async function searchMajors(
         const totalPages = Math.ceil(totalHits / hitsPerPage);
 
         if (totalHits === 0 && query && query !== '*') {
+            const fallback = await searchMajorsInDatabase(query, page, hitsPerPage, filterBy);
+            if (fallback.totalHits > 0) return fallback;
             try {
                 const { resolveMajorQuery } = await import('@/lib/major-resolver');
                 const resolved = await resolveMajorQuery(query).catch(() => ({ matches: [] }));
@@ -109,6 +173,11 @@ export async function searchMajors(
         return { hits, totalPages, totalHits };
     } catch (err) {
         console.error('Typesense major search failed:', err);
+        try {
+            return await searchMajorsInDatabase(query, page, hitsPerPage, filterBy);
+        } catch (fallbackError) {
+            console.error('Database major search failed:', fallbackError);
+        }
         return { hits: [], totalPages: 0, totalHits: 0 };
     }
 }
