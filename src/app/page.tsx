@@ -24,8 +24,8 @@ export default function Home() {
             <h2 id="about-reviews" className="text-3xl font-bold mb-8 text-center">A place for firsthand experiences</h2>
             <div className="grid md:grid-cols-3 gap-6">
                 <article className="coffee-card"><h3 className="font-bold text-xl mb-3">What studying was like</h3><p>Read about coursework, teaching, workload, and support in students’ own words.</p></article>
-                <article className="coffee-card"><h3 className="font-bold text-xl mb-3">Context matters</h3><p>Experiences vary. Review counts show participation, and an average appears after five ratings. No reviews does not mean a poor program.</p></article>
-                <article className="coffee-card"><h3 className="font-bold text-xl mb-3">The same rules for everyone</h3><p>Relevant praise and criticism are welcome. We do not rank or recommend schools.</p><a href="/guidelines" className="inline-block underline mt-4">How reviews work</a></article>
+                <article className="coffee-card"><h3 className="font-bold text-xl mb-3">Learn from student experiences</h3><p>Explore what students enjoyed, what challenged them, and what they wish they had known.</p></article>
+                <article className="coffee-card"><h3 className="font-bold text-xl mb-3">The same rules for everyone</h3><p>Relevant praise and criticism are welcome.</p><a href="/guidelines" className="inline-block underline mt-4">How reviews work</a></article>
             </div>
         </section>
         <section className="text-center max-w-3xl mx-auto px-6 py-12">

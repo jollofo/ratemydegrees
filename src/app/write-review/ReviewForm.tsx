@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { submitReview } from './actions';
-import { searchMajors, searchInstitutions } from '@/app/actions/search';
+import ReviewSearchField from '@/components/ReviewSearchField';
 import { reviewFormSchema } from '@/lib/validation';
 import { ratingCategories } from '@/lib/rating-rubric';
 import type { ReviewFormData, InstitutionSearchResult, MajorSearchResult } from './types';
@@ -26,44 +26,10 @@ export default function WriteReviewForm({ majors, institutions, preSelectedMajor
     const [busy, setBusy] = useState(false);
     const [message, setMessage] = useState('');
     const [errors, setErrors] = useState<Record<string, string>>({});
-    const [majorQuery, setMajorQuery] = useState('');
-    const [schoolQuery, setSchoolQuery] = useState('');
-    const [majorSuggestionsOpen, setMajorSuggestionsOpen] = useState(false);
-    const [schoolSuggestionsOpen, setSchoolSuggestionsOpen] = useState(false);
-    const [majorResults, setMajorResults] = useState(majors);
-    const [schoolResults, setSchoolResults] = useState(institutions);
-    const [selectedMajor, setSelectedMajor] = useState(preSelectedMajor);
-    const [selectedSchool, setSelectedSchool] = useState(preSelectedInstitution);
-    const [searchMessage, setSearchMessage] = useState('');
+    const [majorQuery, setMajorQuery] = useState((preSelectedMajor?.title ?? majors.find(major => major.cip4 === initialData?.majorId)?.title ?? '').replace(/[.\s]+$/, ''));
+    const [schoolQuery, setSchoolQuery] = useState(preSelectedInstitution?.name ?? institutions.find(school => school.unitid === initialData?.institutionId)?.name ?? '');
     const [hasDraft, setHasDraft] = useState(false);
     useEffect(() => { try { setHasDraft(Boolean(sessionStorage.getItem(draftKey))); } catch { /* Draft storage is optional. */ } }, []);
-    useEffect(() => {
-        let active = true;
-        if (majorQuery.trim().length < 2) { setMajorResults(majors); return; }
-        const timer = setTimeout(async () => {
-            try {
-                const result = await searchMajors(majorQuery, { hitsPerPage: 20 });
-                if (!active) return;
-                setMajorResults(result.hits);
-                setSearchMessage(result.unavailable ? 'Degree search is temporarily unavailable. Please retry.' : result.hits.length ? '' : 'No matching degrees. Try another name.');
-            } catch { if (active) setSearchMessage('Degree search is unavailable. Please retry.'); }
-        }, 250);
-        return () => { active = false; clearTimeout(timer); };
-    }, [majorQuery, majors]);
-    useEffect(() => {
-        let active = true;
-        if (schoolQuery.trim().length < 2) { setSchoolResults(institutions); return; }
-        const timer = setTimeout(async () => {
-            try {
-                const result = await searchInstitutions(schoolQuery, { hitsPerPage: 20 });
-                if (!active) return;
-                setSchoolResults(result.hits);
-                setSearchMessage(result.unavailable ? 'School search is temporarily unavailable. Please retry.' : result.hits.length ? '' : 'No matching schools. Try another name.');
-            } catch { if (active) setSearchMessage('School search is unavailable. Please retry.'); }
-        }, 250);
-        return () => { active = false; clearTimeout(timer); };
-    }, [schoolQuery, institutions]);
-
     function validate(upTo: number) {
         const parsed = reviewFormSchema.safeParse(data);
         const next: Record<string, string> = {};
@@ -115,8 +81,6 @@ export default function WriteReviewForm({ majors, institutions, preSelectedMajor
             setBusy(false);
         }
     }
-    const majorOptions = Array.from(new Map([...majorResults, ...(selectedMajor ? [selectedMajor] : [])].map(item => [item.cip4, item])).values());
-    const schoolOptions = Array.from(new Map([...schoolResults, ...(selectedSchool ? [selectedSchool] : [])].map(item => [item.unitid, item])).values());
     const error = (key: string) => errors[key] ? <p id={'error-' + key} role="alert" className="text-red-800 text-sm mt-2">{errors[key]}</p> : null;
 
     return <form onSubmit={submit} noValidate className="space-y-6">
@@ -129,31 +93,12 @@ export default function WriteReviewForm({ majors, institutions, preSelectedMajor
             {step === 1 && <>
                 <h2 className="text-2xl font-bold">Your degree</h2>
                 {reviewId ? <p>{preSelectedMajor?.title} at {preSelectedInstitution?.name}</p> : <>
-                    <div>
-                        <label htmlFor="school-search" className="block font-bold mb-2">Find your school</label>
-                        <input id="school-search" type="search" role="combobox" aria-autocomplete="list" value={schoolQuery} onChange={event => { setSchoolQuery(event.target.value); setSchoolResults([]); setSchoolSuggestionsOpen(true); }} onFocus={() => setSchoolSuggestionsOpen(true)} placeholder="Type a school name" className="coffee-input" maxLength={200} aria-controls={schoolSuggestionsOpen && schoolQuery.trim().length >= 2 && schoolResults.length > 0 ? 'school-suggestions' : undefined} aria-expanded={schoolSuggestionsOpen && schoolQuery.trim().length >= 2 && schoolResults.length > 0} />
-                        {schoolSuggestionsOpen && schoolQuery.trim().length >= 2 && schoolResults.length > 0 && <div id="school-suggestions" role="listbox" className="mt-2 max-h-60 overflow-auto rounded-2xl border-2 border-foreground bg-[#fffefb]">
-                            {schoolResults.slice(0, 6).map(school => <button key={school.unitid} type="button" role="option" aria-selected={data.institutionId === school.unitid} onClick={() => { setData({ ...data, institutionId: school.unitid }); setSelectedSchool(school); setSchoolQuery(school.name); setSchoolSuggestionsOpen(false); }} className="block w-full text-left px-4 py-3 border-b last:border-b-0 border-foreground/10 hover:bg-earth-sage/15"><span className="font-semibold">{school.name}</span><span className="block text-sm text-foreground/70">{[school.city, school.state].filter(Boolean).join(', ')}</span></button>)}
-                        </div>}
-                        <label htmlFor="institutionId" className="block text-sm mt-3 mb-2">Select your school from the results</label>
-                        <select id="institutionId" value={data.institutionId} onChange={event => { setData({ ...data, institutionId: event.target.value }); setSelectedSchool(schoolOptions.find(school => school.unitid === event.target.value)); setSchoolSuggestionsOpen(false); }} className="coffee-input" aria-invalid={Boolean(errors.institutionId)} aria-describedby={errors.institutionId ? 'error-institutionId' : undefined}>
-                            <option value="">Select a school</option>
-                            {schoolOptions.map(school => <option key={school.unitid} value={school.unitid}>{school.name} — {school.state}</option>)}
-                        </select>{error('institutionId')}
-                    </div>
-                    <div>
-                        <label htmlFor="major-search" className="block font-bold mb-2">Find your degree</label>
-                        <input id="major-search" type="search" role="combobox" aria-autocomplete="list" value={majorQuery} onChange={event => { setMajorQuery(event.target.value); setMajorResults([]); setMajorSuggestionsOpen(true); }} onFocus={() => setMajorSuggestionsOpen(true)} placeholder="Type a degree name" className="coffee-input" maxLength={200} aria-controls={majorSuggestionsOpen && majorQuery.trim().length >= 2 && majorResults.length > 0 ? 'major-suggestions' : undefined} aria-expanded={majorSuggestionsOpen && majorQuery.trim().length >= 2 && majorResults.length > 0} />
-                        {majorSuggestionsOpen && majorQuery.trim().length >= 2 && majorResults.length > 0 && <div id="major-suggestions" role="listbox" className="mt-2 max-h-60 overflow-auto rounded-2xl border-2 border-foreground bg-[#fffefb]">
-                            {majorResults.slice(0, 6).map(major => <button key={major.cip4} type="button" role="option" aria-selected={data.majorId === major.cip4} onClick={() => { setData({ ...data, majorId: major.cip4 }); setSelectedMajor(major); setMajorQuery(major.title); setMajorSuggestionsOpen(false); }} className="block w-full text-left px-4 py-3 border-b last:border-b-0 border-foreground/10 hover:bg-earth-sage/15 font-semibold">{major.title.replace(/[.\s]+$/, '')}</button>)}
-                        </div>}
-                        <label htmlFor="majorId" className="block text-sm mt-3 mb-2">Select your degree from the results</label>
-                        <select id="majorId" value={data.majorId} onChange={event => { setData({ ...data, majorId: event.target.value }); setSelectedMajor(majorOptions.find(major => major.cip4 === event.target.value)); setMajorSuggestionsOpen(false); }} className="coffee-input" aria-invalid={Boolean(errors.majorId)} aria-describedby={errors.majorId ? 'error-majorId' : undefined}>
-                            <option value="">Select a degree</option>
-                            {majorOptions.map(major => <option key={major.cip4} value={major.cip4}>{major.title}</option>)}
-                        </select>{error('majorId')}
-                    </div>
-                    <p role="status" className="text-sm">{searchMessage}</p>
+                    <ReviewSearchField id="school-search" kind="school" value={schoolQuery} selectedId={data.institutionId} error={errors.institutionId}
+                        onChange={value => { setSchoolQuery(value); setData(current => ({ ...current, institutionId: '' })); }}
+                        onSelect={option => { setSchoolQuery(option.label); setData(current => ({ ...current, institutionId: option.id })); setErrors(current => ({ ...current, institutionId: '' })); }} />
+                    <ReviewSearchField id="major-search" kind="degree" value={majorQuery} selectedId={data.majorId} error={errors.majorId}
+                        onChange={value => { setMajorQuery(value); setData(current => ({ ...current, majorId: '' })); }}
+                        onSelect={option => { setMajorQuery(option.label); setData(current => ({ ...current, majorId: option.id })); setErrors(current => ({ ...current, majorId: '' })); }} />
                 </>}
                 <div><label htmlFor="student-status" className="block font-bold mb-2">Student status</label>
                     <select id="student-status" className="coffee-input" value={data.status} onChange={event => setData({ ...data, status: event.target.value as ReviewFormData['status'] })}>

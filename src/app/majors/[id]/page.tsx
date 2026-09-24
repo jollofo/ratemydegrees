@@ -37,7 +37,7 @@ export default async function MajorPage({ params, searchParams }: { params: { id
         <ReviewList reviews={reviewData.reviews} total={reviewData.total} page={reviewsPage} signedIn={Boolean(user)} buildHref={next => href(page, next, 'student-reviews')} scope="Across schools" />
         <section id="schools" className="scroll-mt-24 my-10">
             <h2 className="text-3xl font-bold mb-4">Find your school</h2>
-            <p className="mb-5">Search for your school to read or write reviews. Schools with catalog entries or published reviews appear first; a missing catalog link won’t stop you from sharing your experience.</p>
+            <p className="mb-5">Search for your school to read or write reviews.</p>
             <form method="GET" className="flex flex-col sm:flex-row gap-3 mb-6">
                 <label htmlFor="school-query" className="sr-only">School name</label>
                 <SearchAutocomplete id="school-query" kind="schools" scope={major.cip4} defaultValue={query} placeholder="School name" />
@@ -48,11 +48,10 @@ export default async function MajorPage({ params, searchParams }: { params: { id
             <div className="grid sm:grid-cols-2 gap-5">{schools.map(school => <a className="coffee-card" href={'/majors/' + major.cip4 + '/' + school.unitid} key={school.unitid}>
                 <h3 className="font-bold text-xl mb-3">{school.name}</h3>
                 <p>{school.city}, {school.state}</p>
-                {!school.catalogListed && <p className="text-sm mt-3">This degree isn’t linked in our school catalog yet. If you studied it here, you can still write a review.</p>}
                 <p className="mt-3">{school._count.reviews} student {school._count.reviews === 1 ? 'review' : 'reviews'}</p>
                 <p className="underline mt-3">Read reviews →</p>
             </a>)}</div>
-            {!schools.length && <p className="coffee-card">No matching schools on this page. Our catalog may be missing your program. <a className="underline font-semibold" href={'/write-review?majorId=' + major.cip4}>Write a review and select your school</a>, or try another search.</p>}
+            {!schools.length && <p className="coffee-card">No matching schools found. Try another search or <a className="underline font-semibold" href={'/write-review?majorId=' + major.cip4}>write a review and select your school</a>.</p>}
             <Pagination currentPage={page} totalPages={totalPages} buildHref={next => href(next, reviewsPage, 'schools')} />
         </section>
     </div>;

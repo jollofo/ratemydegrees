@@ -27,14 +27,14 @@ export default function MajorResolverModal({ isOpen, onClose, institutionId }: {
     }
     return <dialog ref={dialog} onCancel={onClose} onClose={onClose} aria-labelledby="resolver-title" className="rounded-2xl bg-background text-foreground p-6 w-[min(90vw,40rem)] max-h-[85vh] backdrop:bg-black/50">
         <div className="flex justify-between gap-4 items-start mb-5"><h2 id="resolver-title" className="text-2xl font-bold">Find your degree by name</h2><button onClick={onClose} className="underline py-2" aria-label="Close degree search">Close</button></div>
-        <p className="mb-4">Try an abbreviation or another name for your degree. Matches identify catalog names, not recommended programs.</p>
+        <p className="mb-4">Try an abbreviation or another name for your degree.</p>
         <form onSubmit={search} className="space-y-3">
             <label htmlFor="resolver-query" className="font-bold block">Degree name or abbreviation</label>
             <SearchAutocomplete id="resolver-query" kind="degrees" scope={institutionId} placeholder="Type a degree name or abbreviation" onQueryChange={setQuery} className="coffee-input" minLength={2} required />
             <button disabled={busy} className="coffee-btn">{busy ? 'Searching…' : 'Search'}</button>
         </form>
         <p role="status" className="my-4">{message}</p>
-        <ul className="space-y-4">{results.map(result => <li key={result.cip4}><a className="block rounded-xl border border-foreground/30 p-4 underline" href={result.catalogListed === false && institutionId ? '/write-review?' + new URLSearchParams({ majorId: result.cip4, institutionId }) : '/majors/' + result.cip4 + (institutionId ? '/' + institutionId : '')}>{result.title}</a>{result.catalogListed === false && <p className="text-sm mt-2">Not yet linked in our school catalog. Studied this degree here? You can still write a review.</p>}</li>)}</ul>
+        <ul className="space-y-4">{results.map(result => <li key={result.cip4}><a className="block rounded-xl border border-foreground/30 p-4 underline" href={result.catalogListed === false && institutionId ? '/write-review?' + new URLSearchParams({ majorId: result.cip4, institutionId }) : '/majors/' + result.cip4 + (institutionId ? '/' + institutionId : '')}>{result.title}</a></li>)}</ul>
         {institutionId && <a className="underline inline-block mt-5" href={'/write-review?institutionId=' + institutionId}>Still can’t find your degree? Continue to write a review</a>}
     </dialog>;
 }

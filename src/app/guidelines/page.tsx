@@ -12,8 +12,8 @@ export default function Guidelines() {
         <h2 className="text-2xl font-bold">Moderation and reports</h2>
         <p>Automated checks may queue possible contact information or links for moderation. Edited reviews return to moderation. Reports enter a separate queue and do not automatically hide a review. Moderators apply these content rules regardless of school or sentiment.</p>
         <h2 className="text-2xl font-bold">Understanding ratings</h2>
-        <p>Ratings reflect the contributors who chose to review. An average appears after five valid answers for that category; this is not a guarantee of a representative sample. Not-applicable answers are excluded. Review counts measure participation, not degree quality. Helpful votes are reader feedback, not verification.</p>
-        <p>Schools and degrees are browsed alphabetically. There are no platform rankings or recommendations. Reviews are shown newest first.</p>
+        <p>Ratings come from student reviews. An average appears after five valid answers for that category. Not-applicable answers are excluded. Helpful votes let readers highlight useful reviews.</p>
+        <p>Schools and degrees are browsed alphabetically. Reviews are shown newest first.</p>
         <a href="/write-review" className="coffee-btn">Write a review</a>
     </div>;
 }

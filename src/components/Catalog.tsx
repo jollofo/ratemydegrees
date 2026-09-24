@@ -27,7 +27,7 @@ export default function Catalog({ kind, query, filter, page, totalPages, totalHi
             {(query || filter) && <a href={path} className="inline-block underline mt-4">Clear search and filters</a>}
         </form>
         {unavailable ? <p role="alert" className="coffee-card">Search is temporarily unavailable. Please try again.</p> : <>
-            <div className="flex flex-wrap justify-between items-baseline gap-2 mb-5"><p role="status" className="font-semibold">{totalHits.toLocaleString('en-US')} {kind} found{page > 1 ? ' · Page ' + page : ''}</p><p className="text-sm text-foreground/75">Review counts reflect participation, not quality.</p></div>
+            <div className="mb-5"><p role="status" className="font-semibold">{totalHits.toLocaleString('en-US')} {kind} found{page > 1 ? ' · Page ' + page : ''}</p></div>
             {!items.length ? <div className="coffee-card"><p>{totalHits ? 'There are no results on this page.' : 'No matches. Try another name or clear your filters.'}</p><a href={href(1)} className="underline inline-block mt-3">Go to the first page</a></div> : <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
                 {items.map(item => <a href={item.href} key={item.id} className="coffee-card review-catalog-card group flex flex-col gap-4 hover:border-earth-terracotta">
                     <h2 className="font-bold text-xl break-words">{item.name.replace(/[.\s]+$/, '')}</h2>

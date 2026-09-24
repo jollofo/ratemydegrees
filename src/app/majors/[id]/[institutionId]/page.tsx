@@ -13,10 +13,9 @@ export async function generateMetadata({ params }: { params: { id: string; insti
     return { title: (major?.title ?? 'Degree') + ' at ' + (institution?.name ?? 'School') + ' | Student reviews', description: 'Read firsthand degree experiences from students and graduates.', alternates: { canonical: 'https://ratemydegrees.com/majors/' + params.id + '/' + params.institutionId } };
 }
 export default async function ProgramPage({ params, searchParams }: { params: { id: string; institutionId: string }; searchParams: { page?: string } }) {
-    const [major, institution, offering] = await Promise.all([
+    const [major, institution] = await Promise.all([
         prisma.major.findUnique({ where: { cip4: params.id }, select: { cip4: true, title: true } }),
         prisma.institution.findUnique({ where: { unitid: params.institutionId }, select: { unitid: true, name: true, city: true, state: true } }),
-        prisma.institutionMajor.findUnique({ where: { unitid_cip4: { unitid: params.institutionId, cip4: params.id } }, select: { unitid: true } }),
     ]);
     if (!major || !institution) notFound();
     const { data: { user } } = await createClient().auth.getUser();
@@ -31,7 +30,6 @@ export default async function ProgramPage({ params, searchParams }: { params: { 
         <Breadcrumbs items={[{ label: 'Schools', href: '/institutions' }, { label: institution.name, href: '/institutions/' + institution.unitid }, { label: major.title, href: '/majors/' + major.cip4 + '/' + institution.unitid }]} />
         <h1 className="text-3xl sm:text-5xl font-bold break-words leading-tight mb-4">{major.title.replace(/[.\s]+$/, '')} at {institution.name}</h1>
         <p className="mb-6">{institution.city}, {institution.state} · Student degree reviews</p>
-        {!offering && <p className="coffee-card mb-6">Our catalog hasn’t linked this degree to this school yet. If you studied it here, you can still share your experience.</p>}
         <a href={'/write-review?majorId=' + major.cip4 + '&institutionId=' + institution.unitid} className="coffee-btn mb-8">Write a review</a>
         <RatingSummary averages={data.averages} />
         <ReviewList reviews={data.reviews} total={data.total} page={page} signedIn={Boolean(user)} buildHref={next => '/majors/' + major.cip4 + '/' + institution.unitid + '?page=' + next + '#student-reviews'} scope={institution.name} />
