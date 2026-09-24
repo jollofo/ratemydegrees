@@ -87,6 +87,7 @@ export async function POST(request: Request) {
                 m.matchType === 'DIRECT' ? 'Name match' : 'Alias match',
             confidence: m.confidence.charAt(0) + m.confidence.slice(1).toLowerCase(),
             source: m.source,
+            catalogListed: m.catalogListed,
         }));
 
         return NextResponse.json(

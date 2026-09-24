@@ -12,7 +12,7 @@ export default function Home() {
         <section className="px-6 py-12 sm:py-20 max-w-5xl mx-auto text-center">
             <p className="font-bold text-sm uppercase tracking-widest text-earth-burgundy mb-5">Student degree reviews</p>
             <h1 className="text-4xl sm:text-6xl font-bold tracking-tight leading-tight mb-6">Real students.<br /><span className="text-earth-burgundy">Real degree experiences.</span></h1>
-            <p className="text-lg leading-relaxed max-w-2xl mx-auto mb-8">Read what students and graduates say about their degree—or share your own experience.</p>
+            <p className="text-lg leading-relaxed max-w-2xl mx-auto mb-8">Read what students and graduates say about their degree - or share your own experience.</p>
             <HomeSearch />
             <div className="flex flex-wrap justify-center gap-6 mt-6">
                 <a href="/majors" className="underline py-2 font-bold">Browse degrees</a>

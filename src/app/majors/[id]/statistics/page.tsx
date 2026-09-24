@@ -1,5 +1,6 @@
 import prisma from '@/lib/prisma';
 import Breadcrumbs from '@/components/Breadcrumbs';
+import SearchAutocomplete from '@/components/SearchAutocomplete';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import type { Prisma } from '@prisma/client';
@@ -64,7 +65,8 @@ export default async function OpportunitiesPage({ params, searchParams }: {
             <div className="mb-16 border-b-2 border-earth-sage/20 pb-10">
                 <p className="text-xs font-bold uppercase tracking-widest text-earth-terracotta mb-4">After this degree</p>
                 <h1 className="text-5xl md:text-6xl font-funky text-foreground italic mb-5">Degree statistics</h1>
-                <p className="text-lg text-foreground/70 max-w-3xl">Explore salary, related jobs, and graduate schools for {displayTitle}. These figures describe past outcomes and possible paths.</p>
+                <p className="text-lg text-foreground/70 max-w-3xl">Explore salary, related jobs, and graduate schools for {displayTitle}. These published figures describe past outcomes and possible paths. They are supplementary information, not recommendations.</p>
+                <p className="mt-4 max-w-3xl">Student reviews add firsthand context from people who studied this degree. <a href={`/majors/${major.cip4}#student-reviews`} className="font-bold underline underline-offset-4">Read student reviews →</a></p>
                 <nav aria-label="Statistics sections" className="flex flex-wrap gap-3 mt-8 text-sm font-bold text-earth-sage">
                     <a href="#salary" className="hover:text-earth-terracotta underline underline-offset-4">Salary</a>
                     <a href="#careers" className="hover:text-earth-terracotta underline underline-offset-4">Jobs</a>
@@ -114,7 +116,7 @@ export default async function OpportunitiesPage({ params, searchParams }: {
                 </div>
                 <form method="GET" action={`/majors/${major.cip4}/statistics#graduate-study`} className="flex flex-col sm:flex-row gap-3 mb-8 max-w-xl">
                     {degree !== 'all' && <input type="hidden" name="degree" value={degree} />}
-                    <input className="coffee-input flex-1" type="search" name="q" defaultValue={query} placeholder="Search schools" aria-label="Search graduate schools" />
+                    <SearchAutocomplete id="graduate-school-query" kind="graduate-schools" scope={major.cip4} degree={degree} defaultValue={query} maxLength={100} placeholder="Search schools" ariaLabel="Search graduate schools" />
                     <button className="coffee-btn px-6 py-3" type="submit">Search</button>
                 </form>
                 <p className="text-xs uppercase tracking-widest font-bold text-earth-sage mb-5">{graduateCount.toLocaleString('en-US')} school-degree records</p>

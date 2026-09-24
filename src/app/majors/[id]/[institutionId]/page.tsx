@@ -31,7 +31,7 @@ export default async function ProgramPage({ params, searchParams }: { params: { 
         <Breadcrumbs items={[{ label: 'Schools', href: '/institutions' }, { label: institution.name, href: '/institutions/' + institution.unitid }, { label: major.title, href: '/majors/' + major.cip4 + '/' + institution.unitid }]} />
         <h1 className="text-3xl sm:text-5xl font-bold break-words leading-tight mb-4">{major.title.replace(/[.\s]+$/, '')} at {institution.name}</h1>
         <p className="mb-6">{institution.city}, {institution.state} · Student degree reviews</p>
-        {!offering && <p className="coffee-card mb-6">This degree and school pairing is not confirmed by our current catalog data. That does not establish whether the program exists or is currently offered.</p>}
+        {!offering && <p className="coffee-card mb-6">Our catalog hasn’t linked this degree to this school yet. If you studied it here, you can still share your experience.</p>}
         <a href={'/write-review?majorId=' + major.cip4 + '&institutionId=' + institution.unitid} className="coffee-btn mb-8">Write a review</a>
         <RatingSummary averages={data.averages} />
         <ReviewList reviews={data.reviews} total={data.total} page={page} signedIn={Boolean(user)} buildHref={next => '/majors/' + major.cip4 + '/' + institution.unitid + '?page=' + next + '#student-reviews'} scope={institution.name} />

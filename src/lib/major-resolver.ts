@@ -1,5 +1,6 @@
 
 import prisma from '@/lib/prisma';
+import { searchInstitutionDegrees } from './institution-degree-search';
 
 export type MajorResolutionMatch = {
     cip4: string;
@@ -8,6 +9,7 @@ export type MajorResolutionMatch = {
     matchType: 'DIRECT' | 'ALIAS';
     source: string;
     category?: string | null;
+    catalogListed?: boolean;
 };
 
 export type MajorResolutionResult = {
@@ -32,6 +34,17 @@ export async function resolveMajorQuery(
 
     if (normalizedQuery.length < 2) {
         return { matches: [], eventId: event.id };
+    }
+
+    if (institutionId) {
+        const { items } = await searchInstitutionDegrees(institutionId, query, 1, 5);
+        const matches: MajorResolutionMatch[] = items.map(item => ({
+            cip4: item.id, title: item.name, confidence: 'MEDIUM',
+            matchType: item.name.toLowerCase().includes(normalizedQuery) || item.id === normalizedQuery ? 'DIRECT' : 'ALIAS',
+            source: item.name, catalogListed: item.catalogListed,
+        }));
+        if (matches.length) await prisma.resolverEvent.update({ where: { id: event.id }, data: { topResultCip4: matches[0].cip4 } });
+        return { matches, eventId: event.id };
     }
 
     const matches: MajorResolutionMatch[] = [];
@@ -98,36 +111,16 @@ export async function resolveMajorQuery(
         }
     }
 
-    // 4. Verification Step (Filter by Institution)
-    let verifiedMatches = matches;
-    if (institutionId) {
-        verifiedMatches = [];
-        for (const m of matches) {
-            const isOffered = await prisma.institutionMajor.findUnique({
-                where: {
-                    unitid_cip4: {
-                        unitid: institutionId,
-                        cip4: m.cip4
-                    }
-                }
-            });
-
-            if (isOffered) {
-                verifiedMatches.push(m);
-            }
-        }
-    }
-
     // Update event if we have a top result
-    if (verifiedMatches.length > 0) {
+    if (matches.length > 0) {
         await prisma.resolverEvent.update({
             where: { id: event.id },
-            data: { topResultCip4: verifiedMatches[0].cip4 }
+            data: { topResultCip4: matches[0].cip4 }
         });
     }
 
     return {
-        matches: verifiedMatches,
+        matches,
         eventId: event.id
     };
 }

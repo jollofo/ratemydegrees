@@ -3,6 +3,7 @@ import prisma from '@/lib/prisma';
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
 import ProgramIndex from '@/components/ProgramIndex';
+import { searchInstitutionDegrees } from '@/lib/institution-degree-search';
 
 import Breadcrumbs from '@/components/Breadcrumbs';
 
@@ -44,18 +45,7 @@ export default async function InstitutionPage({
         notFound();
     }
 
-    const whereClause = {
-        AND: [
-            { OR: [{ institutions: { some: { unitid: params.id } } }, { reviews: { some: { unitid: params.id, status: 'APPROVED' } } }] },
-            { OR: [{ title: { contains: query, mode: 'insensitive' as const } }, { aliases: { some: { alias: { contains: query, mode: 'insensitive' as const } } } }, { cip4: { contains: query } }] },
-        ],
-    };
-    const [totalCount, majors] = await Promise.all([
-        prisma.major.count({ where: whereClause }),
-        prisma.major.findMany({ where: whereClause, select: { cip4: true, title: true, category: true, _count: { select: { reviews: { where: { unitid: params.id, status: 'APPROVED' } } } } }, orderBy: [{ title: 'asc' }, { cip4: 'asc' }], take: PAGE_SIZE, skip: (page - 1) * PAGE_SIZE }),
-    ]);
-    const totalPages = Math.ceil(totalCount / PAGE_SIZE);
-    const uniqueMajors = majors.map(major => ({ id: major.cip4, name: major.title, category: major.category, reviewCount: major._count.reviews }));
+    const { items: uniqueMajors, totalPages } = await searchInstitutionDegrees(params.id, query, page, PAGE_SIZE);
 
     return (
         <div className="container mx-auto px-6 py-10 max-w-7xl">

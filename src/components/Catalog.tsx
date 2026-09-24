@@ -1,5 +1,6 @@
 import Pagination from './Pagination';
 import { ArrowLeft, ArrowUpRight, BookOpen, School, MessageCircle, Search } from 'lucide-react';
+import SearchAutocomplete from './SearchAutocomplete';
 
 interface CatalogProps {
     kind: 'degrees' | 'schools'; query: string; filter: string; page: number;
@@ -20,7 +21,7 @@ export default function Catalog({ kind, query, filter, page, totalPages, totalHi
         <nav aria-label="Browse reviews" className="flex flex-wrap gap-3 mb-6"><a href="/majors" aria-current={kind === 'degrees' ? 'page' : undefined} className="catalog-tab"><BookOpen size={17} aria-hidden="true" />Degrees</a><a href="/institutions" aria-current={kind === 'schools' ? 'page' : undefined} className="catalog-tab"><School size={17} aria-hidden="true" />Schools</a></nav>
         <form action={path} method="GET" className="coffee-card mb-8">
             <label htmlFor="catalog-query" className="block font-bold mb-2">{kind === 'degrees' ? 'Degree name' : 'School name or city'}</label>
-            <div className="flex flex-col sm:flex-row gap-3"><input id="catalog-query" type="search" name="q" maxLength={200} defaultValue={query} placeholder={kind === 'degrees' ? 'e.g. Psychology' : 'e.g. University of Florida'} className="coffee-input min-w-0" /><button className="coffee-btn gap-2" type="submit"><Search size={19} aria-hidden="true" />Search</button></div>
+            <div className="flex flex-col sm:flex-row gap-3"><SearchAutocomplete id="catalog-query" kind={kind} defaultValue={query} placeholder={kind === 'degrees' ? 'e.g. Psychology' : 'e.g. University of Florida'} /><button className="coffee-btn gap-2" type="submit"><Search size={19} aria-hidden="true" />Search</button></div>
             {kind === 'schools' && <div className="mt-4"><label htmlFor="school-state" className="block mb-2">State abbreviation (optional)</label><input id="school-state" name="state" defaultValue={filter} maxLength={2} placeholder="e.g. FL" className="coffee-input max-w-40 uppercase" /></div>}
             {kind === 'degrees' && filter && <p className="mt-3">Category: {filter}<input type="hidden" name="category" value={filter} /></p>}
             {(query || filter) && <a href={path} className="inline-block underline mt-4">Clear search and filters</a>}

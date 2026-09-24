@@ -6,6 +6,7 @@ import { getReviewPage } from '@/lib/review-data';
 import ReviewList from '@/components/ReviewList';
 import Pagination from '@/components/Pagination';
 import Breadcrumbs from '@/components/Breadcrumbs';
+import SearchAutocomplete from '@/components/SearchAutocomplete';
 import type { Metadata } from 'next';
 
 export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
@@ -33,13 +34,25 @@ export default async function MajorPage({ params, searchParams }: { params: { id
         <h1 className="text-4xl sm:text-5xl font-bold break-words mb-4">{major.title.replace(/[.\s]+$/, '')}</h1>
         <p className="text-lg mb-6">Firsthand degree experiences. Each review identifies the school where the student studied.</p>
         <div className="flex flex-wrap gap-5 items-center"><a href={'/write-review?majorId=' + major.cip4} className="coffee-btn">Write a review</a><a href="#schools" className="underline py-3">Find reviews at a school</a></div>
+        <section aria-labelledby="degree-statistics-title" className="coffee-card my-10 bg-earth-sage/10">
+            <p className="text-sm font-bold uppercase tracking-wide text-earth-burgundy mb-2">Alongside student reviews</p>
+            <h2 id="degree-statistics-title" className="text-2xl sm:text-3xl font-bold mb-3">Explore degree statistics</h2>
+            <p className="max-w-3xl mb-5">See published salary figures, related jobs, and graduate school records for this degree. Student reviews add firsthand context to these figures.</p>
+            <p className="text-sm mb-6">The published data is supplementary, describes past outcomes or possible paths, and is not a recommendation.</p>
+            <a href={'/majors/' + major.cip4 + '/statistics'} className="inline-flex items-center font-bold underline underline-offset-4 py-2">View statistics and sources →</a>
+            <div className="flex flex-wrap gap-x-6 gap-y-2 mt-3 text-sm">
+                <a className="underline underline-offset-4" href={'/majors/' + major.cip4 + '/statistics#salary'}>Salary</a>
+                <a className="underline underline-offset-4" href={'/majors/' + major.cip4 + '/statistics#careers'}>Related jobs</a>
+                <a className="underline underline-offset-4" href={'/majors/' + major.cip4 + '/statistics#graduate-study'}>Grad school</a>
+            </div>
+        </section>
         <ReviewList reviews={reviewData.reviews} total={reviewData.total} page={reviewsPage} signedIn={Boolean(user)} buildHref={next => href(page, next, 'student-reviews')} scope="Across schools" />
         <section id="schools" className="scroll-mt-24 my-10">
             <h2 className="text-3xl font-bold mb-4">Find your school</h2>
             <p className="mb-5">Schools with catalog entries or published student reviews are listed alphabetically. Listings are not endorsements or confirmations of current admissions availability.</p>
             <form method="GET" className="flex flex-col sm:flex-row gap-3 mb-6">
                 <label htmlFor="school-query" className="sr-only">School name</label>
-                <input id="school-query" name="q" type="search" maxLength={200} defaultValue={query} placeholder="School name" className="coffee-input min-w-0" />
+                <SearchAutocomplete id="school-query" kind="schools" scope={major.cip4} defaultValue={query} placeholder="School name" />
                 <button className="coffee-btn">Search</button>
             </form>
             {query && <a href={'/majors/' + major.cip4 + '#schools'} className="underline inline-block mb-4">Clear school search</a>}
@@ -50,12 +63,8 @@ export default async function MajorPage({ params, searchParams }: { params: { id
                 <p className="mt-3">{school._count.reviews} student {school._count.reviews === 1 ? 'review' : 'reviews'}</p>
                 <p className="underline mt-3">Read reviews →</p>
             </a>)}</div>
-            {!schools.length && <p className="coffee-card">No schools on this page. Try another search or return to the first page.</p>}
+            {!schools.length && <p className="coffee-card">No matching schools on this page. Our catalog may be missing your program. <a className="underline font-semibold" href={'/write-review?majorId=' + major.cip4}>Write a review and select your school</a>, or try another search.</p>}
             <Pagination currentPage={page} totalPages={Math.ceil(schoolCount / 12)} buildHref={next => href(next, reviewsPage, 'schools')} />
         </section>
-        <details className="border-t py-6"><summary className="cursor-pointer">Supplementary published data</summary>
-            <p className="text-sm mt-3">Previously published earnings and career data are separate from student reviews and do not represent platform recommendations.</p>
-            <a href={'/majors/' + major.cip4 + '/statistics'} className="underline inline-block mt-3">View published data and sources</a>
-        </details>
     </div>;
 }
