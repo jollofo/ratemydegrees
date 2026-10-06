@@ -1,0 +1,16 @@
+{
+  "name": "ratemydegree-reels",
+  "private": true,
+  "scripts": {
+    "studio": "remotion studio index.jsx",
+    "render": "remotion render index.jsx UFReview ../../artifacts/uf-cs-reel.mp4 --codec=h264 --crf=18",
+    "render:rochester": "remotion render rochester.jsx RochesterReview ../../artifacts/rochester-cs-reel.mp4 --codec=h264 --crf=18",
+    "render:media": "remotion render rochester-media.jsx RochesterMedia ../../artifacts/rochester-media-reel.mp4 --codec=h264 --crf=18"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.530",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "remotion": "4.0.530"
+  }
+}

@@ -31,7 +31,7 @@ export default async function RootLayout({
     return (
         <html lang="en" className={inter.variable}>
             <head>
-                <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9801764855577031" crossOrigin="anonymous" />
+                <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1253547692894460" crossOrigin="anonymous" />
             </head>
             <body className="font-sans selection:bg-earth-sage/30">
                 {process.env.RMD_LOCAL_CHECK !== '1' && <GoogleAnalytics GA_MEASUREMENT_ID="G-N6LJN2TRCF" />}
