@@ -29,8 +29,6 @@ export default function LoginPage({
         const protocol = headersList.get('x-forwarded-proto') || 'http'
         const origin = `${protocol}://${host}`
 
-        console.log('Redirecting to origin:', origin)
-
         const { data, error } = await supabase.auth.signInWithOAuth({
             provider: 'google',
             options: {
@@ -102,13 +100,7 @@ export default function LoginPage({
 
                 {/* Right Side: Form */}
                 <div className="w-full max-w-sm mx-auto bg-earth-parchment/30 p-8 rounded-3xl border-2 border-dashed border-black/10">
-                    <LoginForm  signInAction={signInWithGoogle} />
-
-                    {searchParams?.message && (
-                        <div className="mt-8 p-4 bg-red-100 border-2 border-black text-black text-center text-[10px] font-black uppercase tracking-widest shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-                            {searchParams.message}
-                        </div>
-                    )}
+                    <LoginForm signInAction={signInWithGoogle} nextUrl={nextUrl} />
                 </div>
             </div>
         </div>

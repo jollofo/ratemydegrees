@@ -1,26 +1,28 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { submitReview } from './actions';
 import ReviewSearchField from '@/components/ReviewSearchField';
 import { reviewFormSchema } from '@/lib/validation';
 import { ratingCategories } from '@/lib/rating-rubric';
 import type { ReviewFormData, InstitutionSearchResult, MajorSearchResult } from './types';
+import { discardDraft, readDraft, writeDraft, type DraftTarget } from '@/lib/review-draft';
+import { safeDestination } from '@/lib/navigation';
 
-const draftKey = 'rmd-review-draft-v1';
 const emptyForm: ReviewFormData = {
     majorId: '', institutionId: '', status: 'current', graduationYear: '',
     ratings: { satisfaction: 0 }, fit: '', challenge: '', misconception: '', differently: '',
     outcomeStatus: '', jobTitle: '', industry: '', gradSchool: '', timeToOutcome: '',
 };
 
-export default function WriteReviewForm({ majors, institutions, preSelectedMajor, preSelectedInstitution, initialData, reviewId }: {
+export default function WriteReviewForm({ majors, institutions, preSelectedMajor, preSelectedInstitution, initialData, reviewId, signedIn = true, draftTarget }: {
     majors: MajorSearchResult[]; institutions: InstitutionSearchResult[];
     preSelectedMajor?: MajorSearchResult; preSelectedInstitution?: InstitutionSearchResult;
-    initialData?: ReviewFormData; reviewId?: string;
+    initialData?: ReviewFormData; reviewId?: string; signedIn?: boolean; draftTarget?: DraftTarget;
 }) {
     const router = useRouter();
+    const target = useMemo(() => ({ majorId: draftTarget?.majorId ?? preSelectedMajor?.cip4 ?? '', institutionId: draftTarget?.institutionId ?? preSelectedInstitution?.unitid ?? '' }), [draftTarget?.majorId, draftTarget?.institutionId, preSelectedMajor?.cip4, preSelectedInstitution?.unitid]);
     const [data, setData] = useState<ReviewFormData>(initialData ?? { ...emptyForm, majorId: preSelectedMajor?.cip4 ?? '', institutionId: preSelectedInstitution?.unitid ?? '' });
     const [step, setStep] = useState(1);
     const [busy, setBusy] = useState(false);
@@ -28,8 +30,28 @@ export default function WriteReviewForm({ majors, institutions, preSelectedMajor
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [majorQuery, setMajorQuery] = useState((preSelectedMajor?.title ?? majors.find(major => major.cip4 === initialData?.majorId)?.title ?? '').replace(/[.\s]+$/, ''));
     const [schoolQuery, setSchoolQuery] = useState(preSelectedInstitution?.name ?? institutions.find(school => school.unitid === initialData?.institutionId)?.name ?? '');
-    const [hasDraft, setHasDraft] = useState(false);
-    useEffect(() => { try { setHasDraft(Boolean(sessionStorage.getItem(draftKey))); } catch { /* Draft storage is optional. */ } }, []);
+    const [draftReady, setDraftReady] = useState(false);
+    const [storageAvailable, setStorageAvailable] = useState(true);
+    useEffect(() => {
+        if (reviewId) return;
+        try {
+            const saved = readDraft(localStorage, target);
+            if (saved) {
+                setData(saved.data); setMajorQuery(saved.majorQuery); setSchoolQuery(saved.schoolQuery); setStep(saved.step);
+                setMessage('Your draft was restored on this device. Check the degree and school before submitting.');
+            }
+        } catch { setStorageAvailable(false); setMessage('Draft storage is unavailable. Keep this tab open until you submit.'); }
+        setDraftReady(true);
+    }, [reviewId, target]);
+    useEffect(() => {
+        if (!draftReady || reviewId) return;
+        const hasWork = data.majorId !== target.majorId || data.institutionId !== target.institutionId || data.status !== 'current' ||
+            Boolean(data.graduationYear || data.fit || data.challenge || data.misconception || data.differently || data.outcomeStatus || data.jobTitle || data.industry || data.gradSchool || data.timeToOutcome) ||
+            Object.values(data.ratings).some(value => Boolean(value));
+        if (!hasWork) return;
+        try { writeDraft(localStorage, target, { data, majorQuery, schoolQuery, step }); }
+        catch { setStorageAvailable(false); }
+    }, [data, majorQuery, schoolQuery, step, draftReady, reviewId, target]);
     function validate(upTo: number) {
         const parsed = reviewFormSchema.safeParse(data);
         const next: Record<string, string> = {};
@@ -43,37 +65,22 @@ export default function WriteReviewForm({ majors, institutions, preSelectedMajor
         else setMessage('');
         return !Object.keys(next).length;
     }
-    function saveDraft() {
-        try { sessionStorage.setItem(draftKey, JSON.stringify(data)); setHasDraft(true); setMessage('Draft saved in this browser tab. It is not submitted.'); }
-        catch { setMessage('This browser could not save the draft. Keep this tab open.'); }
-    }
-    function restoreDraft() {
-        try {
-            const raw: unknown = JSON.parse(sessionStorage.getItem(draftKey) || 'null');
-            // Drafts may be incomplete; only accept known primitive fields and rating keys.
-            if (!raw || typeof raw !== 'object' || Array.isArray(raw)) throw new Error();
-            const draft = raw as Record<string, unknown>;
-            const restored = { ...emptyForm, ratings: { satisfaction: 0 } } as ReviewFormData;
-            for (const key of Object.keys(emptyForm)) {
-                if (key !== 'ratings' && typeof draft[key] === 'string') Object.assign(restored, { [key]: (draft[key] as string).slice(0, 5000) });
-            }
-            if (draft.ratings && typeof draft.ratings === 'object') for (const category of ratingCategories) {
-                const value = (draft.ratings as Record<string, unknown>)[category.key];
-                if (typeof value === 'number' && Number.isInteger(value) && value >= 0 && value <= 5) restored.ratings[category.key] = value;
-            }
-            setData({ ...restored, majorId: data.majorId, institutionId: data.institutionId });
-            setStep(1); setMessage('Draft text restored. Check the selected school and degree before submitting.');
-        } catch { setMessage('The saved draft could not be restored.'); }
+    function signInToSubmit() {
+        try { writeDraft(localStorage, target, { data, majorQuery, schoolQuery, step }); }
+        catch { setMessage('Draft storage is unavailable. Sign-in may lose your writing; keep this tab open.'); return; }
+        const next = safeDestination(window.location.pathname + window.location.search);
+        router.push('/login?next=' + encodeURIComponent(next));
     }
     async function submit(event: React.FormEvent) {
         event.preventDefault();
         if (busy) return;
         if (step < 3) { if (validate(step)) setStep(step + 1); return; }
         if (!validate(3)) { setStep(1); return; }
+        if (!signedIn && !reviewId) { signInToSubmit(); return; }
         setBusy(true);
         try {
             const result = await submitReview(data, reviewId);
-            try { sessionStorage.removeItem(draftKey); } catch { /* Submission succeeds without browser storage. */ }
+            if (!reviewId) try { discardDraft(localStorage, target); } catch { /* Submission succeeds without browser storage. */ }
             const confirmation = new URLSearchParams({ submitted: result.status.toLowerCase(), reviewId: result.id });
             router.push('/my-reviews?' + confirmation.toString());
             router.refresh();
@@ -135,13 +142,12 @@ export default function WriteReviewForm({ majors, institutions, preSelectedMajor
         <p role="status" className="text-sm whitespace-pre-wrap">{message}</p>
         <div className="flex flex-wrap justify-between gap-3">
             {step > 1 && <button type="button" disabled={busy} onClick={() => { setStep(step - 1); setErrors({}); }} className="px-4 py-3 underline">Previous</button>}
-            <button type="submit" disabled={busy} className="coffee-btn">{busy ? 'Saving…' : step < 3 ? 'Next step' : reviewId ? 'Save changes' : 'Submit review'}</button>
+            <button type="submit" disabled={busy} className="coffee-btn">{busy ? 'Saving…' : step < 3 ? 'Next step' : reviewId ? 'Save changes' : signedIn ? 'Submit review' : 'Sign in to submit'}</button>
         </div>
         {!reviewId && <div className="text-sm border-t pt-5 space-y-3">
-            <p>Optional: save a draft in this browser tab. It may contain personal writing; use this on a device you trust.</p>
-            <div className="flex flex-wrap gap-4"><button type="button" onClick={saveDraft} className="underline">Save draft</button>
-                {hasDraft && <><button type="button" onClick={restoreDraft} className="underline">Restore draft text</button><button type="button" className="underline" onClick={() => { try { sessionStorage.removeItem(draftKey); setHasDraft(false); setMessage('Draft cleared.'); } catch { setMessage('Could not clear draft.'); } }}>Clear draft</button></>}
-            </div>
+            <p>Your unfinished review is saved only in this browser on this device for up to seven days. It is not uploaded or submitted until you sign in and submit. Use a device you trust.</p>
+            {!storageAvailable && <p role="alert">Browser storage is unavailable. Keep this tab open; sign-in may lose this draft.</p>}
+            <button type="button" className="underline" onClick={() => { try { discardDraft(localStorage, target); setData({ ...emptyForm, ratings: { satisfaction: 0 }, majorId: target.majorId, institutionId: target.institutionId }); setMajorQuery(preSelectedMajor?.title ?? ''); setSchoolQuery(preSelectedInstitution?.name ?? ''); setStep(1); setMessage('Draft discarded.'); } catch { setMessage('Could not discard the saved draft.'); } }}>Discard draft</button>
         </div>}
         <a href="/my-reviews" className="inline-block underline">My reviews</a>
     </form>;
