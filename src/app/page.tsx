@@ -1,5 +1,6 @@
 import HomeSearch from '@/components/HomeSearch';
 import type { Metadata } from 'next';
+import ReviewPrivacyNote from '@/components/ReviewPrivacyNote';
 
 export const metadata: Metadata = {
     title: 'RateMyDegrees | Real student degree reviews',
@@ -30,7 +31,8 @@ export default function Home() {
         </section>
         <section className="text-center max-w-3xl mx-auto px-6 py-12">
             <h2 className="text-3xl font-bold mb-4">Share your degree experience</h2>
-            <p className="mb-6">Your perspective can help incoming students understand what studying the degree was like. Your account details are not displayed with your review.</p>
+            <p className="mb-4">Your perspective can help incoming students understand what studying the degree was like.</p>
+            <div className="mb-6"><ReviewPrivacyNote /></div>
             <a href="/write-review" className="coffee-btn">Write a review</a>
         </section>
     </div>;

@@ -30,8 +30,9 @@ export async function submitReview(formData: ReviewFormData, reviewId?: string) 
         ratings: JSON.stringify(data.ratings), writtenResponses: JSON.stringify(writtenResponses),
         status, flagReasons: moderation.flagged ? JSON.stringify(moderation.reasons) : null, riskScore: moderation.riskScore,
     };
+    let savedId: string;
     try {
-        await prisma.$transaction(async tx => {
+        savedId = await prisma.$transaction(async tx => {
             let id: string;
             if (reviewId) {
                 const owned = await tx.review.findFirst({ where: { id: reviewId, userId: user.id, status: { in: ['APPROVED', 'PENDING'] } } });
@@ -52,6 +53,7 @@ export async function submitReview(formData: ReviewFormData, reviewId?: string) 
                     industry: data.industry || null, gradSchool: data.gradSchool || null, timeToOutcome: data.timeToOutcome || null,
                 } });
             }
+            return id;
         }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
     } catch (error) {
         if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2034') {
@@ -62,7 +64,7 @@ export async function submitReview(formData: ReviewFormData, reviewId?: string) 
     revalidatePath('/majors', 'layout');
     revalidatePath('/institutions', 'layout');
     revalidatePath('/my-reviews');
-    return { status };
+    return { status, id: savedId };
 }
 
 export async function getInstitutionsForSearch(): Promise<InstitutionSearchResult[]> {

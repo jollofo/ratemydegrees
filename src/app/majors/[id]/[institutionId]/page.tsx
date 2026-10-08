@@ -6,11 +6,13 @@ import { getReviewPage } from '@/lib/review-data';
 import ReviewList from '@/components/ReviewList';
 import RatingSummary from '@/components/RatingSummary';
 import Breadcrumbs from '@/components/Breadcrumbs';
+import ReviewPrivacyNote from '@/components/ReviewPrivacyNote';
 import type { Metadata } from 'next';
+import { programUrl } from '@/lib/review-links';
 
 export async function generateMetadata({ params }: { params: { id: string; institutionId: string } }): Promise<Metadata> {
     const [major, institution] = await Promise.all([prisma.major.findUnique({ where: { cip4: params.id }, select: { title: true } }), prisma.institution.findUnique({ where: { unitid: params.institutionId }, select: { name: true } })]);
-    return { title: (major?.title ?? 'Degree') + ' at ' + (institution?.name ?? 'School') + ' | Student reviews', description: 'Read firsthand degree experiences from students and graduates.', alternates: { canonical: 'https://ratemydegrees.com/majors/' + params.id + '/' + params.institutionId } };
+    return { title: (major?.title ?? 'Degree') + ' at ' + (institution?.name ?? 'School') + ' | Student reviews', description: 'Read firsthand degree experiences from students and graduates.', alternates: { canonical: programUrl(params.id, params.institutionId) } };
 }
 export default async function ProgramPage({ params, searchParams }: { params: { id: string; institutionId: string }; searchParams: { page?: string } }) {
     const [major, institution] = await Promise.all([
@@ -31,6 +33,7 @@ export default async function ProgramPage({ params, searchParams }: { params: { 
         <h1 className="text-3xl sm:text-5xl font-bold break-words leading-tight mb-4">{major.title.replace(/[.\s]+$/, '')} at {institution.name}</h1>
         <p className="mb-6">{institution.city}, {institution.state} · Student degree reviews</p>
         <a href={'/write-review?majorId=' + major.cip4 + '&institutionId=' + institution.unitid} className="coffee-btn mb-8">Write a review</a>
+        <div className="max-w-3xl mb-8"><ReviewPrivacyNote /></div>
         <RatingSummary averages={data.averages} />
         <ReviewList reviews={data.reviews} total={data.total} page={page} signedIn={Boolean(user)} buildHref={next => '/majors/' + major.cip4 + '/' + institution.unitid + '?page=' + next + '#student-reviews'} scope={institution.name} />
         {earnings && published != null && <details className="border-t py-6">

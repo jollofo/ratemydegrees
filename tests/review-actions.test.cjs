@@ -40,6 +40,7 @@ test.beforeEach(() => { user = { id: 'current-user' }; calls = []; owned = null;
 test('review and outcome are saved together at serializable isolation', async () => {
     const result = await submitReview({ ...valid, status: 'graduated', outcomeStatus: 'employed_full', jobTitle: 'Engineer' });
     assert.equal(result.status, 'APPROVED');
+    assert.equal(result.id, id);
     assert.equal(calls.find(c=>c[0]==='transaction')[1].isolationLevel, 'Serializable');
     assert.equal(calls.filter(c=>c[0]==='create').length, 1);
     assert.equal(calls.filter(c=>c[0]==='outcome').length, 1);
@@ -55,7 +56,7 @@ test('editing another user review fails before mutation', async () => {
 });
 test('owned edits keep their school and return to moderation', async () => {
     owned = { id, cip4: '11.07', unitid: '134130' };
-    assert.equal((await submitReview(valid, id)).status, 'PENDING');
+    assert.deepEqual(await submitReview(valid, id), { status: 'PENDING', id });
     assert.equal(calls.find(c=>c[0]==='update')[1].where.userId, user.id);
     await assert.rejects(submitReview({ ...valid, majorId: '42.01' }, id), /cannot be changed/);
 });

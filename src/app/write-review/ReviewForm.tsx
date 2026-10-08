@@ -74,7 +74,8 @@ export default function WriteReviewForm({ majors, institutions, preSelectedMajor
         try {
             const result = await submitReview(data, reviewId);
             try { sessionStorage.removeItem(draftKey); } catch { /* Submission succeeds without browser storage. */ }
-            router.push('/my-reviews?submitted=' + result.status.toLowerCase());
+            const confirmation = new URLSearchParams({ submitted: result.status.toLowerCase(), reviewId: result.id });
+            router.push('/my-reviews?' + confirmation.toString());
             router.refresh();
         } catch (error) {
             setMessage(error instanceof Error ? error.message : 'Could not submit. Please try again.');
@@ -84,7 +85,7 @@ export default function WriteReviewForm({ majors, institutions, preSelectedMajor
     const error = (key: string) => errors[key] ? <p id={'error-' + key} role="alert" className="text-red-800 text-sm mt-2">{errors[key]}</p> : null;
 
     return <form onSubmit={submit} noValidate className="space-y-6">
-        <p className="text-sm">Your account details are not shown with your review. Do not include names, contact details, or other identifying information in your text. <a href="/guidelines" className="underline">Review guidelines</a></p>
+        <p className="text-sm">Your name and account details are not displayed with your review. Your degree, school, student status, rating, review month, and written responses are public. Do not include names, contact details, or other identifying information in your text. <a href="/guidelines" className="underline">Review guidelines</a></p>
         <ol aria-label="Review steps" className="flex flex-wrap gap-4">
             {['Your degree', 'Your ratings', 'Your experience'].map((label, index) => <li key={label} aria-current={step === index + 1 ? 'step' : undefined} className={step === index + 1 ? 'font-bold' : 'text-foreground/70'}>{index + 1}. {label}</li>)}
         </ol>

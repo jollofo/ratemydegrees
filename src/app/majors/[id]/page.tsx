@@ -7,12 +7,15 @@ import ReviewList from '@/components/ReviewList';
 import Pagination from '@/components/Pagination';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import SearchAutocomplete from '@/components/SearchAutocomplete';
+import ShareLink from '@/components/ShareLink';
+import ReviewPrivacyNote from '@/components/ReviewPrivacyNote';
 import { searchDegreeSchools } from '@/lib/degree-school-search';
 import type { Metadata } from 'next';
+import { degreeUrl } from '@/lib/review-links';
 
 export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
     const major = await prisma.major.findUnique({ where: { cip4: params.id }, select: { title: true } });
-    return { title: (major?.title ?? 'Degree') + ' | Student reviews', description: 'Read firsthand student experiences of this degree, with each school clearly identified.', alternates: { canonical: 'https://ratemydegrees.com/majors/' + params.id } };
+    return { title: (major?.title ?? 'Degree') + ' | Student reviews', description: 'Read firsthand student experiences of this degree, with each school clearly identified.', alternates: { canonical: degreeUrl(params.id) } };
 }
 export default async function MajorPage({ params, searchParams }: { params: { id: string }; searchParams: { q?: string; page?: string; reviewsPage?: string } }) {
     const major = await prisma.major.findUnique({ where: { cip4: params.id }, select: { cip4: true, title: true } });
@@ -32,8 +35,10 @@ export default async function MajorPage({ params, searchParams }: { params: { id
     return <div className="max-w-5xl mx-auto px-6 py-10">
         <Breadcrumbs items={[{ label: 'Degrees', href: '/majors' }, { label: major.title, href: '/majors/' + major.cip4 }]} />
         <h1 className="text-4xl sm:text-5xl font-bold break-words mb-4">{major.title.replace(/[.\s]+$/, '')}</h1>
+        {major.cip4 === '42.01' && <p className="max-w-3xl leading-relaxed mb-5">Psychology explores behavior and mental processes. Coursework can include research methods, statistics, development, and cognition. Read the student reviews below to see how people experienced the coursework and support at their schools.</p>}
         <a href={'/majors/' + major.cip4 + '/statistics'} className="inline-block font-semibold underline underline-offset-4 mb-6">View statistics &amp; opportunities</a>
-        <div className="flex flex-wrap gap-5 items-center"><a href={'/write-review?majorId=' + major.cip4} className="coffee-btn">Write a review</a><a href="#schools" className="underline py-3">Find reviews at a school</a></div>
+        <div className="flex flex-wrap gap-5 items-center"><a href={'/write-review?majorId=' + major.cip4} className="coffee-btn">Write a review</a><a href="#schools" className="underline py-3">Find reviews at a school</a><ShareLink url={degreeUrl(major.cip4)} title={major.title.replace(/[.\s]+$/, '') + ' student reviews'} /></div>
+        <div className="max-w-3xl mt-3"><ReviewPrivacyNote /></div>
         <ReviewList reviews={reviewData.reviews} total={reviewData.total} page={reviewsPage} signedIn={Boolean(user)} buildHref={next => href(page, next, 'student-reviews')} scope="Across schools" />
         <section id="schools" className="scroll-mt-24 my-10">
             <h2 className="text-3xl font-bold mb-4">Find your school</h2>

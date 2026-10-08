@@ -1,0 +1,19 @@
+{
+  "degree": "Computer Science",
+  "degreeUrl": "https://ratemydegrees.com/majors/11.07",
+  "scenes": [
+    { "kicker": "BEFORE YOU PICK A MAJOR", "lines": ["Computer", "Science:", "worth it?"], "support": "The answer depends on the experience behind the degree." },
+    { "kicker": "01 / IN CLASS", "lines": ["What did", "classes actually", "teach you?"], "support": "Theory? Projects? Problem solving?" },
+    { "kicker": "02 / BEYOND CLASS", "lines": ["What did you", "learn on", "your own?"], "support": "Tell us what filled the gaps for you." },
+    { "kicker": "03 / THE HARD PART", "lines": ["What was", "harder than", "expected?"], "support": "Workload, projects, recruiting—or something else?" },
+    { "kicker": "ONE PERSON'S VIEW", "lines": ["Your story", "could help", "the next student."], "support": "Share the coursework, surprises, and challenges in your own words." },
+    { "kicker": "YOUR TURN", "lines": ["Studied CS?", "Tell us what", "it was like."], "support": "Read or write a degree review" }
+  ],
+  "provenance": {
+    "format": "Question-led review recruitment pilot; no review quotation, rating, outcome, salary, or consensus claim",
+    "degreeUrl": "Matches the RateMyDegrees canonical degree route in src/lib/review-links.ts",
+    "reviewEvidence": "Live review page could not be verified in this environment on 2026-10-08; older local review notes were not used as current evidence",
+    "audio": "Reuses the existing original 21-second public/dms-pulse.wav from the RochesterMedia reel",
+    "destination": "Organic review only; no posting or ad campaign authorized"
+  }
+}

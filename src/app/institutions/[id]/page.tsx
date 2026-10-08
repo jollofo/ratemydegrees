@@ -6,6 +6,7 @@ import ProgramIndex from '@/components/ProgramIndex';
 import { searchInstitutionDegrees } from '@/lib/institution-degree-search';
 
 import Breadcrumbs from '@/components/Breadcrumbs';
+import ReviewPrivacyNote from '@/components/ReviewPrivacyNote';
 
 export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
     const institution = await prisma.institution.findUnique({ where: { unitid: params.id } });
@@ -69,6 +70,7 @@ export default async function InstitutionPage({
                         Write a Review
                     </a>
                 </div>
+                <div className="max-w-3xl mb-8"><ReviewPrivacyNote /></div>
 
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                     <div className="border-r border-earth-sage/20 pr-6">
