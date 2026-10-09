@@ -8,7 +8,7 @@ import { readAnalyticsChoice, saveAnalyticsChoice, trackProductEvent, trackProdu
 import { consumeRecentGoogleSignIn } from '@/lib/google-auth-analytics';
 import { classifyJourneyPath } from '@/lib/analytics-journey';
 
-export default function AnalyticsConsent({ signedIn, userId, email, available }: { signedIn: boolean; userId: string | null; email: string | null; available: boolean }) {
+export default function AnalyticsConsent({ signedIn, available }: { signedIn: boolean; available: boolean }) {
     const pathname = usePathname();
     const [choice, setChoice] = useState<'granted' | 'denied' | null>(null);
     const [ready, setReady] = useState(false);
@@ -35,7 +35,7 @@ export default function AnalyticsConsent({ signedIn, userId, email, available }:
 
     const enabled = ready && choice === 'granted' && available;
     return <>
-        {enabled && <PostHogInitializer userId={userId} email={email} />}
+        {enabled && <PostHogInitializer />}
         {enabled && <GoogleAnalytics GA_MEASUREMENT_ID="G-N6LJN2TRCF" />}
         <div className="mt-8 text-sm">
             <p className="mb-3">Optional product analytics: {choice === 'granted' ? available ? 'on' : 'off in this environment' : choice === 'denied' ? 'off' : 'off until you choose'}. You can change this choice here.</p>

@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { signOut } from '@/app/actions/auth';
 import { BookOpen, School, PencilLine, UserRound, MessageSquareText, ShieldCheck, Menu, X } from 'lucide-react';
-import { resetProductAnalytics, trackProductEvent } from '@/lib/product-analytics';
+import { trackProductEvent } from '@/lib/product-analytics';
 
 export default function SiteNavigation({ signedIn, admin }: { signedIn: boolean; admin: boolean }) {
     const [open, setOpen] = useState(false);
@@ -18,7 +18,7 @@ export default function SiteNavigation({ signedIn, admin }: { signedIn: boolean;
                 if (destination) void trackProductEvent('navigation_clicked', { destination });
                 if (link.href === '/write-review') void trackProductEvent('review_cta_clicked', { source: 'navigation' });
             }} aria-current={pathname === link.href ? 'page' : undefined} className="warm-nav-link"><link.icon size={17} strokeWidth={1.8} aria-hidden="true" />{link.label}</a>)}
-            {signedIn && <form action={signOut} onSubmit={resetProductAnalytics}><button className="text-sm underline py-2">Sign out</button></form>}
+            {signedIn && <form action={signOut}><button className="text-sm underline py-2">Sign out</button></form>}
         </nav>
     </>;
 }

@@ -1,0 +1,354 @@
+diff --git a/README.md b/README.md
+index 03c0692..d289e1b 100644
+--- a/README.md
++++ b/README.md
+@@ -18,9 +18,9 @@ Under Authentication > URL Configuration, set Site URL to `https://ratemydegrees
+ 
+ Create or select a PostHog project yourself, then set `NEXT_PUBLIC_POSTHOG_KEY` to its publishable project key and `NEXT_PUBLIC_POSTHOG_HOST` to the project's `https://us.i.posthog.com` or `https://eu.i.posthog.com` ingestion host. Set `NEXT_PUBLIC_RMD_ANALYTICS_ENABLED=1` only in the intended production environment. Never put a private PostHog admin/personal API token in a `NEXT_PUBLIC_` variable. No PostHog configuration is required for local development or tests.
+ 
+-The footer offers Allow/Decline analytics controls. Google Analytics and the small set of PostHog product events load only after an explicit Allow choice; a missing or unavailable consent choice leaves them off. Declining later reloads the page to unload analytics scripts. A random anonymous PostHog ID is stored in session storage only after consent so a same-tab Google redirect and review restore remain in one funnel; it is removed on Decline or when the tab session ends. This is never an account or email ID. PostHog has autocapture, pageview capture, replay, surveys, feature flags, automatic exception capture, SDK persistence, and person profiles disabled. Manual Error Tracking captures use only fixed stage/category combinations and omit original exception messages and stacks, so issues show counts by category rather than code-level traces. Events use an explicit property allowlist and exclude review text, credentials, and URL query strings. The existing AdSense integration is separate and described in the Privacy Policy. Configuration follows PostHog's [Next.js guide](https://posthog.com/docs/libraries/next-js), [JavaScript SDK](https://posthog.com/docs/libraries/js), [configuration options](https://posthog.com/docs/libraries/js/config), [persistence guide](https://posthog.com/docs/libraries/js/persistence), and [Error Tracking capture guide](https://posthog.com/docs/error-tracking/capture).
++The footer offers Allow/Decline analytics controls. Google Analytics and the small set of PostHog product events load only after an explicit Allow choice; a missing or unavailable consent choice leaves them off. Declining later reloads the page to unload analytics scripts. A random anonymous PostHog ID is stored in session storage only after consent so a same-tab Google redirect and review restore remain in one funnel; it is removed on Decline or when the tab session ends. This is never an account or email ID. PostHog has autocapture, automatic pageview capture, replay, surveys, feature flags, SDK persistence, and person profiles disabled. Manual Error Tracking captures use only fixed stage/category combinations; automatic uncaught errors and unhandled rejections use a generic error label. Both omit original exception messages and stacks, so issues show counts rather than code-level traces. Events use an explicit property allowlist and exclude review text, credentials, and URL query strings. The existing AdSense integration is separate and described in the Privacy Policy. Configuration follows PostHog's [Next.js guide](https://posthog.com/docs/libraries/next-js), [JavaScript SDK](https://posthog.com/docs/libraries/js), [configuration options](https://posthog.com/docs/libraries/js/config), [persistence guide](https://posthog.com/docs/libraries/js/persistence), and [Error Tracking capture guide](https://posthog.com/docs/error-tracking/capture).
+ 
+-The explicit full-site journey events are `page_viewed` (fixed route template), `detail_viewed` (validated degree/school IDs), `search_submitted` (search type), `search_results` (type, count, results/no-results/unavailable), `navigation_clicked` (fixed destination), `review_cta_clicked` (fixed source and validated IDs), and `share_action_success` (shared/copied). The review/auth events are `review_started`, `review_draft_restored`, `review_submitted` (approved/pending), `sign_in_started`, `sign_in_completed`, and `product_error` with a corresponding normalized manual `$exception` for supported error stages. Search strings, arbitrary paths, URL query strings, and referrers are excluded. No acquisition campaign attribution is collected until a project-specific allowlist is defined.
++The explicit full-site journey events are `page_viewed` (fixed route template), `detail_viewed` (validated degree/school IDs), `search_submitted` (search type), `search_results` (type, count, results/no-results/unavailable), `navigation_clicked` (fixed destination), `review_cta_clicked` (fixed source and validated IDs), and `share_action_success` (shared/copied). The review/auth events are `review_started`, `review_draft_restored`, `review_submitted` (approved/pending), `sign_in_started`, `sign_in_completed`, and `product_error` with a corresponding normalized manual `$exception` for supported error stages. Search strings, arbitrary paths, URL query strings, and referrers are excluded. No acquisition campaign attribution is collected until a project-specific allowlist is defined. Each allowed page_viewed event also emits a standard $pageview for PostHog Web Analytics, using a fixed canonical route template rather than the visited URL. Only the SDK-generated session ID is retained for session counts; account identity and referrers remain excluded. Web Analytics reports grouped route templates and does not provide source/campaign attribution or automatic page-leave duration metrics.
+ 
+ Useful PostHog funnels include home → search submitted → search results → detail viewed, detail viewed → review CTA → review started → sign-in completed → review submitted, and review draft restored → review submitted. Compare no-results and unavailable counts by search type, and inspect where these sequences end. A visit ending or a short engagement period is a signal for further investigation, not proof of why someone left or that they were dissatisfied.
+ 
+diff --git a/src/app/layout.tsx b/src/app/layout.tsx
+index 9975344..84aa049 100644
+--- a/src/app/layout.tsx
++++ b/src/app/layout.tsx
+@@ -70,7 +70,7 @@ export default async function RootLayout({
+                                 <a href="/terms" className="text-sm opacity-80 hover:opacity-100 transition-opacity uppercase tracking-widest font-bold">Terms of Service</a>
+                                 <a href="/privacy" className="text-sm opacity-80 hover:opacity-100 transition-opacity uppercase tracking-widest font-bold">Privacy Policy</a>
+                             </div>
+-                            <AnalyticsConsent signedIn={Boolean(user)} userId={user?.id ?? null} email={user?.email ?? null} available={process.env.NODE_ENV === 'production' && process.env.RMD_LOCAL_CHECK !== '1'} />
++                            <AnalyticsConsent signedIn={Boolean(user)} available={process.env.NODE_ENV === 'production' && process.env.RMD_LOCAL_CHECK !== '1'} />
+                         </div>
+                     </footer>
+                 </div>
+diff --git a/src/app/privacy/page.tsx b/src/app/privacy/page.tsx
+index 725146b..30c3b2b 100644
+--- a/src/app/privacy/page.tsx
++++ b/src/app/privacy/page.tsx
+@@ -17,7 +17,7 @@ export default function PrivacyPage() {
+                 <p className="mb-6">We use the information we collect to provide, maintain, and improve our services, and to communicate with you.</p>
+                 <h2 className="text-2xl font-bold mt-8 mb-4">Public reviews and account data</h2><p>Reviews display the degree, school, student status, review date, ratings, and your written responses. Account details are kept separate from the public review. Your writing may still identify you or others; avoid sharing personal information.</p><h2 className="text-2xl font-bold mt-8 mb-4">Managing your contribution</h2><p>Use My reviews to edit or remove your contributions from public view. Removal retains an internal record for moderation. Unfinished drafts are stored only in this browser on this device for up to seven days, until you discard them, or until a successful submission. They are not uploaded as drafts.</p><h2 className="text-2xl font-bold mt-8 mb-4">Service providers and diagnostics</h2><p>The platform uses Supabase for authentication and storage, Google for sign-in, and Sentry for error monitoring. Degree search may use a search index; alternate-name searches can be logged to improve matching. These services process information required to provide their functions.</p>
+                 <h2 className="text-2xl font-bold mt-8 mb-4">Optional product analytics</h2>
+-                <p>Google Analytics and PostHog product events are off until you choose “Allow analytics” in the footer. You can change your choice there at any time. When enabled, product events describe visits to named page types, searches and result counts, degree and school details viewed, review links clicked, sharing, review and sign-in steps, and fixed error categories. Selected degree and school IDs are included where relevant. PostHog also receives manually captured, normalized error types and categories for issue counts; original error messages and stacks are excluded. A random anonymous ID is stored for the current browser tab so events before and after sign-in can be related without identifying your account. It is cleared when you decline analytics if browser storage permits, or when the tab session ends. We do not send review writing, search phrases, email addresses, sign-in codes, account tokens, full page URLs, or referrer URLs to PostHog. PostHog session replay, broad autocapture, and person profiles are disabled. Google Analytics receives page paths without query strings. The choice is stored in your browser. Declining optional analytics does not disable the services needed to use the site or the advertising described below.</p>
++                <p>Google Analytics and PostHog product events are off until you choose “Allow analytics” in the footer. You can change your choice there at any time. When enabled, product events describe visits to named page types, searches and result counts, degree and school details viewed, review links clicked, sharing, review and sign-in steps, and fixed error categories. Selected degree and school IDs are included where relevant. PostHog also receives manually captured, normalized error types and categories, plus generic counts of uncaught errors and unhandled rejections; original error messages and stacks are excluded. A random anonymous ID is stored for the current browser tab so events before and after sign-in can be related without identifying your account. It is cleared when you decline analytics if browser storage permits, or when the tab session ends. We do not send review writing, search phrases, email addresses, sign-in codes, account tokens, full page URLs, or referrer URLs to PostHog. PostHog Web Analytics receives fixed page-route templates and a random SDK session identifier for visit counts. PostHog session replay, broad autocapture, and person profiles are disabled. Google Analytics receives page paths without query strings. The choice is stored in your browser. Declining optional analytics does not disable the services needed to use the site or the advertising described below.</p>
+                 <h2 className="text-2xl font-bold mt-8 mb-4">Advertising and cookies</h2>
+                 <p>We use Google AdSense to support advertising on this site. Third-party vendors, including Google, may use cookies to serve ads based on your prior visits to this site or other websites. Google&apos;s advertising cookies enable Google and its partners to show ads based on visits to this and other sites. When you visit a page using Google services, your browser may also send Google information such as the page URL and your IP address. Learn more about <a href="https://policies.google.com/technologies/partner-sites">how Google uses information from partner sites</a>.</p>
+                 <p className="mt-6">You can control or opt out of personalized ads in <a href="https://adssettings.google.com/">Google Ads Settings</a>. You can also learn about opting out of some other participating ad vendors&apos; personalized ads at <a href="https://www.aboutads.info/choices/">YourAdChoices</a>. Turning off personalized ads does not stop all ads; ads may still be based on the page you are viewing or your general location.</p>
+diff --git a/src/components/AnalyticsConsent.tsx b/src/components/AnalyticsConsent.tsx
+index fcf6fcc..e83ac76 100644
+--- a/src/components/AnalyticsConsent.tsx
++++ b/src/components/AnalyticsConsent.tsx
+@@ -8,7 +8,7 @@ import { readAnalyticsChoice, saveAnalyticsChoice, trackProductEvent, trackProdu
+ import { consumeRecentGoogleSignIn } from '@/lib/google-auth-analytics';
+ import { classifyJourneyPath } from '@/lib/analytics-journey';
+ 
+-export default function AnalyticsConsent({ signedIn, userId, email, available }: { signedIn: boolean; userId: string | null; email: string | null; available: boolean }) {
++export default function AnalyticsConsent({ signedIn, available }: { signedIn: boolean; available: boolean }) {
+     const pathname = usePathname();
+     const [choice, setChoice] = useState<'granted' | 'denied' | null>(null);
+     const [ready, setReady] = useState(false);
+@@ -35,7 +35,7 @@ export default function AnalyticsConsent({ signedIn, userId, email, available }:
+ 
+     const enabled = ready && choice === 'granted' && available;
+     return <>
+-        {enabled && <PostHogInitializer userId={userId} email={email} />}
++        {enabled && <PostHogInitializer />}
+         {enabled && <GoogleAnalytics GA_MEASUREMENT_ID="G-N6LJN2TRCF" />}
+         <div className="mt-8 text-sm">
+             <p className="mb-3">Optional product analytics: {choice === 'granted' ? available ? 'on' : 'off in this environment' : choice === 'denied' ? 'off' : 'off until you choose'}. You can change this choice here.</p>
+diff --git a/src/components/LoginForm.tsx b/src/components/LoginForm.tsx
+index 5f89848..6e8fe5e 100644
+--- a/src/components/LoginForm.tsx
++++ b/src/components/LoginForm.tsx
+@@ -3,7 +3,7 @@
+ import { useEffect, useState } from 'react';
+ import { useRouter } from 'next/navigation';
+ import { createClient } from '@/utils/supabase/client';
+-import { identifyProductAnalytics, trackProductErrorOnce, trackProductEventOnce } from '@/lib/product-analytics';
++import { trackProductErrorOnce, trackProductEventOnce } from '@/lib/product-analytics';
+ import { clearGoogleSignInPending, markGoogleSignInPending } from '@/lib/google-auth-analytics';
+ import { isValidEmailOtp, normalizeEmailOtpInput } from '@/lib/email-otp';
+ 
+@@ -54,8 +54,7 @@ export default function LoginForm({ signInAction, nextUrl, authError = false }:
+         setBusy(true);
+         try {
+             const { data, error } = await createClient().auth.verifyOtp({ email: email.trim(), token, type: 'email' });
+-            if (error || !data.user) throw error ?? new Error('No authenticated user returned');
+-            await identifyProductAnalytics(data.user.id, data.user.email);
++            if (error || !data?.user) throw error ?? new Error('No authenticated user returned');
+             clearGoogleSignInPending();
+             void trackProductEventOnce('sign_in_completed:email', 'sign_in_completed', { method: 'email' });
+             router.push(nextUrl);
+diff --git a/src/components/PostHogInitializer.tsx b/src/components/PostHogInitializer.tsx
+index 1be1925..4d79ddd 100644
+--- a/src/components/PostHogInitializer.tsx
++++ b/src/components/PostHogInitializer.tsx
+@@ -1,16 +1,12 @@
+ 'use client';
+ 
+ import { useEffect } from 'react';
+-import { identifyProductAnalytics, initializeProductAnalytics } from '@/lib/product-analytics';
++import { initializeProductAnalytics } from '@/lib/product-analytics';
+ 
+-export default function PostHogInitializer({ userId, email }: { userId: string | null; email: string | null }) {
++export default function PostHogInitializer() {
+     useEffect(() => {
+-        if (userId) {
+-            void identifyProductAnalytics(userId, email ?? undefined);
+-            return;
+-        }
+         void initializeProductAnalytics();
+-    }, [email, userId]);
++    }, []);
+ 
+     return null;
+ }
+diff --git a/src/components/SiteNavigation.tsx b/src/components/SiteNavigation.tsx
+index e0e7dab..caac75d 100644
+--- a/src/components/SiteNavigation.tsx
++++ b/src/components/SiteNavigation.tsx
+@@ -3,7 +3,7 @@ import { useState } from 'react';
+ import { usePathname } from 'next/navigation';
+ import { signOut } from '@/app/actions/auth';
+ import { BookOpen, School, PencilLine, UserRound, MessageSquareText, ShieldCheck, Menu, X } from 'lucide-react';
+-import { resetProductAnalytics, trackProductEvent } from '@/lib/product-analytics';
++import { trackProductEvent } from '@/lib/product-analytics';
+ 
+ export default function SiteNavigation({ signedIn, admin }: { signedIn: boolean; admin: boolean }) {
+     const [open, setOpen] = useState(false);
+@@ -18,7 +18,7 @@ export default function SiteNavigation({ signedIn, admin }: { signedIn: boolean;
+                 if (destination) void trackProductEvent('navigation_clicked', { destination });
+                 if (link.href === '/write-review') void trackProductEvent('review_cta_clicked', { source: 'navigation' });
+             }} aria-current={pathname === link.href ? 'page' : undefined} className="warm-nav-link"><link.icon size={17} strokeWidth={1.8} aria-hidden="true" />{link.label}</a>)}
+-            {signedIn && <form action={signOut} onSubmit={resetProductAnalytics}><button className="text-sm underline py-2">Sign out</button></form>}
++            {signedIn && <form action={signOut}><button className="text-sm underline py-2">Sign out</button></form>}
+         </nav>
+     </>;
+ }
+diff --git a/src/lib/product-analytics-policy.ts b/src/lib/product-analytics-policy.ts
+index f52708d..b9c1a1a 100644
+--- a/src/lib/product-analytics-policy.ts
++++ b/src/lib/product-analytics-policy.ts
+@@ -1,8 +1,16 @@
+ export type ProductEvent = 'review_started' | 'review_draft_restored' | 'review_submitted' | 'review_deleted' | 'review_marked_helpful' | 'review_reported' | 'review_moderated' |
+-    'sign_in_started' | 'sign_in_completed' | 'product_error' | 'page_viewed' | 'detail_viewed' | 'search_submitted' | 'search_results' | 'review_cta_clicked' | 'share_action_success' | 'navigation_clicked';
++    'sign_in_started' | 'sign_in_completed' | 'product_error' | 'page_viewed' | '$pageview' | 'detail_viewed' | 'search_submitted' | 'search_results' | 'review_cta_clicked' | 'share_action_success' | 'navigation_clicked';
+ export type ProductProperties = Record<string, unknown>;
+ 
+ const routeTemplates = new Set(['home', 'degrees', 'schools', 'degree_detail', 'school_detail', 'program_detail', 'degree_statistics', 'degree_opportunities', 'write_review', 'sign_in', 'my_reviews', 'guidelines', 'terms', 'privacy']);
++const webPagePaths: Record<string, string> = {
++    home: '/', degrees: '/majors', schools: '/institutions',
++    degree_detail: '/majors/:major_id', school_detail: '/institutions/:institution_id',
++    program_detail: '/majors/:major_id/:institution_id',
++    degree_statistics: '/majors/:major_id/statistics', degree_opportunities: '/majors/:major_id/opportunities',
++    write_review: '/write-review', sign_in: '/login', my_reviews: '/my-reviews',
++    guidelines: '/guidelines', terms: '/terms', privacy: '/privacy',
++};
+ const searchTypes = new Set(['degrees', 'schools', 'schools_within_degree', 'degrees_within_school']);
+ const ctaSources = new Set(['home', 'degree_detail', 'school_detail', 'program_detail', 'navigation']);
+ const navigationDestinations = new Set(['degrees', 'schools', 'write_review', 'my_reviews', 'sign_in']);
+@@ -28,9 +36,15 @@ export function sanitizeProductEvent(event: string, input: ProductProperties = {
+         properties.action = String(input.action);
+         return { event, properties };
+     }
+-    if (event === 'page_viewed') {
++    if (event === 'page_viewed' || event === '$pageview') {
+         if (!routeTemplates.has(String(input.route))) return null;
+         properties.route = String(input.route);
++        if (event === '$pageview') {
++            // Fixed templates only: never copy a browser URL, query, hash, or referrer.
++            properties.$pathname = webPagePaths[properties.route];
++            properties.$host = 'ratemydegrees.com';
++            properties.$current_url = 'https://ratemydegrees.com' + properties.$pathname;
++        }
+         return { event, properties };
+     }
+     if (event === 'detail_viewed') {
+diff --git a/src/lib/product-analytics.ts b/src/lib/product-analytics.ts
+index 430e2eb..c4399ff 100644
+--- a/src/lib/product-analytics.ts
++++ b/src/lib/product-analytics.ts
+@@ -6,7 +6,6 @@ import { clearAnonymousSessionId, getOrCreateAnonymousSessionId } from './anonym
+ const consentKey = 'rmd-analytics-consent-v1';
+ const seen = new Set<string>();
+ let sdkPromise: Promise<typeof import('posthog-js').default | null> | null = null;
+-let sdk: typeof import('posthog-js').default | null = null;
+ 
+ export function hasAnalyticsConsent(): boolean {
+     try { return window.localStorage.getItem(consentKey) === 'granted'; }
+@@ -57,53 +56,35 @@ export async function initializeProductAnalytics() {
+             disable_surveys: true,
+             advanced_disable_flags: true,
+             disable_persistence: true,
+-            person_profiles: 'identified_only',
++            person_profiles: 'never',
+             bootstrap: { distinctID: anonymousId, isIdentifiedID: false },
+             before_send: payload => {
+-                if (!payload) return null;
++                if (!payload || !hasAnalyticsConsent()) return null;
+                 // PostHog needs its anonymous distinct ID and publishable project
+                 // token to ingest the event. Drop all other SDK-added properties.
+-                const distinctId = payload.properties?.distinct_id;
+                 const token = payload.properties?.token;
++                // Keep only the SDK's UUIDv7 session ID for Web Analytics session counts.
++                const sessionId = payload.properties?.$session_id;
++                const safeSessionId = typeof sessionId === 'string' &&
++                    /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(sessionId)
++                    ? sessionId : undefined;
+                 if (token && token !== process.env.NEXT_PUBLIC_POSTHOG_KEY) return null;
+-                if (payload.event === '$identify') {
+-                    const email = payload.properties?.$set?.email;
+-                    return { uuid: payload.uuid, event: payload.event, timestamp: payload.timestamp,
+-                        properties: { $set: typeof email === 'string' ? { email } : {},
+-                            ...(typeof distinctId === 'string' ? { distinct_id: distinctId } : {}),
+-                            ...(typeof token === 'string' ? { token } : {}) } };
+-                }
+                 const safe = payload.event === '$exception'
+                     ? sanitizeExceptionProperties(payload.properties ?? {})
+                     : sanitizeProductEvent(payload.event, payload.properties ?? {})?.properties;
+                 if (!safe) return null;
+                 return { uuid: payload.uuid, event: payload.event, timestamp: payload.timestamp,
+-                    properties: { ...safe,
+-                        ...(typeof distinctId === 'string' ? { distinct_id: distinctId } : {}),
+-                        ...(typeof token === 'string' ? { token } : {}) } };
++                    properties: { ...safe, $process_person_profile: false,
++                        distinct_id: anonymousId,
++                        ...(typeof token === 'string' ? { token } : {}),
++                        ...(safeSessionId ? { $session_id: safeSessionId } : {}) } };
+             },
+         });
+-        sdk = posthog;
+         return posthog;
+     }).catch(() => { sdkPromise = null; return null; });
+     return sdkPromise;
+ }
+ 
+-export async function identifyProductAnalytics(userId: string, email?: string): Promise<boolean> {
+-    if (!userId || !isProductAnalyticsConfigured() || !hasAnalyticsConsent()) return false;
+-    try {
+-        const posthog = await initializeProductAnalytics();
+-        if (!posthog || !hasAnalyticsConsent()) return false;
+-        posthog.identify(userId, email ? { email } : {});
+-        return true;
+-    } catch { return false; }
+-}
+-
+-export function resetProductAnalytics(): void {
+-    sdk?.reset();
+-    try { clearAnonymousSessionId(window.sessionStorage); } catch { /* A new anonymous session will be created when available. */ }
+-}
+-
+ export async function trackProductEvent(event: string, properties: ProductProperties = {}): Promise<boolean> {
+     const safe = sanitizeProductEvent(event, properties);
+     if (!safe || !isProductAnalyticsConfigured() || !hasAnalyticsConsent()) return false;
+@@ -111,6 +92,11 @@ export async function trackProductEvent(event: string, properties: ProductProper
+         const posthog = await initializeProductAnalytics();
+         if (!posthog || !hasAnalyticsConsent()) return false;
+         posthog.capture(safe.event, safe.properties);
++        if (safe.event === 'page_viewed') {
++            // Preserve existing custom funnels while supplying PostHog Web Analytics.
++            const pageview = sanitizeProductEvent('$pageview', safe.properties);
++            if (pageview) posthog.capture(pageview.event, pageview.properties);
++        }
+         return true;
+     } catch { return false; }
+ }
+diff --git a/tests/product-analytics-login.test.cjs b/tests/product-analytics-login.test.cjs
+index 55a7886..2212c3b 100644
+--- a/tests/product-analytics-login.test.cjs
++++ b/tests/product-analytics-login.test.cjs
+@@ -7,7 +7,7 @@ const ts = require('typescript');
+ 
+ require.extensions['.tsx'] = (module, file) => module._compile(ts.transpileModule(fs.readFileSync(file, 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020, esModuleInterop: true, jsx: ts.JsxEmit.ReactJSX } }).outputText, file);
+ require.extensions['.ts'] = (module, file) => module._compile(ts.transpileModule(fs.readFileSync(file, 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020, esModuleInterop: true } }).outputText, file);
+-let events = [], codeError = Error('private auth detail'), sentError = Error('private send detail'), pushes = [], hookIndex = 0, inputCode = '', verifiedTokens = [];
++let events = [], codeError = Error('private auth detail'), sentError = Error('private send detail'), pushes = [], hookIndex = 0, inputCode = '', verifiedTokens = [], verifiedUser = null;
+ const realReact = require('react');
+ const react = { ...realReact, useState(initial) {
+     hookIndex++;
+@@ -19,7 +19,7 @@ Module._load = function(request, parent, isMain) {
+     if (request === 'react') return react;
+     if (request === 'next/navigation') return { useRouter: () => ({ push: value => pushes.push(value), refresh() {} }) };
+     if (request === '@/utils/supabase/client') return { createClient: () => ({ auth: {
+-        signInWithOtp: async () => ({ error: sentError }), verifyOtp: async ({ token }) => { verifiedTokens.push(token); return { error: codeError }; },
++        signInWithOtp: async () => ({ error: sentError }), verifyOtp: async ({ token }) => { verifiedTokens.push(token); return { data: { user: codeError ? null : verifiedUser }, error: codeError }; },
+     } }) };
+     if (request === '@/lib/product-analytics') return { trackProductEventOnce: async (...args) => { events.push(args.slice(1)); return true; }, trackProductErrorOnce: async (key, stage, category) => { events.push(['product_error', { stage, category }]); return true; } };
+     if (request === '@/lib/google-auth-analytics') return { clearGoogleSignInPending() {}, markGoogleSignInPending() {} };
+@@ -29,7 +29,7 @@ Module._load = function(request, parent, isMain) {
+ const LoginForm = require('../src/components/LoginForm.tsx').default;
+ Module._load = originalLoad;
+ function forms() { hookIndex = 0; return LoginForm({ signInAction() {}, nextUrl: '/write-review' }).props.children; }
+-test.beforeEach(() => { events = []; pushes = []; inputCode = '12345678'; verifiedTokens = []; codeError = Error('private auth detail'); sentError = Error('private send detail'); });
++test.beforeEach(() => { events = []; pushes = []; inputCode = '12345678'; verifiedTokens = []; verifiedUser = { id: 'test-user-id', email: 'private@example.com' }; codeError = Error('private auth detail'); sentError = Error('private send detail'); });
+ 
+ test('email send and verification errors use fixed categories without provider messages', async () => {
+     const children = forms();
+@@ -84,3 +84,11 @@ test('expired or wrong codes remain provider errors without leaking details', as
+     assert.deepEqual(events, [['product_error', { stage: 'auth_verify', category: 'provider' }]]);
+     assert.equal(pushes.length, 0);
+ });
++
++test('verification without an authenticated user does not complete sign-in', async () => {
++    codeError = null;
++    verifiedUser = null;
++    await forms()[3].props.onSubmit({ preventDefault() {} });
++    assert.deepEqual(events, [['product_error', { stage: 'auth_verify', category: 'provider' }]]);
++    assert.deepEqual(pushes, []);
++});
+diff --git a/tests/product-analytics.test.cjs b/tests/product-analytics.test.cjs
+index 2a5dc9a..8cb715c 100644
+--- a/tests/product-analytics.test.cjs
++++ b/tests/product-analytics.test.cjs
+@@ -117,8 +117,13 @@ test('consented events initialize once, dedupe retries, and redact SDK-added URL
+     assert.deepEqual(sdk.options.bootstrap, { distinctID: '12345678-1234-4123-8123-123456789abc', isIdentifiedID: false });
+     assert.equal(sdk.options.disable_persistence, true);
+     const payload = sdk.options.before_send({ uuid: 'random', event: 'sign_in_started', $set: { email: 'private@example.com' }, properties: { method: 'google', distinct_id: 'anonymous', token: 'phc_test', $current_url: 'https://example.com/?code=private', email: 'private@example.com' } });
+-    assert.deepEqual(payload.properties, { method: 'google', distinct_id: 'anonymous', token: 'phc_test' });
++    assert.deepEqual(payload.properties, { method: 'google', $process_person_profile: false, distinct_id: '12345678-1234-4123-8123-123456789abc', token: 'phc_test' });
+     assert.equal(payload.$set, undefined);
++    for (const event of ['$identify', '$set', '$create_alias']) {
++        assert.equal(sdk.options.before_send({ event, properties: {
++            distinct_id: 'test-user-id', token: 'phc_test', $set: { email: 'private@example.com' },
++        } }), null);
++    }
+     values.set('rmd-analytics-consent-v1', 'denied');
+     assert.equal(await analytics.trackProductEvent('sign_in_completed', { method: 'google' }), false);
+     assert.equal(sdk.captures.length, 1);
+@@ -132,6 +137,29 @@ test('manual Error Tracking uses only normalized exception type and category wit
+     assert.equal(sdk.exceptions.length, 1);
+     assert.equal(sdk.exceptions[0].error.message, 'review_submit:duplicate');
+     const filtered = sdk.options.before_send({ uuid: 'random', event: '$exception', properties: { stage: 'review_submit', category: 'duplicate', distinct_id: 'anonymous', token: 'phc_test', $current_url: 'https://example.com/?code=private', $exception_list: [{ type: 'Error', value: 'private', stacktrace: { frames: [{ filename: 'private' }] } }] } });
+-    assert.deepEqual(filtered.properties, { ...policy.sanitizeExceptionProperties({ stage: 'review_submit', category: 'duplicate' }), distinct_id: 'anonymous', token: 'phc_test' });
++    assert.deepEqual(filtered.properties, { ...policy.sanitizeExceptionProperties({ stage: 'review_submit', category: 'duplicate' }), $process_person_profile: false, distinct_id: '12345678-1234-4123-8123-123456789abc', token: 'phc_test' });
+     assert.equal(JSON.stringify(filtered).includes('private'), false);
+ });
++
++test('Web Analytics receives anonymous template pageviews without raw URL or account fields', async () => {
++    process.env.NEXT_PUBLIC_RMD_ANALYTICS_ENABLED = '1'; process.env.NEXT_PUBLIC_POSTHOG_KEY = 'phc_test'; values.set('rmd-analytics-consent-v1', 'granted');
++    const expected = { route: 'degree_detail', $pathname: '/majors/:major_id', $host: 'ratemydegrees.com', $current_url: 'https://ratemydegrees.com/majors/:major_id' };
++    assert.equal(await analytics.trackProductEvent('page_viewed', { route: 'degree_detail', email: 'private@example.com', user_id: 'private-user', $current_url: 'https://example.com/?code=private' }), true);
++    assert.deepEqual(sdk.captures, [
++        { event: 'page_viewed', properties: { route: 'degree_detail' } },
++        { event: '$pageview', properties: expected },
++    ]);
++    const sessionId = '019a0000-0000-7000-8000-000000000001';
++    const filtered = sdk.options.before_send({ event: '$pageview', properties: {
++        ...expected, $process_person_profile: true, $session_id: sessionId, distinct_id: 'private@example.com', token: 'phc_test',
++        $current_url: 'https://example.com/?code=private', $pathname: '/private', $host: 'example.com',
++        $referrer: 'https://private.example', email: 'private@example.com', user_id: 'private-user',
++    } });
++    assert.deepEqual(filtered.properties, { ...expected, $process_person_profile: false, distinct_id: '12345678-1234-4123-8123-123456789abc', token: 'phc_test', $session_id: sessionId });
++    assert.equal(sdk.options.before_send({ event: '$pageview', properties: { route: '/private' } }), null);
++    assert.equal(sdk.options.before_send({ event: '$pageview', properties: { route: 'home', $session_id: 'private@example.com' } }).properties.$session_id, undefined);
++    values.set('rmd-analytics-consent-v1', 'denied');
++    assert.equal(await analytics.trackProductEvent('page_viewed', { route: 'home' }), false);
++    assert.equal(sdk.captures.length, 2);
++    assert.equal(sdk.options.before_send({ event: '$pageview', properties: { route: 'home' } }), null);
++});

@@ -6,7 +6,6 @@ import { clearAnonymousSessionId, getOrCreateAnonymousSessionId } from './anonym
 const consentKey = 'rmd-analytics-consent-v1';
 const seen = new Set<string>();
 let sdkPromise: Promise<typeof import('posthog-js').default | null> | null = null;
-let sdk: typeof import('posthog-js').default | null = null;
 
 export function hasAnalyticsConsent(): boolean {
     try { return window.localStorage.getItem(consentKey) === 'granted'; }
@@ -57,51 +56,33 @@ export async function initializeProductAnalytics() {
             disable_surveys: true,
             advanced_disable_flags: true,
             disable_persistence: true,
-            person_profiles: 'identified_only',
+            person_profiles: 'never',
             bootstrap: { distinctID: anonymousId, isIdentifiedID: false },
             before_send: payload => {
-                if (!payload) return null;
+                if (!payload || !hasAnalyticsConsent()) return null;
                 // PostHog needs its anonymous distinct ID and publishable project
                 // token to ingest the event. Drop all other SDK-added properties.
-                const distinctId = payload.properties?.distinct_id;
                 const token = payload.properties?.token;
+                // Keep only the SDK's UUIDv7 session ID for Web Analytics session counts.
+                const sessionId = payload.properties?.$session_id;
+                const safeSessionId = typeof sessionId === 'string' &&
+                    /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(sessionId)
+                    ? sessionId : undefined;
                 if (token && token !== process.env.NEXT_PUBLIC_POSTHOG_KEY) return null;
-                if (payload.event === '$identify') {
-                    const email = payload.properties?.$set?.email;
-                    return { uuid: payload.uuid, event: payload.event, timestamp: payload.timestamp,
-                        properties: { $set: typeof email === 'string' ? { email } : {},
-                            ...(typeof distinctId === 'string' ? { distinct_id: distinctId } : {}),
-                            ...(typeof token === 'string' ? { token } : {}) } };
-                }
                 const safe = payload.event === '$exception'
                     ? sanitizeExceptionProperties(payload.properties ?? {})
                     : sanitizeProductEvent(payload.event, payload.properties ?? {})?.properties;
                 if (!safe) return null;
                 return { uuid: payload.uuid, event: payload.event, timestamp: payload.timestamp,
-                    properties: { ...safe,
-                        ...(typeof distinctId === 'string' ? { distinct_id: distinctId } : {}),
-                        ...(typeof token === 'string' ? { token } : {}) } };
+                    properties: { ...safe, $process_person_profile: false,
+                        distinct_id: anonymousId,
+                        ...(typeof token === 'string' ? { token } : {}),
+                        ...(safeSessionId ? { $session_id: safeSessionId } : {}) } };
             },
         });
-        sdk = posthog;
         return posthog;
     }).catch(() => { sdkPromise = null; return null; });
     return sdkPromise;
-}
-
-export async function identifyProductAnalytics(userId: string, email?: string): Promise<boolean> {
-    if (!userId || !isProductAnalyticsConfigured() || !hasAnalyticsConsent()) return false;
-    try {
-        const posthog = await initializeProductAnalytics();
-        if (!posthog || !hasAnalyticsConsent()) return false;
-        posthog.identify(userId, email ? { email } : {});
-        return true;
-    } catch { return false; }
-}
-
-export function resetProductAnalytics(): void {
-    sdk?.reset();
-    try { clearAnonymousSessionId(window.sessionStorage); } catch { /* A new anonymous session will be created when available. */ }
 }
 
 export async function trackProductEvent(event: string, properties: ProductProperties = {}): Promise<boolean> {
@@ -111,6 +92,11 @@ export async function trackProductEvent(event: string, properties: ProductProper
         const posthog = await initializeProductAnalytics();
         if (!posthog || !hasAnalyticsConsent()) return false;
         posthog.capture(safe.event, safe.properties);
+        if (safe.event === 'page_viewed') {
+            // Preserve existing custom funnels while supplying PostHog Web Analytics.
+            const pageview = sanitizeProductEvent('$pageview', safe.properties);
+            if (pageview) posthog.capture(pageview.event, pageview.properties);
+        }
         return true;
     } catch { return false; }
 }

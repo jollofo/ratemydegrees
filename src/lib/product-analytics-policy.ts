@@ -1,8 +1,16 @@
 export type ProductEvent = 'review_started' | 'review_draft_restored' | 'review_submitted' | 'review_deleted' | 'review_marked_helpful' | 'review_reported' | 'review_moderated' |
-    'sign_in_started' | 'sign_in_completed' | 'product_error' | 'page_viewed' | 'detail_viewed' | 'search_submitted' | 'search_results' | 'review_cta_clicked' | 'share_action_success' | 'navigation_clicked';
+    'sign_in_started' | 'sign_in_completed' | 'product_error' | 'page_viewed' | '$pageview' | 'detail_viewed' | 'search_submitted' | 'search_results' | 'review_cta_clicked' | 'share_action_success' | 'navigation_clicked';
 export type ProductProperties = Record<string, unknown>;
 
 const routeTemplates = new Set(['home', 'degrees', 'schools', 'degree_detail', 'school_detail', 'program_detail', 'degree_statistics', 'degree_opportunities', 'write_review', 'sign_in', 'my_reviews', 'guidelines', 'terms', 'privacy']);
+const webPagePaths: Record<string, string> = {
+    home: '/', degrees: '/majors', schools: '/institutions',
+    degree_detail: '/majors/:major_id', school_detail: '/institutions/:institution_id',
+    program_detail: '/majors/:major_id/:institution_id',
+    degree_statistics: '/majors/:major_id/statistics', degree_opportunities: '/majors/:major_id/opportunities',
+    write_review: '/write-review', sign_in: '/login', my_reviews: '/my-reviews',
+    guidelines: '/guidelines', terms: '/terms', privacy: '/privacy',
+};
 const searchTypes = new Set(['degrees', 'schools', 'schools_within_degree', 'degrees_within_school']);
 const ctaSources = new Set(['home', 'degree_detail', 'school_detail', 'program_detail', 'navigation']);
 const navigationDestinations = new Set(['degrees', 'schools', 'write_review', 'my_reviews', 'sign_in']);
@@ -28,9 +36,15 @@ export function sanitizeProductEvent(event: string, input: ProductProperties = {
         properties.action = String(input.action);
         return { event, properties };
     }
-    if (event === 'page_viewed') {
+    if (event === 'page_viewed' || event === '$pageview') {
         if (!routeTemplates.has(String(input.route))) return null;
         properties.route = String(input.route);
+        if (event === '$pageview') {
+            // Fixed templates only: never copy a browser URL, query, hash, or referrer.
+            properties.$pathname = webPagePaths[properties.route];
+            properties.$host = 'ratemydegrees.com';
+            properties.$current_url = 'https://ratemydegrees.com' + properties.$pathname;
+        }
         return { event, properties };
     }
     if (event === 'detail_viewed') {

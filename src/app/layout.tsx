@@ -70,7 +70,7 @@ export default async function RootLayout({
                                 <a href="/terms" className="text-sm opacity-80 hover:opacity-100 transition-opacity uppercase tracking-widest font-bold">Terms of Service</a>
                                 <a href="/privacy" className="text-sm opacity-80 hover:opacity-100 transition-opacity uppercase tracking-widest font-bold">Privacy Policy</a>
                             </div>
-                            <AnalyticsConsent signedIn={Boolean(user)} userId={user?.id ?? null} email={user?.email ?? null} available={process.env.NODE_ENV === 'production' && process.env.RMD_LOCAL_CHECK !== '1'} />
+                            <AnalyticsConsent signedIn={Boolean(user)} available={process.env.NODE_ENV === 'production' && process.env.RMD_LOCAL_CHECK !== '1'} />
                         </div>
                     </footer>
                 </div>

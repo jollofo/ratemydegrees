@@ -117,8 +117,13 @@ test('consented events initialize once, dedupe retries, and redact SDK-added URL
     assert.deepEqual(sdk.options.bootstrap, { distinctID: '12345678-1234-4123-8123-123456789abc', isIdentifiedID: false });
     assert.equal(sdk.options.disable_persistence, true);
     const payload = sdk.options.before_send({ uuid: 'random', event: 'sign_in_started', $set: { email: 'private@example.com' }, properties: { method: 'google', distinct_id: 'anonymous', token: 'phc_test', $current_url: 'https://example.com/?code=private', email: 'private@example.com' } });
-    assert.deepEqual(payload.properties, { method: 'google', distinct_id: 'anonymous', token: 'phc_test' });
+    assert.deepEqual(payload.properties, { method: 'google', $process_person_profile: false, distinct_id: '12345678-1234-4123-8123-123456789abc', token: 'phc_test' });
     assert.equal(payload.$set, undefined);
+    for (const event of ['$identify', '$set', '$create_alias']) {
+        assert.equal(sdk.options.before_send({ event, properties: {
+            distinct_id: 'test-user-id', token: 'phc_test', $set: { email: 'private@example.com' },
+        } }), null);
+    }
     values.set('rmd-analytics-consent-v1', 'denied');
     assert.equal(await analytics.trackProductEvent('sign_in_completed', { method: 'google' }), false);
     assert.equal(sdk.captures.length, 1);
@@ -132,6 +137,29 @@ test('manual Error Tracking uses only normalized exception type and category wit
     assert.equal(sdk.exceptions.length, 1);
     assert.equal(sdk.exceptions[0].error.message, 'review_submit:duplicate');
     const filtered = sdk.options.before_send({ uuid: 'random', event: '$exception', properties: { stage: 'review_submit', category: 'duplicate', distinct_id: 'anonymous', token: 'phc_test', $current_url: 'https://example.com/?code=private', $exception_list: [{ type: 'Error', value: 'private', stacktrace: { frames: [{ filename: 'private' }] } }] } });
-    assert.deepEqual(filtered.properties, { ...policy.sanitizeExceptionProperties({ stage: 'review_submit', category: 'duplicate' }), distinct_id: 'anonymous', token: 'phc_test' });
+    assert.deepEqual(filtered.properties, { ...policy.sanitizeExceptionProperties({ stage: 'review_submit', category: 'duplicate' }), $process_person_profile: false, distinct_id: '12345678-1234-4123-8123-123456789abc', token: 'phc_test' });
     assert.equal(JSON.stringify(filtered).includes('private'), false);
+});
+
+test('Web Analytics receives anonymous template pageviews without raw URL or account fields', async () => {
+    process.env.NEXT_PUBLIC_RMD_ANALYTICS_ENABLED = '1'; process.env.NEXT_PUBLIC_POSTHOG_KEY = 'phc_test'; values.set('rmd-analytics-consent-v1', 'granted');
+    const expected = { route: 'degree_detail', $pathname: '/majors/:major_id', $host: 'ratemydegrees.com', $current_url: 'https://ratemydegrees.com/majors/:major_id' };
+    assert.equal(await analytics.trackProductEvent('page_viewed', { route: 'degree_detail', email: 'private@example.com', user_id: 'private-user', $current_url: 'https://example.com/?code=private' }), true);
+    assert.deepEqual(sdk.captures, [
+        { event: 'page_viewed', properties: { route: 'degree_detail' } },
+        { event: '$pageview', properties: expected },
+    ]);
+    const sessionId = '019a0000-0000-7000-8000-000000000001';
+    const filtered = sdk.options.before_send({ event: '$pageview', properties: {
+        ...expected, $process_person_profile: true, $session_id: sessionId, distinct_id: 'private@example.com', token: 'phc_test',
+        $current_url: 'https://example.com/?code=private', $pathname: '/private', $host: 'example.com',
+        $referrer: 'https://private.example', email: 'private@example.com', user_id: 'private-user',
+    } });
+    assert.deepEqual(filtered.properties, { ...expected, $process_person_profile: false, distinct_id: '12345678-1234-4123-8123-123456789abc', token: 'phc_test', $session_id: sessionId });
+    assert.equal(sdk.options.before_send({ event: '$pageview', properties: { route: '/private' } }), null);
+    assert.equal(sdk.options.before_send({ event: '$pageview', properties: { route: 'home', $session_id: 'private@example.com' } }).properties.$session_id, undefined);
+    values.set('rmd-analytics-consent-v1', 'denied');
+    assert.equal(await analytics.trackProductEvent('page_viewed', { route: 'home' }), false);
+    assert.equal(sdk.captures.length, 2);
+    assert.equal(sdk.options.before_send({ event: '$pageview', properties: { route: 'home' } }), null);
 });
