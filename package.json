@@ -19,6 +19,9 @@
     "check": "npm run lint && npm run typecheck && npm test"
   },
   "dependencies": {
+    "@opentelemetry/api-logs": "^0.223.0",
+    "@opentelemetry/exporter-logs-otlp-http": "^0.223.0",
+    "@opentelemetry/sdk-logs": "^0.223.0",
     "@prisma/adapter-pg": "^5.21.0",
     "@prisma/client": "5.21.0",
     "@sentry/nextjs": "^10.45.0",

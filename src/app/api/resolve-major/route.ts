@@ -4,6 +4,7 @@ import prisma from '@/lib/prisma';
 import { resolveMajorQuery } from '@/lib/major-resolver';
 import { resolveQuerySchema } from '@/lib/validation';
 import { rateLimit, resolveLimiter } from '@/lib/rate-limit';
+import { logPostHogError, logPostHogInfo } from '@/lib/posthog-logs';
 
 export const runtime = 'nodejs';
 
@@ -78,6 +79,7 @@ export async function POST(request: Request) {
         }
 
         // ── Core resolver ──────────────────────────────────────────────────────
+        await logPostHogInfo('major_resolution_started');
         const resolution = await resolveMajorQuery(queryForResolution, resolvedInstitutionId);
 
         const finalResults = resolution.matches.map((m) => ({
@@ -89,6 +91,11 @@ export async function POST(request: Request) {
             source: m.source,
             catalogListed: m.catalogListed,
         }));
+
+        await logPostHogInfo('major_resolution_completed', {
+            result_count: finalResults.length,
+            used_institution_filter: Boolean(resolvedInstitutionId),
+        });
 
         return NextResponse.json(
             {
@@ -105,6 +112,7 @@ export async function POST(request: Request) {
             },
         );
     } catch (error) {
+        await logPostHogError('major_resolution_failed');
         console.error('Resolver Error:', error);
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
     }

@@ -1,5 +1,5 @@
-export type ProductEvent = 'review_started' | 'review_draft_restored' | 'review_submitted' | 'sign_in_started' | 'sign_in_completed' | 'product_error' |
-    'page_viewed' | 'detail_viewed' | 'search_submitted' | 'search_results' | 'review_cta_clicked' | 'share_action_success' | 'navigation_clicked';
+export type ProductEvent = 'review_started' | 'review_draft_restored' | 'review_submitted' | 'review_deleted' | 'review_marked_helpful' | 'review_reported' | 'review_moderated' |
+    'sign_in_started' | 'sign_in_completed' | 'product_error' | 'page_viewed' | 'detail_viewed' | 'search_submitted' | 'search_results' | 'review_cta_clicked' | 'share_action_success' | 'navigation_clicked';
 export type ProductProperties = Record<string, unknown>;
 
 const routeTemplates = new Set(['home', 'degrees', 'schools', 'degree_detail', 'school_detail', 'program_detail', 'degree_statistics', 'degree_opportunities', 'write_review', 'sign_in', 'my_reviews', 'guidelines', 'terms', 'privacy']);
@@ -20,6 +20,12 @@ export function sanitizeProductEvent(event: string, input: ProductProperties = {
             if (input.status !== 'approved' && input.status !== 'pending') return null;
             properties.status = input.status;
         }
+        return { event, properties };
+    }
+    if (event === 'review_deleted' || event === 'review_marked_helpful' || event === 'review_reported') return { event, properties };
+    if (event === 'review_moderated') {
+        if (!['approve', 'remove', 'shadow_hide', 'reject'].includes(String(input.action))) return null;
+        properties.action = String(input.action);
         return { event, properties };
     }
     if (event === 'page_viewed') {
@@ -89,17 +95,28 @@ export function reviewErrorCategory(error: unknown): string {
 }
 
 /** A PostHog Error Tracking issue without the source exception's message or stack. */
-export function sanitizeExceptionProperties(input: ProductProperties): Record<string, unknown> | null {
+export function sanitizeExceptionProperties(input: ProductProperties): Record<string, unknown> {
     const safe = sanitizeProductEvent('product_error', input);
-    if (!safe) return null;
+    if (safe) {
+        return {
+            stage: safe.properties.stage,
+            category: safe.properties.category,
+            $exception_level: 'error',
+            $exception_list: [{
+                type: 'RateMyDegreesProductError',
+                value: safe.properties.stage + ':' + safe.properties.category,
+                mechanism: { type: 'generic', handled: true },
+            }],
+        };
+    }
+    // SDK-autocaptured exceptions can include user-provided messages or stack
+    // data. Retain the occurrence without forwarding that sensitive content.
     return {
-        stage: safe.properties.stage,
-        category: safe.properties.category,
         $exception_level: 'error',
         $exception_list: [{
-            type: 'RateMyDegreesProductError',
-            value: safe.properties.stage + ':' + safe.properties.category,
-            mechanism: { type: 'generic', handled: true },
+            type: 'UnhandledClientException',
+            value: 'unhandled_client_exception',
+            mechanism: { type: 'generic', handled: false },
         }],
     };
 }

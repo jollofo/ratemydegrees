@@ -3,8 +3,9 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
-import { trackProductErrorOnce, trackProductEventOnce } from '@/lib/product-analytics';
+import { identifyProductAnalytics, trackProductErrorOnce, trackProductEventOnce } from '@/lib/product-analytics';
 import { clearGoogleSignInPending, markGoogleSignInPending } from '@/lib/google-auth-analytics';
+import { isValidEmailOtp, normalizeEmailOtpInput } from '@/lib/email-otp';
 
 interface LoginFormProps {
     signInAction: () => void;
@@ -45,10 +46,16 @@ export default function LoginForm({ signInAction, nextUrl, authError = false }: 
     async function verifyCode(event: React.FormEvent) {
         event.preventDefault();
         if (busy) return;
+        const token = normalizeEmailOtpInput(code);
+        if (!isValidEmailOtp(token)) {
+            setMessage('Enter the 6 to 10 digit code from your email.');
+            return;
+        }
         setBusy(true);
         try {
-            const { error } = await createClient().auth.verifyOtp({ email: email.trim(), token: code.trim(), type: 'email' });
-            if (error) throw error;
+            const { data, error } = await createClient().auth.verifyOtp({ email: email.trim(), token, type: 'email' });
+            if (error || !data.user) throw error ?? new Error('No authenticated user returned');
+            await identifyProductAnalytics(data.user.id, data.user.email);
             clearGoogleSignInPending();
             void trackProductEventOnce('sign_in_completed:email', 'sign_in_completed', { method: 'email' });
             router.push(nextUrl);
@@ -76,7 +83,8 @@ export default function LoginForm({ signInAction, nextUrl, authError = false }: 
         </form>
         {sent && <form onSubmit={verifyCode} className="space-y-3">
             <label htmlFor="sign-in-code" className="block font-bold">Email code</label>
-            <input id="sign-in-code" className="coffee-input" inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]{6}" maxLength={6} required value={code} onChange={event => setCode(event.target.value)} />
+            <p id="sign-in-code-help" className="text-sm">Enter or paste the 6 to 10 digit code from your email.</p>
+            <input id="sign-in-code" className="coffee-input" type="text" inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]{6,10}" required aria-describedby="sign-in-code-help" value={code} onChange={event => setCode(normalizeEmailOtpInput(event.target.value))} />
             <button type="submit" disabled={busy} className="coffee-btn w-full">Verify code</button>
         </form>}
         <p role="status" className="text-sm">{message}</p>

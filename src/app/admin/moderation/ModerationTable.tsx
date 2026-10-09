@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { moderateReview } from '../actions';
 import { useRouter } from 'next/navigation';
+import { trackProductEvent } from '@/lib/product-analytics';
 
 export default function ModerationTable({ initialQueue }: { initialQueue: any[] }) {
     const router = useRouter();
@@ -12,6 +13,7 @@ export default function ModerationTable({ initialQueue }: { initialQueue: any[] 
         setActioningId(id);
         try {
             await moderateReview(id, action);
+            void trackProductEvent('review_moderated', { action: action.toLowerCase() });
             router.refresh();
         } catch (error) {
             console.error(error);

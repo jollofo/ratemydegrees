@@ -6,6 +6,7 @@ import { clearAnonymousSessionId, getOrCreateAnonymousSessionId } from './anonym
 const consentKey = 'rmd-analytics-consent-v1';
 const seen = new Set<string>();
 let sdkPromise: Promise<typeof import('posthog-js').default | null> | null = null;
+let sdk: typeof import('posthog-js').default | null = null;
 
 export function hasAnalyticsConsent(): boolean {
     try { return window.localStorage.getItem(consentKey) === 'granted'; }
@@ -36,7 +37,7 @@ export function isProductAnalyticsConfigured(): boolean {
         Boolean(process.env.NEXT_PUBLIC_POSTHOG_KEY) && (host === 'https://us.i.posthog.com' || host === 'https://eu.i.posthog.com');
 }
 
-async function getSdk() {
+export async function initializeProductAnalytics() {
     if (!isProductAnalyticsConfigured() || !hasAnalyticsConsent()) return null;
     const anonymousId = getOrCreateAnonymousSessionId(window.sessionStorage, () => window.crypto.randomUUID());
     if (!anonymousId) return null;
@@ -46,12 +47,17 @@ async function getSdk() {
             autocapture: false,
             capture_pageview: false,
             capture_pageleave: false,
-            capture_exceptions: false,
+            // Capture uncaught browser failures, but not noisy console output.
+            capture_exceptions: {
+                capture_unhandled_errors: true,
+                capture_unhandled_rejections: true,
+                capture_console_errors: false,
+            },
             disable_session_recording: true,
             disable_surveys: true,
             advanced_disable_flags: true,
             disable_persistence: true,
-            person_profiles: 'never',
+            person_profiles: 'identified_only',
             bootstrap: { distinctID: anonymousId, isIdentifiedID: false },
             before_send: payload => {
                 if (!payload) return null;
@@ -60,6 +66,13 @@ async function getSdk() {
                 const distinctId = payload.properties?.distinct_id;
                 const token = payload.properties?.token;
                 if (token && token !== process.env.NEXT_PUBLIC_POSTHOG_KEY) return null;
+                if (payload.event === '$identify') {
+                    const email = payload.properties?.$set?.email;
+                    return { uuid: payload.uuid, event: payload.event, timestamp: payload.timestamp,
+                        properties: { $set: typeof email === 'string' ? { email } : {},
+                            ...(typeof distinctId === 'string' ? { distinct_id: distinctId } : {}),
+                            ...(typeof token === 'string' ? { token } : {}) } };
+                }
                 const safe = payload.event === '$exception'
                     ? sanitizeExceptionProperties(payload.properties ?? {})
                     : sanitizeProductEvent(payload.event, payload.properties ?? {})?.properties;
@@ -70,16 +83,32 @@ async function getSdk() {
                         ...(typeof token === 'string' ? { token } : {}) } };
             },
         });
+        sdk = posthog;
         return posthog;
     }).catch(() => { sdkPromise = null; return null; });
     return sdkPromise;
+}
+
+export async function identifyProductAnalytics(userId: string, email?: string): Promise<boolean> {
+    if (!userId || !isProductAnalyticsConfigured() || !hasAnalyticsConsent()) return false;
+    try {
+        const posthog = await initializeProductAnalytics();
+        if (!posthog || !hasAnalyticsConsent()) return false;
+        posthog.identify(userId, email ? { email } : {});
+        return true;
+    } catch { return false; }
+}
+
+export function resetProductAnalytics(): void {
+    sdk?.reset();
+    try { clearAnonymousSessionId(window.sessionStorage); } catch { /* A new anonymous session will be created when available. */ }
 }
 
 export async function trackProductEvent(event: string, properties: ProductProperties = {}): Promise<boolean> {
     const safe = sanitizeProductEvent(event, properties);
     if (!safe || !isProductAnalyticsConfigured() || !hasAnalyticsConsent()) return false;
     try {
-        const posthog = await getSdk();
+        const posthog = await initializeProductAnalytics();
         if (!posthog || !hasAnalyticsConsent()) return false;
         posthog.capture(safe.event, safe.properties);
         return true;
@@ -99,7 +128,7 @@ export async function trackProductErrorOnce(dedupeKey: string, stage: string, ca
     if (!safe || seen.has(dedupeKey) || !isProductAnalyticsConfigured() || !hasAnalyticsConsent()) return false;
     seen.add(dedupeKey);
     try {
-        const posthog = await getSdk();
+        const posthog = await initializeProductAnalytics();
         if (!posthog || !hasAnalyticsConsent()) { seen.delete(dedupeKey); return false; }
         posthog.capture('product_error', safe.properties);
         // Only a synthetic, allowlisted type and category enter the SDK. The

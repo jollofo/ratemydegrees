@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { voteReview, reportReview } from '@/lib/actions';
+import { trackProductEvent } from '@/lib/product-analytics';
 import type { PublicReview } from '@/lib/reviews';
 
 export default function ReviewItem({ review, signedIn }: { review: PublicReview; signedIn: boolean }) {
@@ -22,6 +23,7 @@ export default function ReviewItem({ review, signedIn }: { review: PublicReview;
         try {
             const result = await voteReview(review.id, 1);
             setVotes(result.votes); setHasVoted(true);
+            void trackProductEvent('review_marked_helpful');
         } catch (error) { setMessage(error instanceof Error ? error.message : 'Unable to save your vote. Please try again.'); }
         finally { setBusy(false); }
     }
@@ -29,6 +31,7 @@ export default function ReviewItem({ review, signedIn }: { review: PublicReview;
         event.preventDefault(); setBusy(true); setMessage('');
         try {
             await reportReview(review.id, reason);
+            void trackProductEvent('review_reported');
             setReporting(false); setReason('');
             setMessage('Report received. A moderator will review it using the same rules for all schools.');
         } catch (error) { setMessage(error instanceof Error ? error.message : 'Unable to send report. Please try again.'); }

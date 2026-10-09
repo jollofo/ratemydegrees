@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { deleteOwnReview } from '@/app/my-reviews/actions';
+import { trackProductEvent } from '@/lib/product-analytics';
 
 export default function DeleteReviewButton({ id }: { id: string }) {
     const router = useRouter();
@@ -10,7 +11,7 @@ export default function DeleteReviewButton({ id }: { id: string }) {
     const [error, setError] = useState('');
     async function remove() {
         setBusy(true);
-        try { await deleteOwnReview(id); router.refresh(); }
+        try { await deleteOwnReview(id); void trackProductEvent('review_deleted'); router.refresh(); }
         catch (e) { setError(e instanceof Error ? e.message : 'Could not delete your review.'); setBusy(false); }
     }
     return <div>
