@@ -7,6 +7,7 @@ import { searchInstitutionDegrees } from '@/lib/institution-degree-search';
 
 import Breadcrumbs from '@/components/Breadcrumbs';
 import ReviewPrivacyNote from '@/components/ReviewPrivacyNote';
+import ReviewCta from '@/components/ReviewCta';
 
 export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
     const institution = await prisma.institution.findUnique({ where: { unitid: params.id } });
@@ -46,7 +47,7 @@ export default async function InstitutionPage({
         notFound();
     }
 
-    const { items: uniqueMajors, totalPages } = await searchInstitutionDegrees(params.id, query, page, PAGE_SIZE);
+    const { items: uniqueMajors, totalHits, totalPages } = await searchInstitutionDegrees(params.id, query, page, PAGE_SIZE);
 
     return (
         <div className="container mx-auto px-6 py-10 max-w-7xl">
@@ -66,9 +67,9 @@ export default async function InstitutionPage({
                         </div>
                         <h1 className="text-4xl md:text-6xl break-words font-funky text-foreground tracking-tight leading-[0.85]">{institution.name}</h1>
                     </div>
-                    <a href={`/write-review?institutionId=${institution.unitid}`} className="coffee-btn px-10 py-5 text-xl w-full md:w-auto text-center">
+                    <ReviewCta href={`/write-review?institutionId=${institution.unitid}`} source="school_detail" institutionId={institution.unitid} className="coffee-btn px-10 py-5 text-xl w-full md:w-auto text-center">
                         Write a Review
-                    </a>
+                    </ReviewCta>
                 </div>
                 <div className="max-w-3xl mb-8"><ReviewPrivacyNote /></div>
 
@@ -99,6 +100,7 @@ export default async function InstitutionPage({
                     majors={uniqueMajors}
                     unitid={institution.unitid}
                     totalPages={totalPages}
+                    totalHits={totalHits}
                     currentPage={page}
                     query={query}
                 />

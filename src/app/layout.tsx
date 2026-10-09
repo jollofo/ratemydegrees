@@ -5,7 +5,7 @@ import { getDbUser } from "@/lib/user";
 import { createClient } from "@/utils/supabase/server";
 
 import Image from "next/image";
-import GoogleAnalytics from "@/components/GoogleAnalytics";
+import AnalyticsConsent from "@/components/AnalyticsConsent";
 import SiteNavigation from "@/components/SiteNavigation";
 
 const inter = Inter({ subsets: ["latin"], variable: '--font-inter' });
@@ -34,7 +34,6 @@ export default async function RootLayout({
                 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1253547692894460" crossOrigin="anonymous" />
             </head>
             <body className="font-sans selection:bg-earth-sage/30">
-                {process.env.RMD_LOCAL_CHECK !== '1' && <GoogleAnalytics GA_MEASUREMENT_ID="G-N6LJN2TRCF" />}
                 <a href="#main-content" className="sr-only focus:not-sr-only focus:p-4">Skip to content</a>
                 <div className="min-h-screen flex flex-col">
                     <header className="border-b-2 border-earth-sage bg-[#fffefb] sticky top-0 z-50">
@@ -71,6 +70,7 @@ export default async function RootLayout({
                                 <a href="/terms" className="text-sm opacity-80 hover:opacity-100 transition-opacity uppercase tracking-widest font-bold">Terms of Service</a>
                                 <a href="/privacy" className="text-sm opacity-80 hover:opacity-100 transition-opacity uppercase tracking-widest font-bold">Privacy Policy</a>
                             </div>
+                            <AnalyticsConsent signedIn={Boolean(user)} available={process.env.NODE_ENV === 'production' && process.env.RMD_LOCAL_CHECK !== '1'} />
                         </div>
                     </footer>
                 </div>

@@ -9,6 +9,7 @@ import Breadcrumbs from '@/components/Breadcrumbs';
 import ReviewPrivacyNote from '@/components/ReviewPrivacyNote';
 import type { Metadata } from 'next';
 import { programUrl } from '@/lib/review-links';
+import ReviewCta from '@/components/ReviewCta';
 
 export async function generateMetadata({ params }: { params: { id: string; institutionId: string } }): Promise<Metadata> {
     const [major, institution] = await Promise.all([prisma.major.findUnique({ where: { cip4: params.id }, select: { title: true } }), prisma.institution.findUnique({ where: { unitid: params.institutionId }, select: { name: true } })]);
@@ -32,7 +33,7 @@ export default async function ProgramPage({ params, searchParams }: { params: { 
         <Breadcrumbs items={[{ label: 'Schools', href: '/institutions' }, { label: institution.name, href: '/institutions/' + institution.unitid }, { label: major.title, href: '/majors/' + major.cip4 + '/' + institution.unitid }]} />
         <h1 className="text-3xl sm:text-5xl font-bold break-words leading-tight mb-4">{major.title.replace(/[.\s]+$/, '')} at {institution.name}</h1>
         <p className="mb-6">{institution.city}, {institution.state} · Student degree reviews</p>
-        <a href={'/write-review?majorId=' + major.cip4 + '&institutionId=' + institution.unitid} className="coffee-btn mb-8">Write a review</a>
+        <ReviewCta href={'/write-review?majorId=' + major.cip4 + '&institutionId=' + institution.unitid} source="program_detail" majorId={major.cip4} institutionId={institution.unitid} className="coffee-btn mb-8">Write a review</ReviewCta>
         <div className="max-w-3xl mb-8"><ReviewPrivacyNote /></div>
         <RatingSummary averages={data.averages} />
         <ReviewList reviews={data.reviews} total={data.total} page={page} signedIn={Boolean(user)} buildHref={next => '/majors/' + major.cip4 + '/' + institution.unitid + '?page=' + next + '#student-reviews'} scope={institution.name} />

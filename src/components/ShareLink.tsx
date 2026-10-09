@@ -2,6 +2,7 @@
 
 import { useRef, useState } from 'react';
 import { shareLink, type ShareResult } from '@/lib/share-link';
+import { trackProductEvent } from '@/lib/product-analytics';
 
 const feedback: Record<ShareResult, string> = {
     shared: 'Share sheet opened.',
@@ -22,7 +23,9 @@ export default function ShareLink({ url, title, label = 'Share degree page' }: {
         setBusy(true);
         setMessage('');
         try {
-            setMessage(feedback[await shareLink(navigator, url, title, copyOnly)]);
+            const result = await shareLink(navigator, url, title, copyOnly);
+            setMessage(feedback[result]);
+            if (result === 'shared' || result === 'copied') void trackProductEvent('share_action_success', { mode: result });
         } finally {
             inProgress.current = false;
             setBusy(false);

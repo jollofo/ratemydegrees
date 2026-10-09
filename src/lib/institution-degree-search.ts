@@ -36,5 +36,5 @@ export async function searchInstitutionDegrees(unitid: string, input: string, re
         ...listed.map(row => ({ id: row.cip4, name: row.title, reviewCount: row._count.reviews, catalogListed: true })),
         ...additional.map(row => ({ id: row.cip4, name: row.title, reviewCount: row._count.reviews, catalogListed: false })),
     ];
-    return { items, totalPages: Math.ceil((listedCount + additionalCount) / size) };
+    return { items, totalHits: listedCount + additionalCount, totalPages: Math.ceil((listedCount + additionalCount) / size) };
 }

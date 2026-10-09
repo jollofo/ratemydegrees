@@ -55,7 +55,7 @@ export default function LoginPage({
                             Sign In
                         </h1>
                         <p className="text-lg font-bold text-earth-sage uppercase tracking-widest italic">
-                            To Start Reviewing
+                            To Submit Your Review
                         </p>
                     </div>
 
@@ -100,7 +100,8 @@ export default function LoginPage({
 
                 {/* Right Side: Form */}
                 <div className="w-full max-w-sm mx-auto bg-earth-parchment/30 p-8 rounded-3xl border-2 border-dashed border-black/10">
-                    <LoginForm signInAction={signInWithGoogle} nextUrl={nextUrl} />
+                    <LoginForm signInAction={signInWithGoogle} nextUrl={nextUrl} authError={Boolean(searchParams.message)} />
+                    {nextUrl.startsWith('/write-review') && <a href={nextUrl} className="block text-center underline mt-6">Return to your draft</a>}
                 </div>
             </div>
         </div>

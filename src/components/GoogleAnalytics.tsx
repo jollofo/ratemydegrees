@@ -1,21 +1,20 @@
 'use client';
 
-import { usePathname, useSearchParams } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { useEffect, Suspense } from 'react';
 import Script from 'next/script';
 
 function GATracking({ GA_MEASUREMENT_ID }: { GA_MEASUREMENT_ID: string }) {
     const pathname = usePathname();
-    const searchParams = useSearchParams();
 
     useEffect(() => {
-        const url = pathname + (searchParams.toString() ? '?' + searchParams.toString() : '');
         if (typeof window !== 'undefined' && (window as any).gtag) {
             (window as any).gtag('config', GA_MEASUREMENT_ID, {
-                page_path: url,
+                page_path: pathname,
+                page_location: window.location.origin + pathname,
             });
         }
-    }, [pathname, searchParams, GA_MEASUREMENT_ID]);
+    }, [pathname, GA_MEASUREMENT_ID]);
 
     return null;
 }
@@ -38,6 +37,7 @@ export default function GoogleAnalytics({ GA_MEASUREMENT_ID }: { GA_MEASUREMENT_
 
                 gtag('config', '${GA_MEASUREMENT_ID}', {
                     page_path: window.location.pathname,
+                    page_location: window.location.origin + window.location.pathname,
                 });
                 `,
                 }}

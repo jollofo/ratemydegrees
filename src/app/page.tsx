@@ -1,6 +1,7 @@
 import HomeSearch from '@/components/HomeSearch';
 import type { Metadata } from 'next';
 import ReviewPrivacyNote from '@/components/ReviewPrivacyNote';
+import ReviewCta from '@/components/ReviewCta';
 
 export const metadata: Metadata = {
     title: 'RateMyDegrees | Real student degree reviews',
@@ -18,7 +19,7 @@ export default function Home() {
             <div className="flex flex-wrap justify-center gap-6 mt-6">
                 <a href="/majors" className="underline py-2 font-bold">Browse degrees</a>
                 <a href="/institutions" className="underline py-2 font-bold">Browse schools</a>
-                <a href="/write-review" className="underline py-2 font-bold">Write a review</a>
+                <ReviewCta href="/write-review" source="home" className="underline py-2 font-bold">Write a review</ReviewCta>
             </div>
         </section>
         <section aria-labelledby="about-reviews" className="max-w-6xl mx-auto px-6 py-10">
@@ -33,7 +34,7 @@ export default function Home() {
             <h2 className="text-3xl font-bold mb-4">Share your degree experience</h2>
             <p className="mb-4">Your perspective can help incoming students understand what studying the degree was like.</p>
             <div className="mb-6"><ReviewPrivacyNote /></div>
-            <a href="/write-review" className="coffee-btn">Write a review</a>
+            <ReviewCta href="/write-review" source="home" className="coffee-btn">Write a review</ReviewCta>
         </section>
     </div>;
 }

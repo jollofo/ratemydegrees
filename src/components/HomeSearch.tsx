@@ -2,10 +2,11 @@
 
 import { useState } from 'react';
 import SearchAutocomplete from './SearchAutocomplete';
+import { trackProductEvent } from '@/lib/product-analytics';
 
 export default function HomeSearch() {
     const [mode, setMode] = useState('degrees');
-    return <form method="GET" action={mode === 'degrees' ? '/majors' : '/institutions'} className="coffee-card text-left max-w-2xl mx-auto">
+    return <form method="GET" action={mode === 'degrees' ? '/majors' : '/institutions'} className="coffee-card text-left max-w-2xl mx-auto" onSubmit={() => { void trackProductEvent('search_submitted', { search_type: mode }); }}>
         <fieldset className="flex gap-6 mb-5">
             <legend className="font-bold mb-3">Find student reviews by</legend>
             <label className="flex items-center gap-2 py-2"><input type="radio" name="search-mode" checked={mode === 'degrees'} onChange={() => setMode('degrees')} /> Degree</label>

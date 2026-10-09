@@ -12,6 +12,8 @@ import ReviewPrivacyNote from '@/components/ReviewPrivacyNote';
 import { searchDegreeSchools } from '@/lib/degree-school-search';
 import type { Metadata } from 'next';
 import { degreeUrl } from '@/lib/review-links';
+import { TrackedSearchForm, SearchResultsTelemetry } from '@/components/JourneySearch';
+import ReviewCta from '@/components/ReviewCta';
 
 const degreeIntroductions: Record<string, string> = {
     '11.07': 'Computer Science studies computing, including programming, algorithms, and software systems. Courses and emphasis vary by school. Read student reviews below for firsthand accounts of the coursework and support.',
@@ -45,17 +47,18 @@ export default async function MajorPage({ params, searchParams }: { params: { id
         {major.cip4 === '42.01' && <p className="max-w-3xl leading-relaxed mb-5">Psychology explores behavior and mental processes. Coursework can include research methods, statistics, development, and cognition. Read the student reviews below to see how people experienced the coursework and support at their schools.</p>}
         {degreeIntroductions[major.cip4] && <p className="max-w-3xl leading-relaxed mb-5">{degreeIntroductions[major.cip4]}</p>}
         <a href={'/majors/' + major.cip4 + '/statistics'} className="inline-block font-semibold underline underline-offset-4 mb-6">View statistics &amp; opportunities</a>
-        <div className="flex flex-wrap gap-5 items-center"><a href={'/write-review?majorId=' + major.cip4} className="coffee-btn">Write a review</a><a href="#schools" className="underline py-3">Find reviews at a school</a><ShareLink url={degreeUrl(major.cip4)} title={major.title.replace(/[.\s]+$/, '') + ' student reviews'} /></div>
+        <div className="flex flex-wrap gap-5 items-center"><ReviewCta href={'/write-review?majorId=' + major.cip4} source="degree_detail" majorId={major.cip4} className="coffee-btn">Write a review</ReviewCta><a href="#schools" className="underline py-3">Find reviews at a school</a><ShareLink url={degreeUrl(major.cip4)} title={major.title.replace(/[.\s]+$/, '') + ' student reviews'} /></div>
         <div className="max-w-3xl mt-3"><ReviewPrivacyNote /></div>
         <ReviewList reviews={reviewData.reviews} total={reviewData.total} page={reviewsPage} signedIn={Boolean(user)} buildHref={next => href(page, next, 'student-reviews')} scope="Across schools" />
         <section id="schools" className="scroll-mt-24 my-10">
+            {query && <SearchResultsTelemetry searchType="schools_within_degree" count={schoolCount} />}
             <h2 className="text-3xl font-bold mb-4">Find your school</h2>
             <p className="mb-5">Search for your school to read or write reviews.</p>
-            <form method="GET" className="flex flex-col sm:flex-row gap-3 mb-6">
+            <TrackedSearchForm searchType="schools_within_degree" className="flex flex-col sm:flex-row gap-3 mb-6">
                 <label htmlFor="school-query" className="sr-only">School name</label>
                 <SearchAutocomplete id="school-query" kind="schools" scope={major.cip4} defaultValue={query} placeholder="School name" />
                 <button className="coffee-btn">Search</button>
-            </form>
+            </TrackedSearchForm>
             {query && <a href={'/majors/' + major.cip4 + '#schools'} className="underline inline-block mb-4">Clear school search</a>}
             <p className="mb-4">{schoolCount} schools found</p>
             <div className="grid sm:grid-cols-2 gap-5">{schools.map(school => <a className="coffee-card" href={'/majors/' + major.cip4 + '/' + school.unitid} key={school.unitid}>
@@ -64,7 +67,7 @@ export default async function MajorPage({ params, searchParams }: { params: { id
                 <p className="mt-3">{school._count.reviews} student {school._count.reviews === 1 ? 'review' : 'reviews'}</p>
                 <p className="underline mt-3">Read reviews →</p>
             </a>)}</div>
-            {!schools.length && <p className="coffee-card">No matching schools found. Try another search or <a className="underline font-semibold" href={'/write-review?majorId=' + major.cip4}>write a review and select your school</a>.</p>}
+            {!schools.length && <p className="coffee-card">No matching schools found. Try another search or <ReviewCta href={'/write-review?majorId=' + major.cip4} source="degree_detail" majorId={major.cip4} className="underline font-semibold">write a review and select your school</ReviewCta>.</p>}
             <Pagination currentPage={page} totalPages={totalPages} buildHref={next => href(next, reviewsPage, 'schools')} />
         </section>
     </div>;

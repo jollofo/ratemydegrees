@@ -1,14 +1,16 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { submitReview } from './actions';
 import ReviewSearchField from '@/components/ReviewSearchField';
 import { reviewFormSchema } from '@/lib/validation';
 import { ratingCategories } from '@/lib/rating-rubric';
 import type { ReviewFormData, InstitutionSearchResult, MajorSearchResult } from './types';
-import { discardDraft, readDraft, writeDraft, type DraftTarget } from '@/lib/review-draft';
+import { discardDraft, draftKey, readDraft, writeDraft, type DraftTarget } from '@/lib/review-draft';
 import { safeDestination } from '@/lib/navigation';
+import { trackProductErrorOnce, trackProductEventOnce } from '@/lib/product-analytics';
+import { reviewErrorCategory } from '@/lib/product-analytics-policy';
 
 const emptyForm: ReviewFormData = {
     majorId: '', institutionId: '', status: 'current', graduationYear: '',
@@ -32,13 +34,16 @@ export default function WriteReviewForm({ majors, institutions, preSelectedMajor
     const [schoolQuery, setSchoolQuery] = useState(preSelectedInstitution?.name ?? institutions.find(school => school.unitid === initialData?.institutionId)?.name ?? '');
     const [draftReady, setDraftReady] = useState(false);
     const [storageAvailable, setStorageAvailable] = useState(true);
+    const reviewStarted = useRef(false);
     useEffect(() => {
         if (reviewId) return;
         try {
             const saved = readDraft(localStorage, target);
             if (saved) {
+                reviewStarted.current = true;
                 setData(saved.data); setMajorQuery(saved.majorQuery); setSchoolQuery(saved.schoolQuery); setStep(saved.step);
                 setMessage('Your draft was restored on this device. Check the degree and school before submitting.');
+                void trackProductEventOnce('review_draft_restored:' + draftKey(target), 'review_draft_restored', { major_id: saved.data.majorId, institution_id: saved.data.institutionId });
             }
         } catch { setStorageAvailable(false); setMessage('Draft storage is unavailable. Keep this tab open until you submit.'); }
         setDraftReady(true);
@@ -81,17 +86,24 @@ export default function WriteReviewForm({ majors, institutions, preSelectedMajor
         try {
             const result = await submitReview(data, reviewId);
             if (!reviewId) try { discardDraft(localStorage, target); } catch { /* Submission succeeds without browser storage. */ }
+            if (!reviewId) void trackProductEventOnce('review_submitted:' + result.id, 'review_submitted', { major_id: data.majorId, institution_id: data.institutionId, status: result.status.toLowerCase() });
             const confirmation = new URLSearchParams({ submitted: result.status.toLowerCase(), reviewId: result.id });
             router.push('/my-reviews?' + confirmation.toString());
             router.refresh();
         } catch (error) {
+            const category = reviewErrorCategory(error);
+            void trackProductErrorOnce('review_submit_error:' + draftKey(target) + ':' + category, 'review_submit', category);
             setMessage(error instanceof Error ? error.message : 'Could not submit. Please try again.');
             setBusy(false);
         }
     }
     const error = (key: string) => errors[key] ? <p id={'error-' + key} role="alert" className="text-red-800 text-sm mt-2">{errors[key]}</p> : null;
 
-    return <form onSubmit={submit} noValidate className="space-y-6">
+    return <form onSubmit={submit} noValidate className="space-y-6" onChangeCapture={() => {
+        if (reviewId || reviewStarted.current) return;
+        reviewStarted.current = true;
+        void trackProductEventOnce('review_started:' + draftKey(target), 'review_started', { major_id: data.majorId, institution_id: data.institutionId });
+    }}>
         <p className="text-sm">Your name and account details are not displayed with your review. Your degree, school, student status, rating, review month, and written responses are public. Do not include names, contact details, or other identifying information in your text. <a href="/guidelines" className="underline">Review guidelines</a></p>
         <ol aria-label="Review steps" className="flex flex-wrap gap-4">
             {['Your degree', 'Your ratings', 'Your experience'].map((label, index) => <li key={label} aria-current={step === index + 1 ? 'step' : undefined} className={step === index + 1 ? 'font-bold' : 'text-foreground/70'}>{index + 1}. {label}</li>)}

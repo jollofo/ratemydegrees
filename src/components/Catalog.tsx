@@ -1,6 +1,7 @@
 import Pagination from './Pagination';
 import { ArrowLeft, ArrowUpRight, BookOpen, School, MessageCircle, Search } from 'lucide-react';
 import SearchAutocomplete from './SearchAutocomplete';
+import { TrackedSearchForm, SearchResultsTelemetry } from './JourneySearch';
 
 interface CatalogProps {
     kind: 'degrees' | 'schools'; query: string; filter: string; page: number;
@@ -12,6 +13,7 @@ export default function Catalog({ kind, query, filter, page, totalPages, totalHi
     const filterName = kind === 'degrees' ? 'category' : 'state';
     const href = (next: number) => { const params = new URLSearchParams({ page: String(next) }); if(query) params.set('q',query); if(filter) params.set(filterName,filter); return path+'?'+params.toString(); };
     return <div className="container mx-auto px-6 py-10 max-w-6xl">
+        {(query || filter) && <SearchResultsTelemetry searchType={kind} count={totalHits} unavailable={unavailable} />}
         <a href="/" className="inline-flex items-center gap-2 text-sm underline underline-offset-4"><ArrowLeft size={16} aria-hidden="true" />Home</a>
         <div className="flex items-start gap-5 mt-8 mb-5">
             <span className="hidden sm:flex wavy-border bg-earth-mustard/25 p-4 -rotate-6 shrink-0" aria-hidden="true">{kind === 'degrees' ? <BookOpen size={32} strokeWidth={1.5} /> : <School size={32} strokeWidth={1.5} />}</span>
@@ -19,13 +21,13 @@ export default function Catalog({ kind, query, filter, page, totalPages, totalHi
         </div>
         <p className="mb-6 max-w-2xl leading-relaxed">Get a feel for the experience, in students’ own words. Browse alphabetically or search by name.</p>
         <nav aria-label="Browse reviews" className="flex flex-wrap gap-3 mb-6"><a href="/majors" aria-current={kind === 'degrees' ? 'page' : undefined} className="catalog-tab"><BookOpen size={17} aria-hidden="true" />Degrees</a><a href="/institutions" aria-current={kind === 'schools' ? 'page' : undefined} className="catalog-tab"><School size={17} aria-hidden="true" />Schools</a></nav>
-        <form action={path} method="GET" className="coffee-card mb-8">
+        <TrackedSearchForm action={path} searchType={kind} className="coffee-card mb-8">
             <label htmlFor="catalog-query" className="block font-bold mb-2">{kind === 'degrees' ? 'Degree name' : 'School name or city'}</label>
             <div className="flex flex-col sm:flex-row gap-3"><SearchAutocomplete id="catalog-query" kind={kind} defaultValue={query} placeholder={kind === 'degrees' ? 'e.g. Psychology' : 'e.g. University of Florida'} /><button className="coffee-btn gap-2" type="submit"><Search size={19} aria-hidden="true" />Search</button></div>
             {kind === 'schools' && <div className="mt-4"><label htmlFor="school-state" className="block mb-2">State abbreviation (optional)</label><input id="school-state" name="state" defaultValue={filter} maxLength={2} placeholder="e.g. FL" className="coffee-input max-w-40 uppercase" /></div>}
             {kind === 'degrees' && filter && <p className="mt-3">Category: {filter}<input type="hidden" name="category" value={filter} /></p>}
             {(query || filter) && <a href={path} className="inline-block underline mt-4">Clear search and filters</a>}
-        </form>
+        </TrackedSearchForm>
         {unavailable ? <p role="alert" className="coffee-card">Search is temporarily unavailable. Please try again.</p> : <>
             <div className="mb-5"><p role="status" className="font-semibold">{totalHits.toLocaleString('en-US')} {kind} found{page > 1 ? ' · Page ' + page : ''}</p></div>
             {!items.length ? <div className="coffee-card"><p>{totalHits ? 'There are no results on this page.' : 'No matches. Try another name or clear your filters.'}</p><a href={href(1)} className="underline inline-block mt-3">Go to the first page</a></div> : <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
