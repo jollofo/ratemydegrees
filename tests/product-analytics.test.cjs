@@ -32,7 +32,7 @@ test.after(() => {
     process.env.NEXT_PUBLIC_POSTHOG_HOST = oldEnv.host;
     delete global.window;
 });
-test.beforeEach(() => { values.clear(); sessionValues.clear(); sdk.captures = []; sdk.exceptions = []; sdk.initCalls = 0; process.env.NODE_ENV = 'production'; process.env.NEXT_PUBLIC_RMD_ANALYTICS_ENABLED = '0'; process.env.NEXT_PUBLIC_POSTHOG_KEY = ''; process.env.NEXT_PUBLIC_POSTHOG_HOST = 'https://us.i.posthog.com'; });
+test.beforeEach(() => { analytics.saveAnalyticsChoice('granted'); values.clear(); sessionValues.clear(); sdk.captures = []; sdk.exceptions = []; sdk.initCalls = 0; process.env.NODE_ENV = 'production'; process.env.NEXT_PUBLIC_RMD_ANALYTICS_ENABLED = '0'; process.env.NEXT_PUBLIC_POSTHOG_KEY = ''; process.env.NEXT_PUBLIC_POSTHOG_HOST = 'https://us.i.posthog.com'; });
 
 test('no config, no consent, and development mode cannot send or initialize', async () => {
     assert.equal(await analytics.trackProductEvent('review_started', { major_id: '11.07' }), false);
@@ -162,4 +162,70 @@ test('Web Analytics receives anonymous template pageviews without raw URL or acc
     assert.equal(await analytics.trackProductEvent('page_viewed', { route: 'home' }), false);
     assert.equal(sdk.captures.length, 2);
     assert.equal(sdk.options.before_send({ event: '$pageview', properties: { route: 'home' } }), null);
+});
+
+function freshAnalyticsModule() {
+    const file = require.resolve('../src/lib/product-analytics.ts');
+    const cached = require.cache[file];
+    delete require.cache[file];
+    const fresh = require(file);
+    require.cache[file] = cached;
+    return fresh;
+}
+
+test('withdrawal while the SDK import is pending cannot initialize or capture', async () => {
+    const fresh = freshAnalyticsModule();
+    process.env.NEXT_PUBLIC_RMD_ANALYTICS_ENABLED = '1'; process.env.NEXT_PUBLIC_POSTHOG_KEY = 'phc_test';
+    assert.equal(fresh.saveAnalyticsChoice('granted'), true);
+    const pending = fresh.trackProductEvent('review_started', { major_id: '11.07' });
+    assert.equal(fresh.saveAnalyticsChoice('denied'), true);
+    assert.equal(await pending, false);
+    assert.equal(sdk.initCalls, 0);
+    assert.deepEqual(sdk.captures, []);
+    assert.equal(sessionValues.size, 0);
+    assert.equal(global.window['ga-disable-G-N6LJN2TRCF'], true);
+});
+
+test('failed withdrawal blocks existing SDK before_send even while a saved grant remains', async () => {
+    const fresh = freshAnalyticsModule();
+    process.env.NEXT_PUBLIC_RMD_ANALYTICS_ENABLED = '1'; process.env.NEXT_PUBLIC_POSTHOG_KEY = 'phc_test';
+    assert.equal(fresh.saveAnalyticsChoice('granted'), true);
+    assert.equal(await fresh.trackProductEvent('review_started', { major_id: '11.07' }), true);
+    const originalSetItem = global.window.localStorage.setItem;
+    global.window.localStorage.setItem = () => { throw Error('blocked'); };
+    try {
+        assert.equal(fresh.saveAnalyticsChoice('denied'), false);
+        assert.equal(values.get('rmd-analytics-consent-v1'), 'granted');
+        assert.equal(fresh.hasAnalyticsConsent(), false);
+        assert.equal(await fresh.trackProductEvent('review_started', { major_id: '11.07' }), false);
+        assert.equal(sdk.options.before_send({ event: 'review_started', properties: { major_id: '11.07', token: 'phc_test' } }), null);
+        assert.equal(global.window['ga-disable-G-N6LJN2TRCF'], true);
+        assert.equal(sessionValues.size, 0);
+    } finally { global.window.localStorage.setItem = originalSetItem; }
+});
+
+test('silently lost or raced consent writes are rejected and stay fail-closed', () => {
+    const fresh = freshAnalyticsModule();
+    const originalSetItem = global.window.localStorage.setItem;
+    global.window.localStorage.setItem = () => {};
+    try {
+        assert.equal(fresh.saveAnalyticsChoice('granted'), false);
+        assert.equal(fresh.hasAnalyticsConsent(), false);
+        assert.equal(global.window['ga-disable-G-N6LJN2TRCF'], true);
+    } finally { global.window.localStorage.setItem = originalSetItem; }
+});
+
+test('a throwing sessionStorage getter cannot initialize an SDK or reject initialization', async () => {
+    const fresh = freshAnalyticsModule();
+    process.env.NEXT_PUBLIC_RMD_ANALYTICS_ENABLED = '1'; process.env.NEXT_PUBLIC_POSTHOG_KEY = 'phc_test';
+    assert.equal(fresh.saveAnalyticsChoice('granted'), true);
+    const descriptor = Object.getOwnPropertyDescriptor(global.window, 'sessionStorage');
+    Object.defineProperty(global.window, 'sessionStorage', { configurable: true, get() { throw Error('blocked'); } });
+    try {
+        assert.equal(await fresh.initializeProductAnalytics(), null);
+        assert.equal(await fresh.trackProductEvent('review_started', { major_id: '11.07' }), false);
+        assert.equal(sdk.initCalls, 0);
+        assert.deepEqual(sdk.captures, []);
+        assert.equal(fresh.saveAnalyticsChoice('denied'), true);
+    } finally { Object.defineProperty(global.window, 'sessionStorage', descriptor); }
 });

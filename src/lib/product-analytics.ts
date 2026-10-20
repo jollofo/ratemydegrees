@@ -3,31 +3,49 @@
 import { sanitizeExceptionProperties, sanitizeProductEvent, type ProductProperties } from './product-analytics-policy';
 import { clearAnonymousSessionId, getOrCreateAnonymousSessionId } from './anonymous-analytics-session';
 
-const consentKey = 'rmd-analytics-consent-v1';
+export const analyticsConsentKey = 'rmd-analytics-consent-v1';
+let suspendedForPage = false;
 const seen = new Set<string>();
 let sdkPromise: Promise<typeof import('posthog-js').default | null> | null = null;
 
 export function hasAnalyticsConsent(): boolean {
-    try { return window.localStorage.getItem(consentKey) === 'granted'; }
+    if (suspendedForPage) return false;
+    try { return window.localStorage.getItem(analyticsConsentKey) === 'granted'; }
     catch { return false; }
 }
 
 export function readAnalyticsChoice(): 'granted' | 'denied' | null {
     try {
-        const value = window.localStorage.getItem(consentKey);
+        const value = window.localStorage.getItem(analyticsConsentKey);
         return value === 'granted' || value === 'denied' ? value : null;
     } catch { return null; }
 }
 
+// Stop transmission immediately, even if storage is blocked or a SDK import is pending.
+// Successful withdrawal also reloads the page to unload the SDKs entirely.
+export function suspendAnalyticsForPage(): void {
+    suspendedForPage = true;
+    (window as unknown as Record<string, unknown>)['ga-disable-G-N6LJN2TRCF'] = true;
+    try { clearAnonymousSessionId(window.sessionStorage); } catch { /* Capture is still blocked. */ }
+}
+
 export function saveAnalyticsChoice(choice: 'granted' | 'denied'): boolean {
+    if (choice === 'denied') suspendAnalyticsForPage();
     try {
-        window.localStorage.setItem(consentKey, choice);
-        if (choice === 'denied') {
-            try { clearAnonymousSessionId(window.sessionStorage); } catch { /* Choice still blocks capture. */ }
+        window.localStorage.setItem(analyticsConsentKey, choice);
+        if (window.localStorage.getItem(analyticsConsentKey) !== choice) {
+            suspendAnalyticsForPage();
+            return false;
+        }
+        if (choice === 'granted') {
+            suspendedForPage = false;
+            (window as unknown as Record<string, unknown>)['ga-disable-G-N6LJN2TRCF'] = false;
         }
         return true;
+    } catch {
+        suspendAnalyticsForPage();
+        return false;
     }
-    catch { return false; }
 }
 
 export function isProductAnalyticsConfigured(): boolean {
@@ -38,9 +56,12 @@ export function isProductAnalyticsConfigured(): boolean {
 
 export async function initializeProductAnalytics() {
     if (!isProductAnalyticsConfigured() || !hasAnalyticsConsent()) return null;
-    const anonymousId = getOrCreateAnonymousSessionId(window.sessionStorage, () => window.crypto.randomUUID());
+    let anonymousId: string | null;
+    try { anonymousId = getOrCreateAnonymousSessionId(window.sessionStorage, () => window.crypto.randomUUID()); }
+    catch { return null; }
     if (!anonymousId) return null;
     if (!sdkPromise) sdkPromise = import('posthog-js').then(({ default: posthog }) => {
+        if (!hasAnalyticsConsent()) { sdkPromise = null; return null; }
         posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY!, {
             api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST!,
             autocapture: false,
